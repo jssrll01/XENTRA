@@ -257,3 +257,13 @@ button.row { text-align: left; cursor: pointer; }
 .pinbar b { display: block; font-size: 12px; color: var(--blue); }
 .msg.flash .bubble { outline: 3px solid var(--blue); }
 .typing { display: block; font-size: 12px; font-weight: 500; color: var(--blue); }
+.csearch { padding: 8px 12px 0; border-bottom: 1px solid var(--line); }
+.cres { max-height: 220px; overflow-y: auto; }
+.seg { display: flex; gap: 6px; margin-bottom: 12px; }
+.seg button { flex: 1; height: 38px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-weight: 700; cursor: pointer; }
+.seg button.on { background: var(--grad); color: #fff; border-color: transparent; }
+.lbl { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 700; }
+.sheet textarea, .sheet input[type="text"], .sheet input[type="datetime-local"] { width: 100%; padding: 10px 12px; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 12px; background: #fff; outline: 0; }
+.sheet textarea:focus, .sheet input:focus { border-color: var(--blue); }
+.sub-h { margin: 18px 0 6px; font-size: 14px; color: var(--muted); }
+.q-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }

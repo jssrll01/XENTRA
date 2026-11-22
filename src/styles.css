@@ -436,3 +436,9 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .rx-empty { color: var(--muted); }
 .msg-find { margin-bottom: 12px; }
 .msg-find .chat-find { margin: 0; }
+.pollc-act { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+.pollc-act button { border: 0; background: transparent; padding: 0; color: var(--blue); font-weight: 600; font-size: 12px; cursor: pointer; }
+.pollc-voters { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; }
+.pollc-voters b { display: block; margin-top: 4px; }
+.pollc-voters span { display: block; color: var(--muted); }
+.po-sel { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font: inherit; }

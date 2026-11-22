@@ -9,7 +9,7 @@ import { ago } from '../lib/format';
 
 export default function Notifications() {
   const nav = useNavigate();
-  const { reload } = useSummary();
+  const { reload, tick } = useSummary();
   const [rows, setRows] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -18,7 +18,7 @@ export default function Notifications() {
     const r = await listNotifications(50);
     if (r.ok) { setRows(r.data || []); setErr(''); } else setErr(r.error);
   }, []);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, [load, tick]);
 
   const markAll = async () => {
     setBusy(true);

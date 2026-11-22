@@ -397,3 +397,24 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .sk-bub { height: 44px; width: 62%; border-radius: 16px 16px 16px 4px; }
 .sk-bub.me { align-self: flex-end; width: 48%; border-radius: 16px 16px 4px 16px; }
 .sk-tile-n { height: 24px; width: 44px; margin: 4px 0; }
+.sx-me { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 16px; margin-bottom: 14px; }
+.sx-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sx-who b { font-size: 20px; }
+.sx-who span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+.sx-edit { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-weight: 700; text-decoration: none; }
+.sx-group { padding: 4px 14px; margin-bottom: 14px; }
+.sx-item + .sx-item { border-top: 1px solid var(--line); }
+.sx-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px; padding: 10px 0; border: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
+.sx-ic { width: 40px; flex-shrink: 0; display: inline-flex; justify-content: center; color: var(--blue); }
+.sx-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sx-txt b { font-size: 16px; }
+.sx-txt span { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.sx-tag { flex-shrink: 0; padding: 6px 12px; border-radius: 999px; background: rgba(var(--wh), .6); border: 1px solid var(--line); font-size: 13px; font-weight: 600; }
+.sx-chev { flex-shrink: 0; color: var(--muted); transition: transform .2s; }
+.sx-chev.on { transform: rotate(90deg); }
+.sx-panel { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 4px 0 16px 54px; }
+.sx-panel input, .sx-panel select { width: 100%; }
+.sx-panel input:disabled { opacity: .75; cursor: not-allowed; }
+.sx-lbl { display: flex; flex-direction: column; gap: 4px; width: 100%; font-size: 13px; font-weight: 600; color: var(--muted); }
+.sx-out { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 54px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: var(--r-lg); background: rgba(var(--wh), .6); color: var(--blue); font: inherit; font-weight: 700; cursor: pointer; }
+@media (max-width: 380px) { .sx-panel { padding-left: 0; } .sx-edit { width: 100%; justify-content: center; } }

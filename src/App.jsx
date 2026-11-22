@@ -9,6 +9,12 @@ import SignIn from './pages/SignIn';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
+import Profile from './pages/Profile';
+import Notifications from './pages/Notifications';
+import Search from './pages/Search';
+import AppShell from './components/AppShell';
+import { ProfileProvider } from './lib/profile';
+import { SummaryProvider } from './lib/summary';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -32,7 +38,12 @@ export default function App() {
             <Route path="/signin" element={<PublicOnly><SignIn /></PublicOnly>} />
             <Route path="/verify-email" element={<PublicOnly><VerifyEmail /></PublicOnly>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
+            <Route element={<RequireAuth><ProfileProvider><SummaryProvider><AppShell /></SummaryProvider></ProfileProvider></RequireAuth>}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/search" element={<Search />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

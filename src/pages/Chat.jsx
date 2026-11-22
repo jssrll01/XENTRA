@@ -14,6 +14,8 @@ import PinBar from '../components/PinBar';
 import ChatSearch from '../components/ChatSearch';
 import ForwardPicker from '../components/ForwardPicker';
 import GroupInfoButton from '../components/GroupInfoButton';
+import useNames from '../lib/useNames';
+import { getChannelHead } from '../lib/api';
 import LaterSheet from '../components/LaterSheet';
 import PollSheet from '../components/PollSheet';
 import PollCard from '../components/PollCard';
@@ -63,12 +65,13 @@ export default function Chat() {
   const box = useRef(null);
   const root = useRef(null);
   const name = other ? fullName(other) : 'Conversation';
+  const names = useNames(id, !!(other && (other.is_group || other.is_channel)));
 
   const loadOther = useCallback(async () => {
     const r = await listConversations();
     if (!r.ok) { setErr(r.error); return; }
     const c = (r.data || []).find((x) => x.id === id);
-    if (c) setOther(c.other); else setErr('Conversation not found.');
+    if (c) setOther(c.other); else getChannelHead(id).then((t) => { if (t.ok) setOther(t.data); else setErr('Conversation not found.'); });
   }, [id]);
   const load = useCallback(async () => {
     const r = await listMessages(id);
@@ -231,6 +234,7 @@ export default function Chat() {
       <div key={m.id} id={'m-' + m.id} className={'msg' + (mine ? ' mine' : '')}>
         <button type="button" className={'bubble' + (m.deleted ? ' gone' : '') + (m.failed ? ' failed' : '')} aria-expanded={sel === m.id}
           onClick={() => { if (!m.local && !m.deleted) setSel(sel === m.id ? null : m.id); }}>
+          {!mine && names[m.sender_id] ? <span className="sname">{names[m.sender_id]}</span> : null}
           {m.forwarded ? <span className="fwd"><Forward size={12} /> Forwarded</span> : null}
           {m.reply ? <span className="quote"><b>{m.reply.sender_id === me ? 'You' : name}</b>{m.reply.deleted ? 'Message deleted' : m.reply.body}</span> : null}
           {m.deleted ? <i>Message deleted</i> : (m.attachments && m.attachments.length && m.attachments[0].name === m.body ? null : <span className="mbody">{rich(m.body)}</span>)}
@@ -281,6 +285,7 @@ export default function Chat() {
         <Avatar name={name} url={other ? other.avatar_url : null} size={40} />
         <b>{name}{typing ? <small className="typing">typing...</small> : null}</b>
         <button type="button" className="icon-btn" aria-label="Search in chat" onClick={() => setSearching(!searching)}><SearchIcon size={20} /></button>
+        {other && (other.is_group || other.is_channel) ? <GroupInfoButton id={id} other={other} /> : null}
       </div>
       {searching ? <ChatSearch conversationId={id} onClose={() => setSearching(false)} onJump={(m) => { if (jump(m.id)) setSearching(false); }} /> : null}
       {pins.length ? <PinBar pins={pins} onJump={jump} /> : null}
@@ -294,7 +299,6 @@ export default function Chat() {
       </div>
       {pollOpen ? <PollSheet conversationId={id} onClose={() => setPollOpen(false)} onDone={() => { setPollOpen(false); setNotice('Poll sent'); load(); }} /> : null}
       {thread ? <ThreadPanel root={thread} me={me} name={name} onClose={() => setThread(null)} /> : null}
-      {other && other.is_group ? <GroupInfoButton id={id} /> : null}
       {fwd ? <ForwardPicker message={fwd} onClose={() => setFwd(null)} onDone={(c) => { setFwd(null); setNotice('Forwarded to ' + fullName(c.other)); }} /> : null}
       {later ? (
         <LaterSheet conversationId={id} {...later} onClose={() => setLater(null)}

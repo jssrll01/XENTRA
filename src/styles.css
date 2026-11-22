@@ -199,3 +199,41 @@ kbd { font: inherit; font-size: 11px; padding: 2px 6px; border: 1px solid var(--
 .chat-find { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; margin-bottom: 8px; border: 1px solid var(--line); border-radius: var(--r-md); background: rgba(255, 255, 255, .7); }
 .chat-find input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; }
 button.row { text-align: left; cursor: pointer; }
+.chat { display: flex; flex-direction: column; height: var(--chat-h, 70dvh); min-height: 320px; overflow: hidden; }
+.chat-head { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.chat-head b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px; }
+.chat-box { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.day-sep { text-align: center; margin: 10px 0 4px; }
+.day-sep span { display: inline-block; padding: 3px 12px; border-radius: 999px; background: rgba(15, 23, 42, .06); color: var(--muted); font-size: 12px; font-weight: 600; }
+.more { align-self: center; flex-shrink: 0; }
+.msg { display: flex; flex-direction: column; align-items: flex-start; max-width: 82%; flex-shrink: 0; }
+.msg.mine { align-self: flex-end; align-items: flex-end; }
+.bubble { display: block; text-align: left; max-width: 100%; border: 0; border-radius: 16px 16px 16px 4px; padding: 8px 12px; background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .08); cursor: pointer; overflow-wrap: anywhere; white-space: pre-wrap; }
+.msg.mine .bubble { background: var(--grad); color: #fff; border-radius: 16px 16px 4px 16px; }
+.bubble.gone { cursor: default; opacity: .7; }
+.bubble.failed { outline: 2px solid var(--red); }
+.mbody { display: block; }
+.meta { display: block; margin-top: 2px; font-size: 11px; opacity: .7; text-align: right; font-style: normal; }
+.quote { display: block; margin-bottom: 6px; padding: 4px 8px; border-left: 3px solid var(--blue); border-radius: 6px; background: rgba(15, 23, 42, .06); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg.mine .quote { border-left-color: #fff; background: rgba(255, 255, 255, .2); }
+.quote b { display: block; font-size: 12px; }
+.rxs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.rx { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 1px 8px; font-size: 13px; cursor: pointer; }
+.rx.mine { border-color: var(--blue); background: #dbeafe; }
+.fail { display: flex; align-items: center; gap: 10px; margin-top: 3px; font-size: 12px; color: #b91c1c; }
+.fail button { display: inline-flex; align-items: center; gap: 4px; border: 0; background: transparent; color: var(--blue); font-weight: 600; cursor: pointer; padding: 2px; }
+.acts { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; border-radius: 14px; background: #fff; box-shadow: 0 6px 24px rgba(15, 23, 42, .14); max-width: 100%; }
+.acts .quick { display: flex; gap: 2px; width: 100%; }
+.acts button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; border: 0; border-radius: 10px; background: transparent; padding: 0 10px; cursor: pointer; font-weight: 600; }
+.acts .quick button { flex: 1; font-size: 20px; padding: 4px 0; }
+.acts button:hover { background: rgba(37, 99, 235, .08); }
+.composer { border-top: 1px solid var(--line); padding: 8px 10px; }
+.ctx { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--blue); border-radius: 8px; background: rgba(37, 99, 235, .06); font-size: 13px; }
+.ctx span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ctx b { display: block; font-size: 12px; }
+.ctx button { border: 0; background: transparent; cursor: pointer; display: flex; padding: 4px; }
+.cmp { display: flex; align-items: flex-end; gap: 8px; }
+.cmp textarea { flex: 1; min-width: 0; resize: none; max-height: 120px; field-sizing: content; padding: 11px 14px; border: 1px solid var(--line); border-radius: 20px; background: #fff; outline: 0; }
+.cmp textarea:focus { border-color: var(--blue); }
+.send { width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 50%; background: var(--grad); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.send:disabled { opacity: .5; cursor: default; }

@@ -140,3 +140,4 @@ export const checkUsername = (name) => call('username_available', { p_name: name
 export const markAllDelivered = () => call('mark_all_delivered');
 export const getLinkPreview = (url) => call('get_link_preview', { p_url: url });
 export const listReactors = (mid, emoji = null) => call('list_reactors', { p_message: mid, p_emoji: emoji });
+export const searchAllMessages = (q) => call('search_all_messages', { p_q: q });

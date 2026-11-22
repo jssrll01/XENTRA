@@ -5,7 +5,8 @@ import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
 import ConvRow from '../components/ConvRow';
-import { listConversations, setFlags, startDirect } from '../lib/api';
+import { listConversations, setFlags, startDirect, searchAllMessages } from '../lib/api';
+import { clock, dayLabel } from '../lib/chatTime';
 import { searchPeople } from '../lib/search';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
@@ -24,12 +25,27 @@ export default function Messages() {
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState('chats');
   const [menu, setMenu] = useState(null);
+  const [cq, setCq] = useState('');
+  const [hits, setHits] = useState(null);
+  const [herr, setHerr] = useState('');
+  const [rt, setRt] = useState(0);
 
   const load = useCallback(async () => {
     const r = await listConversations();
     if (r.ok) { setRows(r.data || []); setErr(''); } else setErr(r.error);
   }, []);
   useEffect(() => { load(); }, [load, tick]);
+  useEffect(() => {
+    const t = cq.trim();
+    if (t.length < 2) { setHits(null); setHerr(''); return undefined; }
+    let live = true;
+    const timer = setTimeout(async () => {
+      const r = await searchAllMessages(t);
+      if (!live) return;
+      if (r.ok) { setHits(r.data || []); setHerr(''); } else setHerr(r.error);
+    }, 300);
+    return () => { live = false; clearTimeout(timer); };
+  }, [cq, rt]);
   useEffect(() => {
     if (!open) return undefined;
     let live = true;
@@ -52,7 +68,8 @@ export default function Messages() {
     const r = await setFlags(c.id, patch);
     if (r.ok) load(); else setErr(r.error);
   };
-  const shown = (rows || []).filter((c) => (tab === 'archived') === c.archived);
+  const needle = cq.trim().toLowerCase();
+  const shown = (rows || []).filter((c) => (needle ? fullName(c.other).toLowerCase().indexOf(needle) >= 0 : (tab === 'archived') === c.archived));
   const nArch = (rows || []).filter((c) => c.archived).length;
   const searching = q.trim().length >= 2;
 
@@ -82,12 +99,20 @@ export default function Messages() {
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
       {!rows && !err ? <div className="empty"><p>Loading...</p></div> : null}
       {rows ? (
+        <div className="msg-find">
+          <label className="chat-find"><SearchIcon size={18} />
+            <input value={cq} onChange={(e) => setCq(e.target.value)} placeholder="Search chats and messages" aria-label="Search chats and messages" />
+            {cq ? <button type="button" className="icon-btn" aria-label="Clear search" onClick={() => setCq('')}><X size={18} /></button> : null}
+          </label>
+        </div>
+      ) : null}
+      {rows ? (
         <div className="tabs" role="tablist">
           <button type="button" role="tab" aria-selected={tab === 'chats'} className={tab === 'chats' ? 'on' : ''} onClick={() => setTab('chats')}>Chats</button>
           <button type="button" role="tab" aria-selected={tab === 'archived'} className={tab === 'archived' ? 'on' : ''} onClick={() => setTab('archived')}>{nArch ? 'Archived (' + nArch + ')' : 'Archived'}</button>
         </div>
       ) : null}
-      {rows && shown.length === 0 ? <EmptyState icon={MessageCircle} title={tab === 'archived' ? 'No archived chats' : 'No conversations yet'} text={tab === 'archived' ? 'Archived chats appear here.' : 'Tap New to message someone.'} /> : null}
+      {rows && shown.length === 0 && !needle ? <EmptyState icon={MessageCircle} title={tab === 'archived' ? 'No archived chats' : 'No conversations yet'} text={tab === 'archived' ? 'Archived chats appear here.' : 'Tap New to message someone.'} /> : null}
       {shown.length > 0 ? (
         <section className="glass card">
           <div className="rows">
@@ -105,6 +130,27 @@ export default function Messages() {
               </div>
             ))}
           </div>
+        </section>
+      ) : null}
+      {needle.length >= 2 ? (
+        <section className="glass card">
+          <h3 className="sub-h">Messages</h3>
+          {herr ? <div className="alert err with-action"><span>{herr}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => setRt((n) => n + 1)}><RefreshCw size={16} /> Retry</button></div> : null}
+          {!hits && !herr ? <div className="empty"><p>Searching...</p></div> : null}
+          {hits && hits.length === 0 ? <div className="empty"><p>No messages found.</p></div> : null}
+          {hits && hits.length > 0 ? (
+            <div className="rows">
+              {hits.map((h) => {
+                const c = (rows || []).find((x) => x.id === h.conversation_id);
+                return (
+                  <button type="button" className="row" key={h.id} onClick={() => nav('/messages/' + h.conversation_id, { state: { jump: h.id } })}>
+                    {c ? <Avatar name={fullName(c.other)} url={c.other ? c.other.avatar_url : null} size={36} /> : null}
+                    <div className="row-main"><b>{c ? fullName(c.other) : 'Conversation'}</b><span>{h.sender_name}: {h.body}</span><span>{dayLabel(h.created_at)} {clock(h.created_at)}</span></div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
         </section>
       ) : null}
     </>

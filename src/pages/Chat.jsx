@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, CheckCheck, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X, ListChecks, MessageSquare, Paperclip, Plus, Users } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
@@ -41,6 +41,7 @@ function merge(prev, fresh) {
 export default function Chat() {
   const { id } = useParams();
   const nav = useNavigate();
+  const loc = useLocation();
   const { profile } = useProfile();
   const { reload: reloadSummary, tick } = useSummary();
   const me = profile.id;
@@ -210,6 +211,12 @@ export default function Chat() {
     }
     setTimeout(() => jump(mid), 80);
   };
+  useEffect(() => {
+    const j = loc.state && loc.state.jump;
+    if (!j || !msgs) return;
+    nav(loc.pathname, { replace: true, state: null });
+    goQuote(j);
+  }, [msgs, loc.state]);
   const addRx = (m) => {
     const v = rxText.trim();
     if (!v || [...v].length > 16 || !/\p{Extended_Pictographic}/u.test(v)) { setNotice('Enter an emoji.'); return; }
@@ -349,7 +356,7 @@ export default function Chat() {
         <button type="button" className="icon-btn" aria-label="Search in chat" onClick={() => setSearching(!searching)}><SearchIcon size={20} /></button>
         {other && (other.is_group || other.is_channel) ? <GroupInfoButton id={id} other={other} /> : null}
       </div>
-      {searching ? <ChatSearch conversationId={id} onClose={() => setSearching(false)} onJump={(m) => { if (jump(m.id)) setSearching(false); }} /> : null}
+      {searching ? <ChatSearch conversationId={id} onClose={() => setSearching(false)} onJump={(m) => { setSearching(false); goQuote(m.id); }} /> : null}
       {pins.length ? <PinBar pins={pins} onJump={jump} /> : null}
       <div className="chat-box" ref={box}>
         {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => { loadOther(); load(); }}><RefreshCw size={16} /> Retry</button></div> : null}

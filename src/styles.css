@@ -434,3 +434,5 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .rx-list li { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--line); }
 .rx-e { font-size: 22px; }
 .rx-empty { color: var(--muted); }
+.msg-find { margin-bottom: 12px; }
+.msg-find .chat-find { margin: 0; }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Users, MailPlus, CalendarClock, RefreshCw, Search, Bell } from 'lucide-react';
+import { MessageCircle, Users, MailPlus, CalendarClock, RefreshCw, Search, Bell, ArrowRight } from 'lucide-react';
 import { BrandArt } from '../components/Logo';
 import Sparkline from '../components/ui/Sparkline';
 import EmptyState from '../components/ui/EmptyState';
@@ -62,7 +62,7 @@ export default function Home() {
       </section>
 
       <section className="glass card">
-        <div className="card-head"><h2>Recent Activity</h2><Link to="/notifications">See all</Link></div>
+        <div className="card-head"><h2><span className="sec-ic"><Bell size={18} /></span>Recent Activity</h2><Link className="see-all" to="/notifications">See all <ArrowRight size={16} /></Link></div>
         {rerr ? <div className="alert err">{rerr}</div> : null}
         {recent && recent.length === 0 ? <EmptyState icon={Bell} title="No activity yet" text="Invitations, mentions and updates will appear here." /> : null}
         {recent && recent.length > 0 ? (

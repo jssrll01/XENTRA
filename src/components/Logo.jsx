@@ -1,29 +1,37 @@
-import React from 'react';
+import React, { useId } from 'react';
+
+function Cross({ id }) {
+  return (
+    <>
+      <defs>
+        <linearGradient id={id + 'a'} gradientUnits="userSpaceOnUse" x1="14" y1="12" x2="50" y2="52">
+          <stop offset="0" stopColor="#1e40af" /><stop offset="1" stopColor="#2563eb" />
+        </linearGradient>
+        <linearGradient id={id + 'b'} gradientUnits="userSpaceOnUse" x1="14" y1="52" x2="50" y2="12">
+          <stop offset="0" stopColor="#38bdf8" /><stop offset="1" stopColor="#3b82f6" />
+        </linearGradient>
+      </defs>
+      <line x1="14" y1="52" x2="50" y2="12" stroke={'url(#' + id + 'b)'} strokeWidth="13" strokeLinecap="round" />
+      <line x1="14" y1="12" x2="50" y2="52" stroke={'url(#' + id + 'a)'} strokeWidth="13" strokeLinecap="round" />
+    </>
+  );
+}
+
+const useUid = () => useId().replace(/[^a-zA-Z0-9]/g, '');
 
 export function LogoMark({ size = 40 }) {
+  const id = useUid();
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <defs>
-        <linearGradient id="lm-a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#1d4ed8" /><stop offset="1" stopColor="#3b82f6" /></linearGradient>
-        <linearGradient id="lm-b" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3b82f6" /><stop offset="1" stopColor="#38bdf8" /></linearGradient>
-      </defs>
-      <path d="M14 12L50 52" stroke="url(#lm-a)" strokeWidth="11" strokeLinecap="round" />
-      <path d="M50 12L14 52" stroke="url(#lm-b)" strokeWidth="11" strokeLinecap="round" />
-    </svg>
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true"><Cross id={id} /></svg>
   );
 }
 
 export function BrandArt({ size = 260 }) {
+  const id = useUid();
   return (
-    <svg width={size} height={size} viewBox="0 0 260 260" aria-hidden="true">
-      <defs>
-        <linearGradient id="ba-a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#1d4ed8" /><stop offset="1" stopColor="#3b82f6" /></linearGradient>
-        <linearGradient id="ba-b" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3b82f6" /><stop offset="1" stopColor="#38bdf8" /></linearGradient>
-        <linearGradient id="ba-r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor="#93c5fd" /></linearGradient>
-      </defs>
-      <ellipse cx="130" cy="130" rx="120" ry="70" transform="rotate(-24 130 130)" fill="none" stroke="url(#ba-r)" strokeWidth="3" opacity=".7" />
-      <path d="M72 56L188 204" stroke="url(#ba-a)" strokeWidth="42" strokeLinecap="round" />
-      <path d="M188 56L72 204" stroke="url(#ba-b)" strokeWidth="42" strokeLinecap="round" />
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <ellipse cx="32" cy="32" rx="30" ry="11" transform="rotate(-28 32 32)" fill="none" stroke="#93c5fd" strokeOpacity=".55" strokeWidth="1.2" />
+      <Cross id={id} />
     </svg>
   );
 }
@@ -33,7 +41,7 @@ export default function Logo({ size = 40, tagline = true }) {
     <div className="brand">
       <LogoMark size={size} />
       <div>
-        <div className="brand-name">XENTRA</div>
+        <div className="brand-name" style={{ fontSize: Math.round(size * 0.6) }}>XENTRA</div>
         {tagline ? <div className="brand-tag">One Ecosystem. Every Connection.</div> : null}
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, Search, User } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react';
 import Logo from './Logo';
 import Avatar from './ui/Avatar';
 import { NAV } from '../nav';
@@ -41,21 +41,23 @@ export default function AppShell() {
   return (
     <div className="app">
       <aside className="side" aria-label="Sidebar">
-        <Logo size={38} tagline={false} />
+        <Logo size={40} />
+        <button type="button" className="side-search" onClick={() => nav('/search')}><Search size={18} /><span>Search people</span><kbd>Ctrl K</kbd></button>
         <nav className="side-nav" aria-label="Main">
           {NAV.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}><Icon size={20} />{label}</NavLink>
           ))}
         </nav>
         <div className="side-user">
-          <Avatar name={name} url={profile.avatar_url} size={40} />
-          <div><b>{name}</b><span>{profile.username ? '@' + profile.username : profile.email}</span></div>
+          <Avatar name={name} url={profile.avatar_url} size={42} presence="online" />
+          <div className="who"><b>{name}</b><span className="status"><i />Online</span></div>
+          <button type="button" className="icon-btn" aria-label="Profile settings" onClick={() => nav('/profile')}><Settings size={18} /></button>
         </div>
       </aside>
 
       <div className="app-col">
         <header className="topbar">
-          <div className="brand-mobile"><Logo size={34} tagline={false} /></div>
+          <div className="brand-mobile"><Logo size={36} /></div>
           <h1 className="page-title">{title}</h1>
           <span className="spacer" />
           <button type="button" className="search-pill" aria-label="Search" onClick={() => nav('/search')}><Search size={18} /><span>Search people</span><kbd>Ctrl K</kbd></button>
@@ -65,7 +67,7 @@ export default function AppShell() {
           </button>
           <div className="menu-wrap" ref={ref}>
             <button type="button" className="avatar-btn" aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu" onClick={() => setMenu(!menu)}>
-              <Avatar name={name} url={profile.avatar_url} size={40} /><ChevronDown size={16} />
+              <Avatar name={name} url={profile.avatar_url} size={42} presence="online" /><ChevronDown size={16} />
             </button>
             {menu ? (
               <div className="pop glass" role="menu">
@@ -81,7 +83,7 @@ export default function AppShell() {
 
       <nav className="bottom-nav" aria-label="Primary">
         {NAV.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className={({ isActive }) => 'bn-item' + (isActive ? ' active' : '')}><Icon size={22} />{label}</NavLink>
+          <NavLink key={to} to={to} className={({ isActive }) => 'bn-item' + (isActive ? ' active' : '')}><Icon size={24} />{label}</NavLink>
         ))}
       </nav>
     </div>

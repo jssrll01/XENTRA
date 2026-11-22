@@ -46,6 +46,7 @@ export const toggleReaction = (id, emoji) => call('toggle_reaction', { p_message
 export const setFlags = (cid, f) => call('set_conversation_flags', { p_conversation: cid, ...f });
 export const setMute = (cid, secs, unmute = false) => call('set_conversation_mute', { p_conversation: cid, p_seconds: secs, p_unmute: unmute });
 export const deleteConversation = (cid) => call('delete_conversation_for_me', { p_conversation: cid });
+export const exportConversation = (cid, fmt) => call('export_conversation', { p_conversation: cid, p_format: fmt });
 export const togglePin = (id) => call('toggle_pin_message', { p_message: id });
 export const listPins = (cid) => call('list_pins', { p_conversation: cid });
 export const forwardMessage = (id, cid, clientId) => call('forward_message', { p_message: id, p_conversation: cid, p_client_id: clientId });

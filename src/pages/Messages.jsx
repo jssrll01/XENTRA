@@ -5,8 +5,10 @@ import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
 import ConvRow from '../components/ConvRow';
-import { Trash2 as TrashIcon, MailOpen as UnreadIcon } from 'lucide-react';
-import { listConversations, setFlags, setMute, deleteConversation, startDirect, searchAllMessages } from '../lib/api';
+import { Trash2 as TrashIcon, MailOpen as UnreadIcon, Users as GroupIcon, Download as DownIcon } from 'lucide-react';
+import PickSheet from '../components/PickSheet';
+import ExportSheet from '../components/ExportSheet';
+import { listConversations, setFlags, setMute, deleteConversation, startDirect, searchAllMessages, createGroup } from '../lib/api';
 import { clock, dayLabel } from '../lib/chatTime';
 import { searchPeople } from '../lib/search';
 import { useProfile } from '../lib/profile';
@@ -27,6 +29,8 @@ export default function Messages() {
   const [tab, setTab] = useState('chats');
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [muteFor, setMuteFor] = useState(null);
+  const [groupOpen, setGroupOpen] = useState(false);
+  const [expFor, setExpFor] = useState(null);
   const [menu, setMenu] = useState(null);
   const [cq, setCq] = useState('');
   const [hits, setHits] = useState(null);
@@ -92,7 +96,10 @@ export default function Messages() {
     <>
       <div className="page-head">
         <h2>Messages</h2>
-        <button type="button" className="btn btn-primary btn-sm" onClick={() => setOpen(!open)}>{open ? <X size={16} /> : <Plus size={16} />} {open ? 'Close' : 'New'}</button>
+        <div className="head-acts">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setGroupOpen(true)}><GroupIcon size={16} /> New group</button>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setOpen(!open)}>{open ? <X size={16} /> : <Plus size={16} />} {open ? 'Close' : 'New'}</button>
+        </div>
       </div>
       {open ? (
         <section className="glass card">
@@ -113,6 +120,8 @@ export default function Messages() {
       ) : null}
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
       {!rows && !err ? <div className="empty"><p>Loading...</p></div> : null}
+      {groupOpen ? <PickSheet title="New group" label="Create" withName onSubmit={(ids, n, d) => createGroup(n, ids, d)} onClose={() => setGroupOpen(false)} onDone={(r) => { setGroupOpen(false); nav('/messages/' + r.data.id); }} /> : null}
+      {expFor ? <ExportSheet conv={expFor} onClose={() => setExpFor(null)} /> : null}
       {rows ? (
         <div className="msg-find">
           <label className="chat-find"><SearchIcon size={18} />
@@ -147,6 +156,7 @@ export default function Messages() {
                       <button type="button" onClick={() => setMuteFor(c.id)}><BellOff size={16} /> Mute...</button>
                     )}
                     <button type="button" onClick={() => flag(c, { p_archived: !c.archived })}>{c.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />} {c.archived ? 'Unarchive' : 'Archive'}</button>
+                    <button type="button" onClick={() => { setMenu(null); setExpFor(c); }}><DownIcon size={16} /> Export chat</button>
                     <button type="button" onClick={() => del(c)}><TrashIcon size={16} /> Delete chat</button>
                   </div>
                 ) : null}

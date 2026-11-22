@@ -267,3 +267,13 @@ button.row { text-align: left; cursor: pointer; }
 .sheet textarea:focus, .sheet input:focus { border-color: var(--blue); }
 .sub-h { margin: 18px 0 6px; font-size: 14px; color: var(--muted); }
 .q-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.conv { display: flex; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--line); }
+.conv:last-child { border-bottom: 0; }
+.conv .row { flex: 1; min-width: 0; width: auto; border-bottom: 0; }
+.conv-acts { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; padding: 0 0 10px; }
+.conv-acts button { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-weight: 600; cursor: pointer; }
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.tabs button { height: 36px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-weight: 700; cursor: pointer; }
+.tabs button.on { background: var(--grad); color: #fff; border-color: transparent; }
+.badge.off { background: #94a3b8; }
+.ci { margin-left: 6px; vertical-align: -2px; color: var(--muted); }

@@ -14,7 +14,7 @@ export default function RecentChats() {
   const [err, setErr] = useState('');
   const load = useCallback(async () => {
     const r = await listConversations();
-    if (r.ok) { setRows(r.data || []); setErr(''); } else setErr(r.error);
+    if (r.ok) { setRows((r.data || []).filter((c) => !c.archived)); setErr(''); } else setErr(r.error);
   }, []);
   useEffect(() => { load(); }, [load, tick]);
   return (

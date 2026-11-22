@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Plus, RefreshCw, Search as SearchIcon, X } from 'lucide-react';
+import { Archive, ArchiveRestore, Bell, BellOff, Ellipsis, MessageCircle, Pin, PinOff, Plus, RefreshCw, Search as SearchIcon, X } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import ConvRow from '../components/ConvRow';
-import { listConversations, startDirect } from '../lib/api';
+import { listConversations, setFlags, startDirect } from '../lib/api';
 import { searchPeople } from '../lib/search';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
@@ -21,6 +21,8 @@ export default function Messages() {
   const [found, setFound] = useState(null);
   const [serr, setSerr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState('chats');
+  const [menu, setMenu] = useState(null);
 
   const load = useCallback(async () => {
     const r = await listConversations();
@@ -44,6 +46,13 @@ export default function Messages() {
     setBusy(false);
     if (r.ok) nav('/messages/' + r.data.id); else setSerr(r.error);
   };
+  const flag = async (c, patch) => {
+    setMenu(null);
+    const r = await setFlags(c.id, patch);
+    if (r.ok) load(); else setErr(r.error);
+  };
+  const shown = (rows || []).filter((c) => (tab === 'archived') === c.archived);
+  const nArch = (rows || []).filter((c) => c.archived).length;
   const searching = q.trim().length >= 2;
 
   return (
@@ -71,8 +80,32 @@ export default function Messages() {
       ) : null}
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
       {!rows && !err ? <div className="empty"><p>Loading...</p></div> : null}
-      {rows && rows.length === 0 ? <EmptyState icon={MessageCircle} title="No conversations yet" text="Tap New to message someone." /> : null}
-      {rows && rows.length > 0 ? <section className="glass card"><div className="rows">{rows.map((c) => <ConvRow key={c.id} c={c} meId={profile.id} />)}</div></section> : null}
+      {rows ? (
+        <div className="tabs" role="tablist">
+          <button type="button" role="tab" aria-selected={tab === 'chats'} className={tab === 'chats' ? 'on' : ''} onClick={() => setTab('chats')}>Chats</button>
+          <button type="button" role="tab" aria-selected={tab === 'archived'} className={tab === 'archived' ? 'on' : ''} onClick={() => setTab('archived')}>{nArch ? 'Archived (' + nArch + ')' : 'Archived'}</button>
+        </div>
+      ) : null}
+      {rows && shown.length === 0 ? <EmptyState icon={MessageCircle} title={tab === 'archived' ? 'No archived chats' : 'No conversations yet'} text={tab === 'archived' ? 'Archived chats appear here.' : 'Tap New to message someone.'} /> : null}
+      {shown.length > 0 ? (
+        <section className="glass card">
+          <div className="rows">
+            {shown.map((c) => (
+              <div className="conv" key={c.id}>
+                <ConvRow c={c} meId={profile.id} />
+                <button type="button" className="icon-btn" aria-label="Chat options" aria-expanded={menu === c.id} onClick={() => setMenu(menu === c.id ? null : c.id)}><Ellipsis size={20} /></button>
+                {menu === c.id ? (
+                  <div className="conv-acts">
+                    <button type="button" onClick={() => flag(c, { p_pinned: !c.pinned })}>{c.pinned ? <PinOff size={16} /> : <Pin size={16} />} {c.pinned ? 'Unpin' : 'Pin'}</button>
+                    <button type="button" onClick={() => flag(c, { p_muted: !c.muted })}>{c.muted ? <Bell size={16} /> : <BellOff size={16} />} {c.muted ? 'Unmute' : 'Mute'}</button>
+                    <button type="button" onClick={() => flag(c, { p_archived: !c.archived })}>{c.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />} {c.archived ? 'Unarchive' : 'Archive'}</button>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }

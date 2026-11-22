@@ -7,6 +7,7 @@ import { Root, RequireAuth, PublicOnly } from './components/Guards';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/signup" element={<PublicOnly><SignUp /></PublicOnly>} />
             <Route path="/signin" element={<PublicOnly><SignIn /></PublicOnly>} />
             <Route path="/verify-email" element={<PublicOnly><VerifyEmail /></PublicOnly>} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

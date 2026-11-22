@@ -47,3 +47,7 @@ export async function signIn(email, password) {
 }
 
 export const signOutApi = () => wrap(() => supabase.auth.signOut());
+
+export const sendResetCode = (email) => wrap(() => supabase.auth.resetPasswordForEmail(normEmail(email)));
+export const verifyRecovery = (email, code) => wrap(() => supabase.auth.verifyOtp({ email: normEmail(email), token: String(code).replace(/\D/g, ''), type: 'recovery' }));
+export const setNewPassword = (password) => wrap(() => supabase.auth.updateUser({ password }));

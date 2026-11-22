@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { Pencil, X } from 'lucide-react';
 import Sheet from './Sheet';
-import { cancelReminder, cancelScheduled, createReminder, listReminders, listScheduled, scheduleMessage } from '../lib/api';
+import { cancelReminder, cancelScheduled, createReminder, listReminders, listScheduled, scheduleMessage, updateScheduledTime } from '../lib/api';
 import { clock, dayLabel } from '../lib/chatTime';
 
 const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -17,6 +17,8 @@ export default function LaterSheet({ conversationId, tab: first = 'schedule', te
   const [err, setErr] = useState('');
   const [sched, setSched] = useState([]);
   const [rems, setRems] = useState([]);
+  const [editId, setEditId] = useState(null);
+  const [editAt, setEditAt] = useState('');
   const load = useCallback(async () => {
     const [a, b] = await Promise.all([listScheduled(conversationId), listReminders()]);
     if (a.ok) setSched(a.data || []); else setErr(a.error);
@@ -34,6 +36,14 @@ export default function LaterSheet({ conversationId, tab: first = 'schedule', te
     if (r.ok) onDone(tab); else setErr(r.error);
   };
   const drop = async (fn, id) => { const r = await fn(id); if (r.ok) load(); else setErr(r.error); };
+  const saveEdit = async () => {
+    const t = new Date(editAt);
+    if (Number.isNaN(t.getTime())) { setErr('Choose a date and time.'); return; }
+    setBusy(true); setErr('');
+    const r = await updateScheduledTime(editId, t.toISOString());
+    setBusy(false);
+    if (r.ok) { setEditId(null); load(); } else setErr(r.error);
+  };
   const empty = tab === 'schedule' ? !body.trim() : !note.trim();
   return (
     <Sheet title="Later" onClose={onClose}>
@@ -62,9 +72,17 @@ export default function LaterSheet({ conversationId, tab: first = 'schedule', te
       {sched.map((s) => (
         <div className="q-row" key={s.id}>
           <div className="row-main"><b>{s.body}</b><span>{stamp(s.send_at)}</span></div>
+          <button type="button" className="icon-btn" aria-label="Edit send time" onClick={() => { setEditId(editId === s.id ? null : s.id); setEditAt(local(new Date(s.send_at))); }}><Pencil size={18} /></button>
           <button type="button" className="icon-btn" aria-label="Cancel scheduled message" onClick={() => drop(cancelScheduled, s.id)}><X size={18} /></button>
         </div>
       ))}
+      {editId ? (
+        <div className="q-edit">
+          <label className="lbl" htmlFor="lt-edit">New send time</label>
+          <input id="lt-edit" type="datetime-local" value={editAt} onChange={(e) => setEditAt(e.target.value)} />
+          <button type="button" className="btn btn-primary btn-block" disabled={busy} onClick={saveEdit}>{busy ? 'Saving...' : 'Save time'}</button>
+        </div>
+      ) : null}
       {rems.length ? <h3 className="sub-h">Reminders in this chat</h3> : null}
       {rems.map((s) => (
         <div className="q-row" key={s.id}>

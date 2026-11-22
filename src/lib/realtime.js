@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from './supabase';
+import { markAllDelivered } from './api';
 
 // One channel per signed-in user. Any change in the messaging tables fires a debounced callback.
 export function useMessageEvents(onEvent, userId) {
@@ -8,7 +9,8 @@ export function useMessageEvents(onEvent, userId) {
   useEffect(() => {
     if (!userId) return undefined;
     let timer = null;
-    const fire = () => { clearTimeout(timer); timer = setTimeout(() => cb.current(), 250); };
+    let lastD = 0;
+    const fire = () => { clearTimeout(timer); timer = setTimeout(() => { cb.current(); const n = Date.now(); if (n - lastD > 4000) { lastD = n; markAllDelivered(); } }, 250); };
     const ch = supabase.channel('msg-' + userId + '-' + Math.random().toString(36).slice(2))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fire)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'message_reactions' }, fire)

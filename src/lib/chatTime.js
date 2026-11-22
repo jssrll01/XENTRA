@@ -9,3 +9,5 @@ export function dayLabel(iso) {
   return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: d.getFullYear() === n.getFullYear() ? undefined : 'numeric' });
 }
 export const listTime = (iso) => (same(new Date(iso), new Date()) ? clock(iso) : dayLabel(iso));
+export const fullTime = (iso) => new Date(iso).toLocaleString([], { dateStyle: 'full', timeStyle: 'medium' });
+export const minKey = (iso) => { const d = new Date(iso); return dayKey(iso) + '-' + d.getHours() + ':' + d.getMinutes(); };

@@ -137,3 +137,6 @@ export const removeDevice = (id) => call('remove_device', { p_id: id });
 export const savePushSubscription = (endpoint, p256dh, auth, ua) => call('save_push_subscription', { p_endpoint: endpoint, p_p256dh: p256dh, p_auth: auth, p_ua: ua || null });
 export const removePushSubscription = (endpoint) => call('remove_push_subscription', { p_endpoint: endpoint });
 export const checkUsername = (name) => call('username_available', { p_name: name });
+export const markAllDelivered = () => call('mark_all_delivered');
+export const getLinkPreview = (url) => call('get_link_preview', { p_url: url });
+export const listReactors = (mid, emoji = null) => call('list_reactors', { p_message: mid, p_emoji: emoji });

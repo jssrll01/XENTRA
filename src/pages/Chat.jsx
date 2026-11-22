@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X, ListChecks, MessageSquare, Paperclip } from 'lucide-react';
+import { ArrowLeft, Check, CheckCheck, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X, ListChecks, MessageSquare, Paperclip } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction, togglePin, listPins, votePoll, closePoll, sendAttachment } from '../lib/api';
 import { fullName, timeAgo } from '../lib/format';
 import usePresence from '../lib/usePresence';
-import { clock, dayKey, dayLabel } from '../lib/chatTime';
+import { clock, dayKey, dayLabel, fullTime, minKey } from '../lib/chatTime';
 import { rich, firstUrl } from '../lib/rich';
 import { useTyping } from '../lib/typing';
 import LinkCard from '../components/LinkCard';
@@ -232,7 +232,15 @@ export default function Chat() {
     }
   };
 
-  const bubble = (m) => {
+  const statusTick = (m) => {
+    if (m.pending) return <Clock size={12} className="tick" aria-label="Sending" />;
+    if (m.failed) return null;
+    const s = m.status || 'sent';
+    if (s === 'read') return <CheckCheck size={14} className="tick read" aria-label="Read" />;
+    if (s === 'delivered') return <CheckCheck size={14} className="tick" aria-label="Delivered" />;
+    return <Check size={14} className="tick" aria-label="Sent" />;
+  };
+  const bubble = (m, showTime) => {
     const mine = m.sender_id === me;
     return (
       <div key={m.id} id={'m-' + m.id} className={'msg' + (mine ? ' mine' : '')}>
@@ -242,7 +250,7 @@ export default function Chat() {
           {m.forwarded ? <span className="fwd"><Forward size={12} /> Forwarded</span> : null}
           {m.reply ? <span className="quote"><b>{m.reply.sender_id === me ? 'You' : name}</b>{m.reply.deleted ? 'Message deleted' : m.reply.body}</span> : null}
           {m.deleted ? <i>Message deleted</i> : (m.attachments && m.attachments.length && m.attachments[0].name === m.body ? null : <span className="mbody">{rich(m.body)}</span>)}
-          <span className="meta">{m.edited_at ? 'edited ' : ''}{clock(m.created_at)}{m.pending ? ' - sending' : ''}</span>
+          {showTime || m.edited_at || m.pending ? <span className="meta" title={fullTime(m.created_at)}>{m.edited_at ? 'edited ' : ''}{clock(m.created_at)}{mine && !m.deleted ? statusTick(m) : null}</span> : null}
         </button>
         {!m.deleted && firstUrl(m.body) ? <LinkCard url={firstUrl(m.body)} /> : null}
         {!m.deleted && m.poll ? <PollCard poll={m.poll} onVote={(oid) => vote(m.poll, oid)} onClose={() => closeP(m.poll)} /> : null}
@@ -259,6 +267,7 @@ export default function Chat() {
         ) : null}
         {sel === m.id ? (
           <div className="acts" role="menu">
+            <div className="when">{fullTime(m.created_at)}</div>
             <div className="quick">{QUICK.map((e) => <button type="button" key={e} aria-label={'React ' + e} onClick={() => react(m, e)}>{e}</button>)}</div>
             <button type="button" onClick={() => { setReply(m); setEditing(null); setSel(null); }}><CornerUpLeft size={16} /> Reply</button>
             <button type="button" onClick={() => copy(m)}><Copy size={16} /> Copy</button>
@@ -276,10 +285,13 @@ export default function Chat() {
 
   const items = [];
   let prevDay = '';
-  for (const m of msgs || []) {
+  const list = msgs || [];
+  for (let i = 0; i < list.length; i += 1) {
+    const m = list[i];
+    const nx = list[i + 1];
     const k = dayKey(m.created_at);
     if (k !== prevDay) { items.push(<div className="day-sep" key={'d' + k}><span>{dayLabel(m.created_at)}</span></div>); prevDay = k; }
-    items.push(bubble(m));
+    items.push(bubble(m, !nx || nx.sender_id !== m.sender_id || minKey(nx.created_at) !== minKey(m.created_at)));
   }
 
   return (

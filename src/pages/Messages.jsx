@@ -7,11 +7,13 @@ import ConvRow from '../components/ConvRow';
 import { listConversations, startDirect } from '../lib/api';
 import { searchPeople } from '../lib/search';
 import { useProfile } from '../lib/profile';
+import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
 
 export default function Messages() {
   const nav = useNavigate();
   const { profile } = useProfile();
+  const { tick } = useSummary();
   const [rows, setRows] = useState(null);
   const [err, setErr] = useState('');
   const [open, setOpen] = useState(false);
@@ -24,11 +26,7 @@ export default function Messages() {
     const r = await listConversations();
     if (r.ok) { setRows(r.data || []); setErr(''); } else setErr(r.error);
   }, []);
-  useEffect(() => {
-    load();
-    const t = setInterval(() => { if (document.visibilityState === 'visible') load(); }, 15000);
-    return () => clearInterval(t);
-  }, [load]);
+  useEffect(() => { load(); }, [load, tick]);
   useEffect(() => {
     if (!open) return undefined;
     let live = true;

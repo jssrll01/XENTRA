@@ -9,15 +9,14 @@ import { useSummary } from '../lib/summary';
 
 export default function RecentChats() {
   const { profile } = useProfile();
-  const { summary } = useSummary();
+  const { tick } = useSummary();
   const [rows, setRows] = useState(null);
   const [err, setErr] = useState('');
-  const key = summary && summary.unread ? summary.unread.value : null;
   const load = useCallback(async () => {
     const r = await listConversations();
     if (r.ok) { setRows(r.data || []); setErr(''); } else setErr(r.error);
   }, []);
-  useEffect(() => { load(); }, [load, key]);
+  useEffect(() => { load(); }, [load, tick]);
   return (
     <section className="glass card">
       <div className="card-head"><h2><span className="sec-ic"><MessageCircle size={18} /></span>Recent Conversations</h2><Link className="see-all" to="/messages">See all <ArrowRight size={16} /></Link></div>

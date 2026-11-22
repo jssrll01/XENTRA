@@ -24,7 +24,7 @@ export default function Chat() {
   const { id } = useParams();
   const nav = useNavigate();
   const { profile } = useProfile();
-  const { reload: reloadSummary } = useSummary();
+  const { reload: reloadSummary, tick } = useSummary();
   const me = profile.id;
   const [other, setOther] = useState(null);
   const [msgs, setMsgs] = useState(null);
@@ -53,11 +53,8 @@ export default function Chat() {
     setMore((m) => (m === null ? fresh.length >= 50 : m));
     setErr('');
   }, [id]);
-  useEffect(() => {
-    loadOther(); load();
-    const t = setInterval(() => { if (document.visibilityState === 'visible') load(); }, 5000);
-    return () => clearInterval(t);
-  }, [load, loadOther]);
+  useEffect(() => { loadOther(); }, [loadOther]);
+  useEffect(() => { load(); }, [load, tick]);
   useEffect(() => {
     if (!notice) return undefined;
     const t = setTimeout(() => setNotice(''), 3000);

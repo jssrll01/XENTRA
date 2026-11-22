@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, CheckCheck, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X, ListChecks, MessageSquare, Paperclip } from 'lucide-react';
+import { ArrowLeft, Check, CheckCheck, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X, ListChecks, MessageSquare, Paperclip, Plus, Users } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
@@ -24,6 +24,7 @@ import PollCard from '../components/PollCard';
 import ThreadPanel from '../components/ThreadPanel';
 import AttachmentView from '../components/AttachmentView';
 import { MAX_FILE, uploadChatFile } from '../lib/files';
+import ReactorsSheet from '../components/ReactorsSheet';
 
 const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 const norm = (m) => ({ ...m, deleted: m.deleted !== undefined ? m.deleted : Boolean(m.deleted_at), reactions: m.reactions || [] });
@@ -61,6 +62,10 @@ export default function Chat() {
   const [thread, setThread] = useState(null);
   const [ups, setUps] = useState([]);
   const fileRef = useRef(null);
+  const busyRef = useRef(false);
+  const [rxFor, setRxFor] = useState(null);
+  const [rxText, setRxText] = useState('');
+  const [who, setWho] = useState(null);
   const saveDraft = (v) => {
     try { if (v) localStorage.setItem('xentra-draft-' + id, v); else localStorage.removeItem('xentra-draft-' + id); } catch (e) { /* storage blocked */ }
   };
@@ -127,6 +132,11 @@ export default function Chat() {
     }));
   }, [id]);
   const submit = async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    try { await doSubmit(); } finally { busyRef.current = false; }
+  };
+  const doSubmit = async () => {
     const body = text.trim();
     if (!body) return;
     if (editing) {
@@ -176,6 +186,35 @@ export default function Chat() {
     el.classList.add('flash');
     setTimeout(() => el.classList.remove('flash'), 1500);
     return true;
+  };
+  const goQuote = async (mid) => {
+    const has = (l) => l.some((x) => x.id === mid);
+    if (!has(msgs || [])) {
+      let acc = [];
+      let before = ((msgs || []).find((x) => !x.local) || {}).created_at;
+      let more2 = true;
+      let guard = 0;
+      while (before && more2 && guard < 20 && !has(acc)) {
+        const r = await listMessages(id, before, 100);
+        if (!r.ok) { setNotice(r.error); return; }
+        const old = (r.data || []).map(norm);
+        if (!old.length) { more2 = false; break; }
+        acc = [...old, ...acc];
+        before = old[0].created_at;
+        more2 = old.length >= 100;
+        guard += 1;
+      }
+      if (!has(acc)) { setNotice('Original message is not available.'); return; }
+      setMsgs((p) => { const ids = new Set(p.map((x) => x.id)); return [...acc.filter((x) => !ids.has(x.id)), ...p]; });
+      setMore(more2);
+    }
+    setTimeout(() => jump(mid), 80);
+  };
+  const addRx = (m) => {
+    const v = rxText.trim();
+    if (!v || [...v].length > 16 || !/\p{Extended_Pictographic}/u.test(v)) { setNotice('Enter an emoji.'); return; }
+    setRxFor(null); setRxText('');
+    react(m, v);
   };
   const pin = async (m) => {
     setSel(null);
@@ -248,7 +287,7 @@ export default function Chat() {
           onClick={() => { if (!m.local && !m.deleted) setSel(sel === m.id ? null : m.id); }}>
           {!mine && names[m.sender_id] ? <span className="sname">{names[m.sender_id]}</span> : null}
           {m.forwarded ? <span className="fwd"><Forward size={12} /> {m.forwarded_from_name ? 'Forwarded from ' + m.forwarded_from_name : 'Forwarded'}</span> : null}
-          {m.reply ? <span className="quote"><b>{m.reply.sender_id === me ? 'You' : name}</b>{m.reply.deleted ? 'Message deleted' : m.reply.body}</span> : null}
+          {m.reply ? <span className="quote" role="button" tabIndex={0} aria-label="Go to original message" onClick={(e) => { e.stopPropagation(); goQuote(m.reply.id); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); goQuote(m.reply.id); } }}><b>{m.reply.sender_id === me ? 'You' : (names[m.reply.sender_id] || name)}</b>{m.reply.deleted ? 'Message deleted' : m.reply.body}</span> : null}
           {m.deleted ? <i>Message deleted</i> : (m.attachments && m.attachments.length && m.attachments[0].name === m.body ? null : <span className="mbody">{rich(m.body)}</span>)}
           {showTime || m.edited_at || m.pending ? <span className="meta" title={fullTime(m.created_at)}>{m.edited_at ? 'edited ' : ''}{clock(m.created_at)}{mine && !m.deleted ? statusTick(m) : null}</span> : null}
         </button>
@@ -268,9 +307,16 @@ export default function Chat() {
         {sel === m.id ? (
           <div className="acts" role="menu">
             <div className="when">{fullTime(m.created_at)}</div>
-            <div className="quick">{QUICK.map((e) => <button type="button" key={e} aria-label={'React ' + e} onClick={() => react(m, e)}>{e}</button>)}</div>
+            <div className="quick">{QUICK.map((e) => <button type="button" key={e} aria-label={'React ' + e} onClick={() => react(m, e)}>{e}</button>)}<button type="button" aria-label="More reactions" onClick={() => { setRxFor(m.id); setRxText(''); }}><Plus size={18} /></button></div>
+            {rxFor === m.id ? (
+              <div className="rx-in">
+                <input autoFocus value={rxText} maxLength={16} aria-label="Emoji reaction" placeholder="Type or paste an emoji" onChange={(e) => setRxText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addRx(m); } }} />
+                <button type="button" onClick={() => addRx(m)}>Add</button>
+              </div>
+            ) : null}
             <button type="button" onClick={() => { setReply(m); setEditing(null); setSel(null); }}><CornerUpLeft size={16} /> Reply</button>
             <button type="button" onClick={() => copy(m)}><Copy size={16} /> Copy</button>
+            {m.reactions.length ? <button type="button" onClick={() => { setWho(m); setSel(null); }}><Users size={16} /> Reactions</button> : null}
             <button type="button" onClick={() => { setThread(m); setSel(null); }}><MessageSquare size={16} /> Reply in thread</button>
             <button type="button" onClick={() => { setFwd(m); setSel(null); }}><Forward size={16} /> Forward</button>
             <button type="button" onClick={() => pin(m)}>{m.pinned ? <PinOff size={16} /> : <Pin size={16} />} {m.pinned ? 'Unpin' : 'Pin'}</button>
@@ -315,6 +361,7 @@ export default function Chat() {
       </div>
       {pollOpen ? <PollSheet conversationId={id} onClose={() => setPollOpen(false)} onDone={() => { setPollOpen(false); setNotice('Poll sent'); load(); }} /> : null}
       {thread ? <ThreadPanel root={thread} me={me} name={name} onClose={() => setThread(null)} /> : null}
+      {who ? <ReactorsSheet message={who} onClose={() => setWho(null)} /> : null}
       {fwd ? <ForwardPicker message={fwd} onClose={() => setFwd(null)} onDone={(c) => { setFwd(null); setNotice('Forwarded to ' + fullName(c.other)); }} /> : null}
       {later ? (
         <LaterSheet conversationId={id} {...later} onClose={() => setLater(null)}

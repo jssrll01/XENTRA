@@ -112,6 +112,7 @@ export default function Chat() {
 
   const push = useCallback(async (m) => {
     const r = await sendMessage(id, m.body, m.client_id, m.reply_to);
+    if (!r.ok) setNotice(r.error);
     setMsgs((p) => (p || []).map((x) => {
       if (!x.local || x.client_id !== m.client_id) return x;
       return r.ok ? { ...norm(r.data), reply: x.reply } : { ...x, pending: false, failed: true };

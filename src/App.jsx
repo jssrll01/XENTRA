@@ -20,6 +20,7 @@ import GroupInfo from './pages/GroupInfo';
 import JoinGroup from './pages/JoinGroup';
 import Teams from './pages/Teams';
 import Team from './pages/Team';
+import JoinTeam from './pages/JoinTeam';
 import AppShell from './components/AppShell';
 import { ProfileProvider } from './lib/profile';
 import { SummaryProvider } from './lib/summary';
@@ -59,6 +60,7 @@ export default function App() {
               <Route path="/join/:code" element={<JoinGroup />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/teams/:id" element={<Team />} />
+              <Route path="/t/:code" element={<JoinTeam />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { RefreshCw, UserPlus } from 'lucide-react';
 import Avatar from './ui/Avatar';
 import EmptyState from './ui/EmptyState';
@@ -33,7 +34,7 @@ export default function RequestsPane({ onChanged }) {
   return (
     <>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!data && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!data && !err ? <Skeleton /> : null}
       {none ? <EmptyState icon={UserPlus} title="No requests" text="Contact requests you send and receive appear here." /> : null}
       {data && data.incoming.length > 0 ? (
         <section className="glass card">

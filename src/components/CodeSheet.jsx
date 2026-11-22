@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { Copy, RefreshCw } from 'lucide-react';
 import QRCode from 'qrcode';
 import Sheet from './Sheet';
@@ -37,7 +38,7 @@ export default function CodeSheet({ onClose }) {
           <button type="button" className="btn btn-secondary btn-sm" onClick={copy}><Copy size={16} /> Copy link</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={regen}><RefreshCw size={16} /> New code</button>
         </div>
-      ) : (!err ? <div className="empty pulse">Loading...</div> : null)}
+      ) : (!err ? <Skeleton /> : null)}
     </Sheet>
   );
 }

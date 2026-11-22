@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { Ban, Crown, RefreshCw, UserMinus, Volume2, VolumeX } from 'lucide-react';
 import Avatar from './ui/Avatar';
 import { listTeamMembers, setTeamRole, transferTeamOwner, kickMember, banMember, muteMember } from '../lib/api';
@@ -26,7 +27,7 @@ export default function TeamMembers({ team, tick }) {
   return (
     <>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!rows && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!rows && !err ? <Skeleton /> : null}
       {rows ? (
         <section className="glass card"><div className="rows">
           {rows.map((m) => {

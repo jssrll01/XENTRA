@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from '../components/ui/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import EmptyState from '../components/ui/EmptyState';
@@ -47,7 +48,7 @@ export default function Notifications() {
         <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}>Retry</button></div>
       ) : null}
       <section className="glass card">
-        {rows === null && !err ? <div className="empty pulse">Loading...</div> : null}
+        {rows === null && !err ? <Skeleton /> : null}
         {rows && rows.length === 0 ? <EmptyState icon={Bell} title="No activity yet" text="Invitations, mentions and updates will appear here." /> : null}
         {rows && rows.length > 0 ? (
           <div className="rows">

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { Link } from 'react-router-dom';
 import { Hash, Lock, Pin, PinOff, RefreshCw, Trash2 } from 'lucide-react';
 import { listChannels, listPosts, createPost, pinPost, deletePost } from '../lib/api';
@@ -30,7 +31,7 @@ export default function TeamHome({ team, tick }) {
   return (
     <>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!ch && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!ch && !err ? <Skeleton /> : null}
       {ch ? (
         <section className="glass card">
           <div className="card-head"><h2>Channels</h2></div>

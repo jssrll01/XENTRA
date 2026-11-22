@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { RefreshCw } from 'lucide-react';
 import Sheet from './Sheet';
 import Avatar from './ui/Avatar';
@@ -16,7 +17,7 @@ export default function MutualSheet({ contact, onClose }) {
   return (
     <Sheet title={'Mutual with ' + fullName(contact)} onClose={onClose}>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!rows && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!rows && !err ? <Skeleton /> : null}
       {rows && rows.length === 0 ? <p className="note">No mutual contacts.</p> : null}
       {rows ? rows.map((p) => (
         <div className="row static" key={p.id}>

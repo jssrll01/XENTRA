@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { RefreshCw, Send } from 'lucide-react';
 import Sheet from './Sheet';
 import { listThread, sendThreadReply } from '../lib/api';
@@ -32,7 +33,7 @@ export default function ThreadPanel({ root, me, name, onClose }) {
       <div className="th-root">{root.body}</div>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
       <div className="th-list" ref={end}>
-        {!data && !err ? <div className="empty pulse">Loading...</div> : null}
+        {!data && !err ? <Skeleton /> : null}
         {data && data.replies.length === 0 ? <div className="empty"><p>No replies yet.</p></div> : null}
         {data ? data.replies.map((x) => (
           <div key={x.id} className={'th-msg' + (x.sender_id === me ? ' mine' : '')}>

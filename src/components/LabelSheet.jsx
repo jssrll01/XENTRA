@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { Check, Pencil, Trash2 } from 'lucide-react';
 import Sheet from './Sheet';
 import { listLabels, createLabel, renameLabel, deleteLabel, setContactLabel } from '../lib/api';
@@ -32,7 +33,7 @@ export default function LabelSheet({ contact, onClose, onChanged }) {
   return (
     <Sheet title={contact ? 'Label for ' + fullName(contact) : 'Labels'} onClose={onClose}>
       {err ? <div className="alert err">{err}</div> : null}
-      {!labels && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!labels && !err ? <Skeleton /> : null}
       {contact ? (
         <div className="chips">
           <button type="button" className={'chip' + (!contact.label_id ? ' on' : '')} onClick={() => assign(null)}>None</button>

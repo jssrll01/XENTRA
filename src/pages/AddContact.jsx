@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from '../components/ui/Skeleton';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MessageCircle, RefreshCw, UserPlus } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
@@ -41,7 +42,7 @@ export default function AddContact() {
     <section className="glass card add-card">
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
       {note ? <div className="alert info">{note}</div> : null}
-      {!p && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!p && !err ? <Skeleton /> : null}
       {p ? (
         <>
           <Avatar name={fullName(p)} url={p.avatar_url} size={72} />

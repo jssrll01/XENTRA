@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Skeleton from '../components/ui/Skeleton';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Camera, Copy, Crown, LogOut, RefreshCw, ShieldCheck, ShieldOff, UserMinus, UserPlus } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
@@ -61,7 +62,7 @@ export default function GroupInfo() {
     <>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
       {note ? <div className="alert info">{note}</div> : null}
-      {!g && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!g && !err ? <Skeleton /> : null}
       {g ? (
         <>
           <section className="glass card add-card">

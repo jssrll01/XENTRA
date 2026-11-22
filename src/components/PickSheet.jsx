@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { Check, RefreshCw } from 'lucide-react';
 import Sheet from './Sheet';
 import Avatar from './ui/Avatar';
@@ -37,7 +38,7 @@ export default function PickSheet({ title, exclude, withName, label, onSubmit, o
         </>
       ) : null}
       <input type="text" placeholder="Search contacts" aria-label="Search contacts" value={q} onChange={(e) => setQ(e.target.value)} />
-      {!rows && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!rows && !err ? <Skeleton /> : null}
       {rows && list.length === 0 ? <p className="note">No contacts to show.</p> : null}
       {list.map((c) => (
         <button type="button" key={c.id} className={'row pick' + (sel.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>

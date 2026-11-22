@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from '../components/ui/Skeleton';
 import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Layers, Plus, RefreshCw, Search as SearchIcon } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
@@ -53,7 +54,7 @@ export default function Teams() {
       </div>
       {tab === 'mine' ? (
         <>
-          {!mine && !err ? <div className="empty pulse">Loading...</div> : null}
+          {!mine && !err ? <Skeleton /> : null}
           {mine && mine.length === 0 ? <EmptyState icon={Layers} title="No teams yet" text="Create a team, or open Discover to find one." /> : null}
           {mine && mine.length > 0 ? (
             <section className="glass card"><div className="rows">
@@ -70,7 +71,7 @@ export default function Teams() {
       ) : (
         <>
           <label className="chat-find"><SearchIcon size={18} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search teams" aria-label="Search teams" /></label>
-          {!found && !err ? <div className="empty pulse">Loading...</div> : null}
+          {!found && !err ? <Skeleton /> : null}
           {found && found.length === 0 ? <EmptyState icon={SearchIcon} title="No teams found" text="Try a different search." /> : null}
           {found && found.length > 0 ? (
             <section className="glass card"><div className="rows">

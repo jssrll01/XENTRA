@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { Activity, RefreshCw } from 'lucide-react';
 import EmptyState from './ui/EmptyState';
 import { listTeamActivity } from '../lib/api';
@@ -15,7 +16,7 @@ export default function TeamActivity({ team, tick }) {
   return (
     <>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!rows && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!rows && !err ? <Skeleton /> : null}
       {rows && rows.length === 0 ? <EmptyState icon={Activity} title="No activity yet" text="Joins, posts and changes appear here." /> : null}
       {rows && rows.length > 0 ? (
         <section className="glass card"><div className="rows">

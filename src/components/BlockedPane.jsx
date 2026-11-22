@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { Ban, RefreshCw } from 'lucide-react';
 import Avatar from './ui/Avatar';
 import EmptyState from './ui/EmptyState';
@@ -23,7 +24,7 @@ export default function BlockedPane({ onChanged }) {
   return (
     <>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!rows && !err ? <div className="empty pulse">Loading...</div> : null}
+      {!rows && !err ? <Skeleton /> : null}
       {rows && rows.length === 0 ? <EmptyState icon={Ban} title="No blocked people" text="People you block cannot message you or send requests." /> : null}
       {rows && rows.length > 0 ? (
         <section className="glass card">

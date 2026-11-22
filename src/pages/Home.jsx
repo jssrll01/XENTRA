@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Users, MailPlus, CalendarClock, RefreshCw, Search, Bell, ArrowRight } from 'lucide-react';
+import { MessageCircle, Users, MailPlus, CalendarClock, RefreshCw, Search, Bell, ArrowRight, Layers, Megaphone } from 'lucide-react';
 import { BrandArt } from '../components/Logo';
 import Sparkline from '../components/ui/Sparkline';
 import EmptyState from '../components/ui/EmptyState';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
-import { listNotifications } from '../lib/api';
+import { listNotifications, getAnnouncement, listMyTeams } from '../lib/api';
+import Avatar from '../components/ui/Avatar';
 import { greeting } from '../lib/format';
 import RecentChats from '../components/RecentChats';
 import { ago } from '../lib/time';
@@ -20,9 +21,13 @@ const TILES = [
 
 export default function Home() {
   const { profile } = useProfile();
-  const { summary, state, reload } = useSummary();
+  const { summary, state, reload, tick } = useSummary();
   const [recent, setRecent] = useState(null);
   const [rerr, setRerr] = useState('');
+  const [ann, setAnn] = useState(null);
+  const [teams, setTeams] = useState(null);
+  const [herr, setHerr] = useState('');
+  const [hk, setHk] = useState(0);
   const count = summary ? summary.notifications : null;
 
   useEffect(() => {
@@ -33,6 +38,16 @@ export default function Home() {
     });
     return () => { live = false; };
   }, [count]);
+
+  useEffect(() => {
+    let live = true;
+    Promise.all([getAnnouncement(), listMyTeams()]).then(([a, t]) => {
+      if (!live) return;
+      if (!a.ok || !t.ok) { setHerr(a.ok ? t.error : a.error); return; }
+      setAnn(a.data); setTeams(t.data || []); setHerr('');
+    });
+    return () => { live = false; };
+  }, [tick, hk]);
 
   return (
     <>
@@ -46,6 +61,13 @@ export default function Home() {
 
       {state === 'error' || state === 'notready' ? (
         <div className="alert err with-action"><span>Could not load your summary.</span><button type="button" className="btn btn-secondary btn-sm" onClick={reload}><RefreshCw size={16} /> Retry</button></div>
+      ) : null}
+
+      {ann ? (
+        <section className="glass ann" aria-label="Announcement">
+          <span className="sec-ic"><Megaphone size={18} /></span>
+          <div className="row-main"><b>{ann.title}</b>{ann.body ? <span>{ann.body}</span> : null}</div>
+        </section>
       ) : null}
 
       <section className="tiles" aria-label="Summary">
@@ -63,6 +85,23 @@ export default function Home() {
       </section>
 
       <RecentChats />
+
+      <section className="glass card">
+        <div className="card-head"><h2><span className="sec-ic"><Layers size={18} /></span>My Teams</h2><Link className="see-all" to="/teams">See all <ArrowRight size={16} /></Link></div>
+        {herr ? <div className="alert err with-action"><span>{herr}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => setHk(hk + 1)}><RefreshCw size={16} /> Retry</button></div> : null}
+        {teams && teams.length === 0 ? <EmptyState icon={Layers} title="No teams yet" text="Create or join a team to see it here." /> : null}
+        {teams && teams.length > 0 ? (
+          <div className="team-strip">
+            {teams.map((t) => (
+              <Link className="team-card" key={t.id} to={'/teams/' + t.id}>
+                <Avatar name={t.name} url={t.avatar_url} size={48} />
+                <b>{t.name}</b>
+                <span>{t.members} members</span>
+              </Link>
+            ))}
+          </div>
+        ) : null}
+      </section>
 
       <section className="glass card">
         <div className="card-head"><h2><span className="sec-ic"><Bell size={18} /></span>Recent Activity</h2><Link className="see-all" to="/notifications">See all <ArrowRight size={16} /></Link></div>

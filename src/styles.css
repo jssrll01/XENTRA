@@ -324,3 +324,8 @@ button.row { text-align: left; cursor: pointer; }
 .row.pick { width: 100%; border: 0; background: transparent; text-align: left; font: inherit; color: inherit; cursor: pointer; }
 .row.pick.on { background: rgba(37, 99, 235, .08); }
 .sname { display: block; margin-bottom: 2px; color: var(--blue); font-size: 12px; font-weight: 600; }
+.ann { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; margin-bottom: 14px; }
+.team-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.team-card { flex: 0 0 132px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border-radius: 16px; text-align: center; color: inherit; text-decoration: none; background: rgba(255, 255, 255, .6); border: 1px solid var(--line); }
+.team-card b { font-size: 14px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team-card span { font-size: 12px; color: var(--muted); }

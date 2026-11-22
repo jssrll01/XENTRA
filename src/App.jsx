@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
 import Search from './pages/Search';
+import Messages from './pages/Messages';
 import AppShell from './components/AppShell';
 import { ProfileProvider } from './lib/profile';
 import { SummaryProvider } from './lib/summary';
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/search" element={<Search />} />
+              <Route path="/messages" element={<Messages />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

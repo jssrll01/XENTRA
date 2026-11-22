@@ -8,6 +8,7 @@ import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { listNotifications } from '../lib/api';
 import { greeting } from '../lib/format';
+import RecentChats from '../components/RecentChats';
 import { ago } from '../lib/time';
 
 const TILES = [
@@ -60,6 +61,8 @@ export default function Home() {
           );
         })}
       </section>
+
+      <RecentChats />
 
       <section className="glass card">
         <div className="card-head"><h2><span className="sec-ic"><Bell size={18} /></span>Recent Activity</h2><Link className="see-all" to="/notifications">See all <ArrowRight size={16} /></Link></div>

@@ -9,6 +9,7 @@ import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
 import { pingPresence, getMyPresence } from '../lib/api';
+import CommandPalette from './CommandPalette';
 
 const EXTRA = { '/notifications': 'Activity', '/search': 'Search', '/settings': 'Settings' };
 
@@ -19,6 +20,8 @@ export default function AppShell() {
   const { profile } = useProfile();
   const { summary } = useSummary();
   const [menu, setMenu] = useState(false);
+  const [pal, setPal] = useState(false);
+  const um = Number(summary && summary.unread && summary.unread.value) || 0;
   const ref = useRef(null);
   const [pres, setPres] = useState({ status: 'online', status_text: null });
   const title = (NAV.find((n) => pathname.startsWith(n.to)) || {}).label || EXTRA[pathname] || 'XENTRA';
@@ -37,7 +40,7 @@ export default function AppShell() {
   }, []);
   useEffect(() => { setMenu(false); }, [pathname]);
   useEffect(() => {
-    const k = (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); nav('/search'); } };
+    const k = (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPal(true); } };
     document.addEventListener('keydown', k);
     return () => document.removeEventListener('keydown', k);
   }, [nav]);
@@ -52,12 +55,13 @@ export default function AppShell() {
 
   return (
     <div className="app">
+      {pal ? <CommandPalette uid={profile.id} onClose={() => setPal(false)} /> : null}
       <aside className="side" aria-label="Sidebar">
         <Logo size={40} />
-        <button type="button" className="side-search" onClick={() => nav('/search')}><Search size={18} /><span>Search people</span><kbd>Ctrl K</kbd></button>
+        <button type="button" className="side-search" onClick={() => setPal(true)}><Search size={18} /><span>Search people</span><kbd>Ctrl K</kbd></button>
         <nav className="side-nav" aria-label="Main">
           {NAV.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}><Icon size={20} />{label}</NavLink>
+            <NavLink key={to} to={to} className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}><Icon size={20} />{label}{to === '/messages' && um > 0 ? <span className="nav-badge">{um > 99 ? '99+' : um}</span> : null}</NavLink>
           ))}
         </nav>
         <div className="side-user">
@@ -72,7 +76,7 @@ export default function AppShell() {
           <div className="brand-mobile"><Logo size={36} /></div>
           <h1 className="page-title">{title}</h1>
           <span className="spacer" />
-          <button type="button" className="search-pill" aria-label="Search" onClick={() => nav('/search')}><Search size={18} /><span>Search people</span><kbd>Ctrl K</kbd></button>
+          <button type="button" className="search-pill" aria-label="Search" onClick={() => setPal(true)}><Search size={18} /><span>Search people</span><kbd>Ctrl K</kbd></button>
           <button type="button" className="icon-btn" aria-label={unread ? 'Notifications, ' + unread + ' unread' : 'Notifications'} onClick={() => nav('/notifications')}>
             <Bell size={20} />
             {unread > 0 ? <span className="count">{unread > 99 ? '99+' : unread}</span> : null}
@@ -96,7 +100,7 @@ export default function AppShell() {
 
       <nav className="bottom-nav" aria-label="Primary">
         {NAV.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className={({ isActive }) => 'bn-item' + (isActive ? ' active' : '')}><Icon size={24} />{label}</NavLink>
+          <NavLink key={to} to={to} className={({ isActive }) => 'bn-item' + (isActive ? ' active' : '')}><Icon size={24} />{label}{to === '/messages' && um > 0 ? <span className="nav-badge">{um > 99 ? '99+' : um}</span> : null}</NavLink>
         ))}
       </nav>
     </div>

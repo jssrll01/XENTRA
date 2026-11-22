@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AtSign, Camera, Mail, Phone, User } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
-import { updateProfile, setAvatar } from '../lib/api';
+import { updateProfile, setAvatar, checkUsername } from '../lib/api';
 import { uploadAvatar } from '../lib/cloudinary';
 import { fullName } from '../lib/format';
 
@@ -27,6 +27,20 @@ export default function Profile() {
   const [ok, setOk] = useState(false);
   const [busy, setBusy] = useState(false);
   const [up, setUp] = useState(false);
+  const [un, setUn] = useState('');
+  useEffect(() => {
+    const u = f.username.trim().toLowerCase();
+    if (!u || u === (profile.username || '')) { setUn(''); return undefined; }
+    if (!/^[a-z0-9_.]{3,20}$/.test(u)) { setUn('bad'); return undefined; }
+    setUn('check');
+    let live = true;
+    const t = setTimeout(async () => {
+      const r = await checkUsername(u);
+      if (live) setUn(r.ok ? (r.data.available ? 'ok' : 'taken') : 'fail');
+    }, 350);
+    return () => { live = false; clearTimeout(t); };
+  }, [f.username, profile.username]);
+  const unMsg = { check: 'Checking...', ok: 'Username is available.', taken: 'That username is taken.', bad: '3 to 20 characters: letters, numbers, dot or underscore.', fail: 'Could not check the username.' }[un];
   const fileRef = useRef(null);
 
   useEffect(() => { setF(fromProfile(profile)); }, [profile.first_name, profile.last_name, profile.username, profile.phone]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -78,9 +92,10 @@ export default function Profile() {
           <Item icon={Phone} label="Phone (private)" wide type="tel" value={f.phone} onChange={set('phone')} autoComplete="tel" />
           <Item icon={Mail} label="Email" wide value={profile.email || ''} readOnly />
         </div>
+        {unMsg ? <p className="note" role="status">{unMsg}</p> : null}
         {err ? <div className="alert err">{err}</div> : null}
         {ok ? <div className="alert ok">Profile saved.</div> : null}
-        <button type="submit" className="btn btn-primary btn-block" disabled={busy}>{busy ? 'Saving...' : 'Save changes'}</button>
+        <button type="submit" className="btn btn-primary btn-block" disabled={busy || un === 'taken' || un === 'bad'}>{busy ? 'Saving...' : 'Save changes'}</button>
       </form>
     </>
   );

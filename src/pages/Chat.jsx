@@ -1,12 +1,19 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Copy, CornerUpLeft, Pencil, RefreshCw, Send, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
-import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction } from '../lib/api';
+import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction, togglePin, listPins } from '../lib/api';
 import { fullName } from '../lib/format';
 import { clock, dayKey, dayLabel } from '../lib/chatTime';
+import { rich, firstUrl } from '../lib/rich';
+import { useTyping } from '../lib/typing';
+import LinkCard from '../components/LinkCard';
+import PinBar from '../components/PinBar';
+import ChatSearch from '../components/ChatSearch';
+import ForwardPicker from '../components/ForwardPicker';
+import LaterSheet from '../components/LaterSheet';
 
 const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 const norm = (m) => ({ ...m, deleted: m.deleted !== undefined ? m.deleted : Boolean(m.deleted_at), reactions: m.reactions || [] });
@@ -26,6 +33,7 @@ export default function Chat() {
   const { profile } = useProfile();
   const { reload: reloadSummary, tick } = useSummary();
   const me = profile.id;
+  const { typing, ping } = useTyping(id, me);
   const [other, setOther] = useState(null);
   const [msgs, setMsgs] = useState(null);
   const [more, setMore] = useState(null);
@@ -35,6 +43,13 @@ export default function Chat() {
   const [text, setText] = useState('');
   const [reply, setReply] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [pins, setPins] = useState([]);
+  const [fwd, setFwd] = useState(null);
+  const [later, setLater] = useState(null);
+  const [searching, setSearching] = useState(false);
+  const saveDraft = (v) => {
+    try { if (v) localStorage.setItem('xentra-draft-' + id, v); else localStorage.removeItem('xentra-draft-' + id); } catch (e) { /* storage blocked */ }
+  };
   const box = useRef(null);
   const root = useRef(null);
   const name = other ? fullName(other) : 'Conversation';
@@ -55,6 +70,10 @@ export default function Chat() {
   }, [id]);
   useEffect(() => { loadOther(); }, [loadOther]);
   useEffect(() => { load(); }, [load, tick]);
+  useEffect(() => { listPins(id).then((r) => { if (r.ok) setPins(r.data || []); }); }, [id, tick]);
+  useEffect(() => {
+    try { setText(localStorage.getItem('xentra-draft-' + id) || ''); } catch (e) { setText(''); }
+  }, [id]);
   useEffect(() => {
     if (!notice) return undefined;
     const t = setTimeout(() => setNotice(''), 3000);
@@ -107,7 +126,7 @@ export default function Chat() {
       created_at: new Date().toISOString(), reactions: [], deleted: false, local: true, pending: true,
     };
     setMsgs((p) => [...(p || []), m]);
-    setText(''); setReply(null);
+    setText(''); setReply(null); saveDraft('');
     push(m);
   };
   const retry = (m) => {
@@ -132,6 +151,22 @@ export default function Chat() {
     setSel(null);
     try { await navigator.clipboard.writeText(m.body); setNotice('Copied'); } catch (e) { setNotice('Could not copy.'); }
   };
+  const jump = (mid) => {
+    const el = document.getElementById('m-' + mid);
+    if (!el) { setNotice('Load earlier messages to jump to it.'); return false; }
+    el.scrollIntoView({ block: 'center' });
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 1500);
+    return true;
+  };
+  const pin = async (m) => {
+    setSel(null);
+    const r = await togglePin(m.id);
+    if (!r.ok) { setNotice(r.error); return; }
+    const p = await listPins(id);
+    if (p.ok) setPins(p.data || []);
+    load();
+  };
   const earlier = async () => {
     const first = msgs.find((m) => !m.local);
     if (!first) return;
@@ -145,13 +180,15 @@ export default function Chat() {
   const bubble = (m) => {
     const mine = m.sender_id === me;
     return (
-      <div key={m.id} className={'msg' + (mine ? ' mine' : '')}>
+      <div key={m.id} id={'m-' + m.id} className={'msg' + (mine ? ' mine' : '')}>
         <button type="button" className={'bubble' + (m.deleted ? ' gone' : '') + (m.failed ? ' failed' : '')} aria-expanded={sel === m.id}
           onClick={() => { if (!m.local && !m.deleted) setSel(sel === m.id ? null : m.id); }}>
+          {m.forwarded ? <span className="fwd"><Forward size={12} /> Forwarded</span> : null}
           {m.reply ? <span className="quote"><b>{m.reply.sender_id === me ? 'You' : name}</b>{m.reply.deleted ? 'Message deleted' : m.reply.body}</span> : null}
-          {m.deleted ? <i>Message deleted</i> : <span className="mbody">{m.body}</span>}
+          {m.deleted ? <i>Message deleted</i> : <span className="mbody">{rich(m.body)}</span>}
           <span className="meta">{m.edited_at ? 'edited ' : ''}{clock(m.created_at)}{m.pending ? ' - sending' : ''}</span>
         </button>
+        {!m.deleted && firstUrl(m.body) ? <LinkCard url={firstUrl(m.body)} /> : null}
         {m.failed ? (
           <span className="fail">Not sent.
             <button type="button" onClick={() => retry(m)}><RefreshCw size={14} /> Retry</button>
@@ -166,6 +203,9 @@ export default function Chat() {
             <div className="quick">{QUICK.map((e) => <button type="button" key={e} aria-label={'React ' + e} onClick={() => react(m, e)}>{e}</button>)}</div>
             <button type="button" onClick={() => { setReply(m); setEditing(null); setSel(null); }}><CornerUpLeft size={16} /> Reply</button>
             <button type="button" onClick={() => copy(m)}><Copy size={16} /> Copy</button>
+            <button type="button" onClick={() => { setFwd(m); setSel(null); }}><Forward size={16} /> Forward</button>
+            <button type="button" onClick={() => pin(m)}>{m.pinned ? <PinOff size={16} /> : <Pin size={16} />} {m.pinned ? 'Unpin' : 'Pin'}</button>
+            <button type="button" onClick={() => { setLater({ tab: 'remind', message: m }); setSel(null); }}><Clock size={16} /> Remind me</button>
             {mine && !m.edited_at ? <button type="button" onClick={() => startEdit(m)}><Pencil size={16} /> Edit</button> : null}
             {mine ? <button type="button" onClick={() => del(m)}><Trash2 size={16} /> Delete</button> : null}
           </div>
@@ -187,8 +227,11 @@ export default function Chat() {
       <div className="chat-head">
         <button type="button" className="icon-btn" aria-label="Back to messages" onClick={() => nav('/messages')}><ArrowLeft size={20} /></button>
         <Avatar name={name} url={other ? other.avatar_url : null} size={40} />
-        <b>{name}</b>
+        <b>{name}{typing ? <small className="typing">typing...</small> : null}</b>
+        <button type="button" className="icon-btn" aria-label="Search in chat" onClick={() => setSearching(!searching)}><SearchIcon size={20} /></button>
       </div>
+      {searching ? <ChatSearch conversationId={id} onClose={() => setSearching(false)} onJump={(m) => { if (jump(m.id)) setSearching(false); }} /> : null}
+      {pins.length ? <PinBar pins={pins} onJump={jump} /> : null}
       <div className="chat-box" ref={box}>
         {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => { loadOther(); load(); }}><RefreshCw size={16} /> Retry</button></div> : null}
         {notice ? <div className="alert info">{notice}</div> : null}
@@ -197,13 +240,23 @@ export default function Chat() {
         {msgs && msgs.length === 0 ? <div className="empty"><p>No messages yet. Say hello.</p></div> : null}
         {items}
       </div>
+      {fwd ? <ForwardPicker message={fwd} onClose={() => setFwd(null)} onDone={(c) => { setFwd(null); setNotice('Forwarded to ' + fullName(c.other)); }} /> : null}
+      {later ? (
+        <LaterSheet conversationId={id} {...later} onClose={() => setLater(null)}
+          onDone={(kind) => {
+            if (kind === 'schedule' && later.text && later.text === text) { setText(''); saveDraft(''); }
+            setLater(null);
+            setNotice(kind === 'schedule' ? 'Message scheduled' : 'Reminder set');
+          }} />
+      ) : null}
       <div className="composer">
         {reply ? <div className="ctx"><CornerUpLeft size={16} /><span><b>Replying to {reply.sender_id === me ? 'yourself' : name}</b>{reply.body}</span><button type="button" aria-label="Cancel reply" onClick={() => setReply(null)}><X size={16} /></button></div> : null}
         {editing ? <div className="ctx"><Pencil size={16} /><span><b>Editing message</b>A message can be edited once.</span><button type="button" aria-label="Cancel edit" onClick={() => { setEditing(null); setText(''); }}><X size={16} /></button></div> : null}
         <div className="cmp">
           <textarea rows={1} value={text} placeholder="Message" aria-label="Message" maxLength={4000} disabled={!msgs}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => { setText(e.target.value); if (!editing) saveDraft(e.target.value); ping(); }}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }} />
+          <button type="button" className="icon-btn" aria-label="Schedule or remind" onClick={() => setLater({ tab: 'schedule', text })}><Clock size={20} /></button>
           <button type="button" className="send" aria-label={editing ? 'Save edit' : 'Send'} disabled={!text.trim() || !msgs} onClick={submit}><Send size={20} /></button>
         </div>
       </div>

@@ -7,9 +7,10 @@ import CodeSheet from '../components/CodeSheet';
 import ScanSheet from '../components/ScanSheet';
 import LabelSheet from '../components/LabelSheet';
 import MutualSheet from '../components/MutualSheet';
+import PickSheet from '../components/PickSheet';
 import RequestsPane from '../components/RequestsPane';
 import BlockedPane from '../components/BlockedPane';
-import { listContacts, listLabels, listRequests, startDirect, setFavorite, removeContact, blockUser } from '../lib/api';
+import { listContacts, listLabels, listRequests, startDirect, setFavorite, removeContact, blockUser, createGroup } from '../lib/api';
 import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
 
@@ -61,6 +62,7 @@ export default function Contacts() {
       <div className="page-head">
         <h2>Contacts</h2>
         <span className="req-acts">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'group' })}><Users size={16} /> Group</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'scan' })}><ScanLine size={16} /> Scan</button>
           <button type="button" className="btn btn-primary btn-sm" onClick={() => setSheet({ t: 'code' })}><QrCode size={16} /> My code</button>
         </span>
@@ -117,6 +119,7 @@ export default function Contacts() {
       {sheet && sheet.t === 'code' ? <CodeSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'scan' ? <ScanSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'labels' ? <LabelSheet contact={sheet.c} onClose={() => setSheet(null)} onChanged={load} /> : null}
+      {sheet && sheet.t === 'group' ? <PickSheet title="New group" label="Create" withName onSubmit={(ids, n, d) => createGroup(n, ids, d)} onClose={() => setSheet(null)} onDone={(r) => { setSheet(null); nav('/messages/' + r.data.id); }} /> : null}
       {sheet && sheet.t === 'mutual' ? <MutualSheet contact={sheet.c} onClose={() => setSheet(null)} /> : null}
     </>
   );

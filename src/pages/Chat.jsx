@@ -13,6 +13,7 @@ import LinkCard from '../components/LinkCard';
 import PinBar from '../components/PinBar';
 import ChatSearch from '../components/ChatSearch';
 import ForwardPicker from '../components/ForwardPicker';
+import GroupInfoButton from '../components/GroupInfoButton';
 import LaterSheet from '../components/LaterSheet';
 import PollSheet from '../components/PollSheet';
 import PollCard from '../components/PollCard';
@@ -293,6 +294,7 @@ export default function Chat() {
       </div>
       {pollOpen ? <PollSheet conversationId={id} onClose={() => setPollOpen(false)} onDone={() => { setPollOpen(false); setNotice('Poll sent'); load(); }} /> : null}
       {thread ? <ThreadPanel root={thread} me={me} name={name} onClose={() => setThread(null)} /> : null}
+      {other && other.is_group ? <GroupInfoButton id={id} /> : null}
       {fwd ? <ForwardPicker message={fwd} onClose={() => setFwd(null)} onDone={(c) => { setFwd(null); setNotice('Forwarded to ' + fullName(c.other)); }} /> : null}
       {later ? (
         <LaterSheet conversationId={id} {...later} onClose={() => setLater(null)}

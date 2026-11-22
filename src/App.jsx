@@ -17,6 +17,7 @@ import Chat from './pages/Chat';
 import Contacts from './pages/Contacts';
 import AddContact from './pages/AddContact';
 import GroupInfo from './pages/GroupInfo';
+import JoinGroup from './pages/JoinGroup';
 import AppShell from './components/AppShell';
 import { ProfileProvider } from './lib/profile';
 import { SummaryProvider } from './lib/summary';
@@ -53,6 +54,7 @@ export default function App() {
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/add/:code" element={<AddContact />} />
               <Route path="/groups/:id/info" element={<GroupInfo />} />
+              <Route path="/join/:code" element={<JoinGroup />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

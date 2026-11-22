@@ -10,7 +10,8 @@ export default function ConvRow({ c, meId }) {
   const last = c.last;
   let draft = '';
   try { draft = localStorage.getItem('xentra-draft-' + c.id) || ''; } catch (e) { draft = ''; }
-  const text = !last ? 'No messages yet' : last.deleted ? 'Message deleted' : (last.sender_id === meId ? 'You: ' : '') + last.body;
+  const who = !last ? '' : last.sender_id === meId ? 'You: ' : (c.other.is_group && last.sender_name ? last.sender_name + ': ' : '');
+  const text = !last ? 'No messages yet' : last.deleted ? 'Message deleted' : who + last.body;
   return (
     <Link className="row" to={'/messages/' + c.id}>
       <Avatar name={name} url={c.other.avatar_url} size={46} />

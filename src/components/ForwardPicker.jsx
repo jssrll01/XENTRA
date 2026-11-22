@@ -27,7 +27,7 @@ export default function ForwardPicker({ message, onClose, onDone }) {
         {(rows || []).map((c) => (
           <button type="button" className="row" key={c.id} disabled={Boolean(busy)} onClick={() => go(c)}>
             <Avatar name={fullName(c.other)} url={c.other.avatar_url} size={42} />
-            <div className="row-main"><b>{fullName(c.other)}</b><span>@{c.other.username}</span></div>
+            <div className="row-main"><b>{fullName(c.other)}</b><span>{c.other.is_group ? c.other.members + ' members' : '@' + c.other.username}</span></div>
             {busy === c.id ? <span className="row-time">Sending...</span> : null}
           </button>
         ))}

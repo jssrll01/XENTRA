@@ -1,4 +1,5 @@
 import React from 'react';
+import CodeBlock from '../components/CodeBlock';
 
 const RE = /`([^`\n]+)`|\*([^\s*](?:[^*\n]*[^\s*])?)\*|_([^\s_](?:[^_\n]*[^\s_])?)_|(https?:\/\/[^\s<]+)/g;
 const TAIL = /[.,;:!?)\]]+$/;
@@ -8,7 +9,7 @@ export function firstUrl(text) {
   return m ? m[0].replace(TAIL, '') : null;
 }
 
-export function rich(text) {
+function inline(text) {
   const s = String(text || '');
   const out = [];
   let last = 0;
@@ -33,5 +34,17 @@ export function rich(text) {
     last = end;
   }
   if (last < s.length) out.push(s.slice(last));
+  return out;
+}
+
+export function rich(text) {
+  const s = String(text || '');
+  const parts = s.split(/```([\s\S]*?)```/);
+  if (parts.length === 1) return inline(s);
+  const out = [];
+  parts.forEach((p, i) => {
+    if (i % 2 === 1) out.push(<CodeBlock key={'c' + i} code={p.replace(/^\n/, '').replace(/\n$/, '')} />);
+    else if (p) out.push(<React.Fragment key={'t' + i}>{inline(p)}</React.Fragment>);
+  });
   return out;
 }

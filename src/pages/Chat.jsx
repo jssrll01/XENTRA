@@ -247,7 +247,7 @@ export default function Chat() {
         <button type="button" className={'bubble' + (m.deleted ? ' gone' : '') + (m.failed ? ' failed' : '')} aria-expanded={sel === m.id}
           onClick={() => { if (!m.local && !m.deleted) setSel(sel === m.id ? null : m.id); }}>
           {!mine && names[m.sender_id] ? <span className="sname">{names[m.sender_id]}</span> : null}
-          {m.forwarded ? <span className="fwd"><Forward size={12} /> Forwarded</span> : null}
+          {m.forwarded ? <span className="fwd"><Forward size={12} /> {m.forwarded_from_name ? 'Forwarded from ' + m.forwarded_from_name : 'Forwarded'}</span> : null}
           {m.reply ? <span className="quote"><b>{m.reply.sender_id === me ? 'You' : name}</b>{m.reply.deleted ? 'Message deleted' : m.reply.body}</span> : null}
           {m.deleted ? <i>Message deleted</i> : (m.attachments && m.attachments.length && m.attachments[0].name === m.body ? null : <span className="mbody">{rich(m.body)}</span>)}
           {showTime || m.edited_at || m.pending ? <span className="meta" title={fullTime(m.created_at)}>{m.edited_at ? 'edited ' : ''}{clock(m.created_at)}{mine && !m.deleted ? statusTick(m) : null}</span> : null}

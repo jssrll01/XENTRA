@@ -43,3 +43,14 @@ export const editMessage = (id, body) => call('edit_message', { p_id: id, p_body
 export const deleteMessage = (id) => call('delete_message', { p_id: id });
 export const markRead = (cid) => call('mark_read', { p_conversation: cid });
 export const toggleReaction = (id, emoji) => call('toggle_reaction', { p_message: id, p_emoji: emoji });
+export const setFlags = (cid, f) => call('set_conversation_flags', { p_conversation: cid, ...f });
+export const togglePin = (id) => call('toggle_pin_message', { p_message: id });
+export const listPins = (cid) => call('list_pins', { p_conversation: cid });
+export const forwardMessage = (id, cid, clientId) => call('forward_message', { p_message: id, p_conversation: cid, p_client_id: clientId });
+export const searchMessages = (cid, q) => call('search_messages', { p_conversation: cid, p_q: q });
+export const scheduleMessage = (cid, body, at) => call('schedule_message', { p_conversation: cid, p_body: body, p_send_at: at });
+export const listScheduled = (cid = null) => call('list_scheduled', { p_conversation: cid });
+export const cancelScheduled = (id) => call('cancel_scheduled', { p_id: id });
+export const createReminder = (note, at, cid = null, mid = null) => call('create_reminder', { p_note: note, p_remind_at: at, p_conversation: cid, p_message: mid });
+export const listReminders = () => call('list_reminders');
+export const cancelReminder = (id) => call('cancel_reminder', { p_id: id });

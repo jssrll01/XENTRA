@@ -277,3 +277,35 @@ button.row { text-align: left; cursor: pointer; }
 .tabs button.on { background: var(--grad); color: #fff; border-color: transparent; }
 .badge.off { background: #94a3b8; }
 .ci { margin-left: 6px; vertical-align: -2px; color: var(--muted); }
+.pollc { margin-top: 4px; padding: 8px; width: 100%; max-width: 320px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); }
+.pollc-opt { position: relative; display: flex; justify-content: space-between; gap: 8px; width: 100%; margin-bottom: 6px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: transparent; text-align: left; cursor: pointer; overflow: hidden; color: inherit; }
+.pollc-opt.mine { border-color: var(--blue); }
+.pollc-opt:disabled { cursor: default; }
+.pollc-opt i { position: absolute; inset: 0 auto 0 0; background: rgba(37, 99, 235, .14); }
+.pollc-opt span, .pollc-opt b { position: relative; }
+.pollc-foot { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.pollc-foot button { border: 0; background: transparent; color: var(--blue); font-weight: 600; cursor: pointer; }
+.po-row { display: flex; align-items: center; gap: 6px; }
+.po-row input { flex: 1; }
+.po-chk { display: flex; align-items: center; gap: 8px; margin: 4px 0 12px; }
+.att { display: flex; align-items: center; gap: 10px; margin-top: 4px; padding: 8px 12px; max-width: 100%; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); }
+.att.img { padding: 4px; }
+.att img { display: block; max-width: min(260px, 100%); max-height: 260px; border-radius: 10px; }
+.att-t { min-width: 0; display: flex; flex-direction: column; font-size: 13px; }
+.att-t b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.att-t span { color: var(--muted); font-size: 12px; }
+.thread-link { margin-top: 3px; display: inline-flex; align-items: center; gap: 4px; border: 0; background: transparent; color: var(--blue); font-size: 12px; font-weight: 600; cursor: pointer; }
+.ups { display: flex; flex-direction: column; gap: 6px; padding: 6px 10px 0; }
+.up { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.up-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.up-bar { width: 80px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.up-bar i { display: block; height: 100%; background: var(--blue); }
+.up-err { color: var(--red); }
+.up button { display: inline-flex; align-items: center; gap: 4px; border: 0; background: transparent; color: var(--blue); cursor: pointer; }
+.th-list { display: flex; flex-direction: column; gap: 8px; max-height: 46dvh; overflow-y: auto; margin-bottom: 10px; }
+.th-msg { align-self: flex-start; max-width: 85%; padding: 8px 12px; border-radius: 14px; background: #eef2f9; overflow-wrap: anywhere; white-space: pre-wrap; }
+.th-msg.mine { align-self: flex-end; background: var(--grad); color: #fff; }
+.th-msg small { display: block; margin-top: 2px; font-size: 11px; opacity: .7; }
+.th-root { padding: 8px 10px; margin-bottom: 10px; border-left: 3px solid var(--blue); border-radius: 8px; background: rgba(37, 99, 235, .06); font-size: 14px; overflow-wrap: anywhere; }
+.th-cmp { display: flex; align-items: flex-start; gap: 8px; }
+.th-cmp input { flex: 1; }

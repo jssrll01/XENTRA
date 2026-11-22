@@ -5,13 +5,14 @@ import Avatar from './ui/Avatar';
 import { fullName } from '../lib/format';
 import { listTime } from '../lib/chatTime';
 import usePresence from '../lib/usePresence';
+import { draftOf, useDrafts } from '../lib/drafts';
 
 export default function ConvRow({ c, meId }) {
   const name = fullName(c.other);
   const pr = usePresence(c.other.is_group || c.other.is_channel ? null : c.other.id);
   const last = c.last;
-  let draft = '';
-  try { draft = localStorage.getItem('xentra-draft-' + c.id) || ''; } catch (e) { draft = ''; }
+  useDrafts();
+  const draft = draftOf(c.id);
   const who = !last ? '' : last.sender_id === meId ? 'You: ' : (c.other.is_group && last.sender_name ? last.sender_name + ': ' : '');
   const text = !last ? 'No messages yet' : last.deleted ? 'Message deleted' : who + last.body;
   return (

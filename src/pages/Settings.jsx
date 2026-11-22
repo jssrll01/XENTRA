@@ -87,11 +87,11 @@ export default function Settings() {
     load();
   };
   const clear = async () => {
-    if (!window.confirm('Clear cached data? Unsent drafts are removed too.')) return;
+    if (!window.confirm('Clear cached data?')) return;
     try {
       const ks = await caches.keys();
       await Promise.all(ks.map((k) => caches.delete(k)));
-      Object.keys(localStorage).filter((k) => k.indexOf('xentra-draft-') === 0).forEach((k) => localStorage.removeItem(k));
+      
       setNote('Cache cleared');
     } catch (x) { setErr('Could not clear the cache.'); }
   };

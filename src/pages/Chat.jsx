@@ -24,6 +24,7 @@ import PollCard from '../components/PollCard';
 import ThreadPanel from '../components/ThreadPanel';
 import AttachmentView from '../components/AttachmentView';
 import { MAX_FILE, uploadChatFile } from '../lib/files';
+import { draftOf, queueDraft, useDrafts } from '../lib/drafts';
 import ReactorsSheet from '../components/ReactorsSheet';
 
 const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -63,12 +64,14 @@ export default function Chat() {
   const [thread, setThread] = useState(null);
   const [ups, setUps] = useState([]);
   const fileRef = useRef(null);
+  const seededFor = useRef(null);
+  const { loaded: draftsLoaded, error: draftsError, version: draftsVersion } = useDrafts();
   const busyRef = useRef(false);
   const [rxFor, setRxFor] = useState(null);
   const [rxText, setRxText] = useState('');
   const [who, setWho] = useState(null);
   const saveDraft = (v) => {
-    try { if (v) localStorage.setItem('xentra-draft-' + id, v); else localStorage.removeItem('xentra-draft-' + id); } catch (e) { /* storage blocked */ }
+    queueDraft(id, v);
   };
   const box = useRef(null);
   const root = useRef(null);
@@ -95,7 +98,7 @@ export default function Chat() {
   useEffect(() => { load(); }, [load, tick]);
   useEffect(() => { listPins(id).then((r) => { if (r.ok) setPins(r.data || []); }); }, [id, tick]);
   useEffect(() => {
-    try { setText(localStorage.getItem('xentra-draft-' + id) || ''); } catch (e) { setText(''); }
+    setText('');
   }, [id]);
   useEffect(() => {
     if (!notice) return undefined;
@@ -217,6 +220,15 @@ export default function Chat() {
     nav(loc.pathname, { replace: true, state: null });
     goQuote(j);
   }, [msgs, loc.state]);
+  useEffect(() => {
+    if (!draftsLoaded) return;
+    const remote = draftOf(id);
+    if (seededFor.current !== id) { seededFor.current = id; setText(remote); return; }
+    const ae = document.activeElement;
+    const focused = Boolean(ae && ae.getAttribute && ae.getAttribute('aria-label') === 'Message');
+    if (!editing && !focused && remote !== text) setText(remote);
+  }, [id, draftsLoaded, draftsVersion]);
+  useEffect(() => { if (draftsError) setNotice(draftsError); }, [draftsError]);
   const addRx = (m) => {
     const v = rxText.trim();
     if (!v || [...v].length > 16 || !/\p{Extended_Pictographic}/u.test(v)) { setNotice('Enter an emoji.'); return; }

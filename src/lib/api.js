@@ -142,3 +142,5 @@ export const getLinkPreview = (url) => call('get_link_preview', { p_url: url });
 export const listReactors = (mid, emoji = null) => call('list_reactors', { p_message: mid, p_emoji: emoji });
 export const searchAllMessages = (q) => call('search_all_messages', { p_q: q });
 export const updateScheduledTime = (id, at) => call('update_scheduled_time', { p_id: id, p_send_at: at });
+export const getDrafts = () => call('get_drafts');
+export const setDraft = (cid, body) => call('set_draft', { p_conversation: cid, p_body: body });

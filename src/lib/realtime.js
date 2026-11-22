@@ -14,6 +14,7 @@ export function useMessageEvents(onEvent, userId) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'message_reactions' }, fire)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversation_members' }, fire)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'message_pins' }, fire)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, fire)
       .subscribe((s) => { if (s === 'SUBSCRIBED') fire(); });
     return () => { clearTimeout(timer); supabase.removeChannel(ch); };
   }, [userId]);

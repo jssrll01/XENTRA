@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Search as SearchIcon, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MessageCircle, Search as SearchIcon, Users } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import { useAuth } from '../lib/auth';
 import { searchPeople } from '../lib/search';
+import { startDirect } from '../lib/api';
 import { fullName } from '../lib/format';
 
 const nm = (p) => fullName(p) || p.username || 'Member';
@@ -15,6 +17,14 @@ export default function Search() {
   const [rows, setRows] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const nav = useNavigate();
+  const [starting, setStarting] = useState('');
+  const message = async (p) => {
+    setStarting(p.id);
+    const r = await startDirect(p.id);
+    setStarting('');
+    if (r.ok) nav('/messages/' + r.data.id); else setErr(r.error);
+  };
 
   useEffect(() => {
     const t = q.trim();
@@ -51,6 +61,7 @@ export default function Search() {
                 <div className="row static" key={p.id}>
                   <Avatar name={nm(p)} url={p.avatar_url} size={44} />
                   <div className="row-main"><b>{nm(p)}</b><span>{p.username ? '@' + p.username : ''}</span></div>
+                  <button type="button" className="icon-btn" aria-label={'Message ' + nm(p)} title="Message" disabled={starting === p.id} onClick={() => message(p)}><MessageCircle size={20} /></button>
                 </div>
               ))}
             </div>

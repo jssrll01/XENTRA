@@ -5,7 +5,8 @@ import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction, togglePin, listPins, votePoll, closePoll, sendAttachment } from '../lib/api';
-import { fullName } from '../lib/format';
+import { fullName, timeAgo } from '../lib/format';
+import usePresence from '../lib/usePresence';
 import { clock, dayKey, dayLabel } from '../lib/chatTime';
 import { rich, firstUrl } from '../lib/rich';
 import { useTyping } from '../lib/typing';
@@ -66,6 +67,8 @@ export default function Chat() {
   const root = useRef(null);
   const name = other ? fullName(other) : 'Conversation';
   const names = useNames(id, !!(other && (other.is_group || other.is_channel)));
+  const pr = usePresence(other && !other.is_group && !other.is_channel ? other.id : null);
+  const pline = !pr ? '' : pr.state === 'online' ? 'Online' : pr.state === 'dnd' ? 'Do not disturb' : pr.last_seen ? 'Last seen ' + timeAgo(pr.last_seen) : '';
 
   const loadOther = useCallback(async () => {
     const r = await listConversations();
@@ -283,7 +286,7 @@ export default function Chat() {
       <div className="chat-head">
         <button type="button" className="icon-btn" aria-label="Back to messages" onClick={() => nav('/messages')}><ArrowLeft size={20} /></button>
         <Avatar name={name} url={other ? other.avatar_url : null} size={40} />
-        <b>{name}{typing ? <small className="typing">typing...</small> : null}</b>
+        <b>{name}{typing ? <small className="typing">typing...</small> : pline ? <small className="pline">{pline}</small> : null}</b>
         <button type="button" className="icon-btn" aria-label="Search in chat" onClick={() => setSearching(!searching)}><SearchIcon size={20} /></button>
         {other && (other.is_group || other.is_channel) ? <GroupInfoButton id={id} other={other} /> : null}
       </div>

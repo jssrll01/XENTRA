@@ -8,6 +8,7 @@ import { useAuth } from '../lib/auth';
 import { getMyPresence, setPresence, listDevices, removeDevice } from '../lib/api';
 import { ago } from '../lib/format';
 import { pushSupported, currentSub, enablePush, disablePush } from '../lib/push';
+import { getTheme, applyTheme } from '../lib/theme';
 
 const STATES = [['online', 'Online'], ['dnd', 'Do not disturb'], ['invisible', 'Invisible']];
 const HOURS = [['0', 'Never clears'], ['1', '1 hour'], ['4', '4 hours'], ['24', '24 hours']];
@@ -23,6 +24,7 @@ export default function Settings() {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [pushOn, setPushOn] = useState(false);
+  const [theme, setTheme] = useState(getTheme());
   const load = useCallback(async () => {
     const [a, b] = await Promise.all([getMyPresence(), listDevices()]);
     if (!a.ok || !b.ok) { setErr(a.ok ? b.error : a.error); return; }
@@ -97,6 +99,14 @@ export default function Settings() {
         <Link className="btn btn-secondary btn-sm" to="/profile"><User size={16} /> Edit profile</Link>
         <input type="password" placeholder="New password (8+ characters)" aria-label="New password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} />
         <button type="button" className="btn btn-secondary btn-sm" disabled={busy || pw.length < 8} onClick={changePw}><KeyRound size={16} /> Change password</button>
+      </section>
+      <section className="glass card add-card">
+        <h2>Appearance</h2>
+        <div className="chips">
+          {[['system', 'System'], ['light', 'Light'], ['dark', 'Dark']].map((x) => (
+            <button type="button" key={x[0]} className={'chip' + (theme === x[0] ? ' on' : '')} onClick={() => { setTheme(x[0]); applyTheme(x[0]); }}>{x[1]}</button>
+          ))}
+        </div>
       </section>
       <section className="glass card add-card">
         <h2>Notifications</h2>

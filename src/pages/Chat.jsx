@@ -4,7 +4,7 @@ import { ArrowLeft, Check, CheckCheck, Clock, Copy, CornerUpLeft, Forward, Penci
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
-import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction, togglePin, listPins, votePoll, closePoll, sendAttachment } from '../lib/api';
+import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction, togglePin, listPins, votePoll, retractVote, closePoll, sendAttachment } from '../lib/api';
 import { fullName, timeAgo } from '../lib/format';
 import usePresence from '../lib/usePresence';
 import { clock, dayKey, dayLabel, fullTime, minKey } from '../lib/chatTime';
@@ -257,6 +257,10 @@ export default function Chat() {
     const r = await votePoll(p.id, oid);
     if (r.ok) load(); else setNotice(r.error);
   };
+  const retract = async (p) => {
+    const r = await retractVote(p.id);
+    if (r.ok) load(); else setNotice(r.error);
+  };
   const closeP = async (p) => {
     if (!window.confirm('Close this poll? Voting will stop.')) return;
     const r = await closePoll(p.id);
@@ -311,7 +315,7 @@ export default function Chat() {
           {showTime || m.edited_at || m.pending ? <span className="meta" title={fullTime(m.created_at)}>{m.edited_at ? 'edited ' : ''}{clock(m.created_at)}{mine && !m.deleted ? statusTick(m) : null}</span> : null}
         </button>
         {!m.deleted && firstUrl(m.body) ? <LinkCard url={firstUrl(m.body)} /> : null}
-        {!m.deleted && m.poll ? <PollCard poll={m.poll} onVote={(oid) => vote(m.poll, oid)} onClose={() => closeP(m.poll)} /> : null}
+        {!m.deleted && m.poll ? <PollCard poll={m.poll} onVote={(oid) => vote(m.poll, oid)} onRetract={() => retract(m.poll)} onClose={() => closeP(m.poll)} /> : null}
         {!m.deleted && m.attachments && m.attachments.length ? m.attachments.map((a) => <AttachmentView key={a.id} a={a} />) : null}
         {!m.deleted && m.thread_count > 0 ? <button type="button" className="thread-link" onClick={() => setThread(m)}><MessageSquare size={14} /> {m.thread_count} {m.thread_count === 1 ? 'reply' : 'replies'}</button> : null}
         {m.failed ? (

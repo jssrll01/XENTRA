@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X, ListChecks, MessageSquare, Paperclip } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
-import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction, togglePin, listPins } from '../lib/api';
+import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction, togglePin, listPins, votePoll, closePoll, sendAttachment } from '../lib/api';
 import { fullName } from '../lib/format';
 import { clock, dayKey, dayLabel } from '../lib/chatTime';
 import { rich, firstUrl } from '../lib/rich';
@@ -14,6 +14,11 @@ import PinBar from '../components/PinBar';
 import ChatSearch from '../components/ChatSearch';
 import ForwardPicker from '../components/ForwardPicker';
 import LaterSheet from '../components/LaterSheet';
+import PollSheet from '../components/PollSheet';
+import PollCard from '../components/PollCard';
+import ThreadPanel from '../components/ThreadPanel';
+import AttachmentView from '../components/AttachmentView';
+import { MAX_FILE, uploadChatFile } from '../lib/files';
 
 const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 const norm = (m) => ({ ...m, deleted: m.deleted !== undefined ? m.deleted : Boolean(m.deleted_at), reactions: m.reactions || [] });
@@ -47,6 +52,10 @@ export default function Chat() {
   const [fwd, setFwd] = useState(null);
   const [later, setLater] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [pollOpen, setPollOpen] = useState(false);
+  const [thread, setThread] = useState(null);
+  const [ups, setUps] = useState([]);
+  const fileRef = useRef(null);
   const saveDraft = (v) => {
     try { if (v) localStorage.setItem('xentra-draft-' + id, v); else localStorage.removeItem('xentra-draft-' + id); } catch (e) { /* storage blocked */ }
   };
@@ -177,6 +186,43 @@ export default function Chat() {
     setMore(old.length >= 50);
   };
 
+  const vote = async (p, oid) => {
+    const r = await votePoll(p.id, oid);
+    if (r.ok) load(); else setNotice(r.error);
+  };
+  const closeP = async (p) => {
+    if (!window.confirm('Close this poll? Voting will stop.')) return;
+    const r = await closePoll(p.id);
+    if (r.ok) load(); else setNotice(r.error);
+  };
+  const runUpload = useCallback(async (u) => {
+    const set = (patch) => setUps((p) => p.map((x) => (x.key === u.key ? { ...x, ...patch } : x)));
+    set({ failed: false, error: '' });
+    let path = u.path;
+    if (!path) {
+      set({ progress: 0 });
+      const r = await uploadChatFile(id, u.file, (n) => set({ progress: n }));
+      if (!r.ok) { set({ failed: true, error: r.error }); return; }
+      path = r.path;
+      set({ path, progress: 100 });
+    }
+    const s = await sendAttachment(id, path, u.file.name, u.file.type, u.file.size, u.key);
+    if (!s.ok) { set({ failed: true, error: s.error }); return; }
+    setUps((p) => p.filter((x) => x.key !== u.key));
+    load();
+  }, [id, load]);
+  const onFiles = (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    for (const f of files) {
+      if (f.size < 1) { setNotice(f.name + ' is empty.'); continue; }
+      if (f.size > MAX_FILE) { setNotice(f.name + ' is over 25 MB.'); continue; }
+      const u = { key: crypto.randomUUID(), file: f, progress: 0, failed: false, error: '', path: null };
+      setUps((p) => [...p, u]);
+      runUpload(u);
+    }
+  };
+
   const bubble = (m) => {
     const mine = m.sender_id === me;
     return (
@@ -185,10 +231,13 @@ export default function Chat() {
           onClick={() => { if (!m.local && !m.deleted) setSel(sel === m.id ? null : m.id); }}>
           {m.forwarded ? <span className="fwd"><Forward size={12} /> Forwarded</span> : null}
           {m.reply ? <span className="quote"><b>{m.reply.sender_id === me ? 'You' : name}</b>{m.reply.deleted ? 'Message deleted' : m.reply.body}</span> : null}
-          {m.deleted ? <i>Message deleted</i> : <span className="mbody">{rich(m.body)}</span>}
+          {m.deleted ? <i>Message deleted</i> : (m.attachments && m.attachments.length && m.attachments[0].name === m.body ? null : <span className="mbody">{rich(m.body)}</span>)}
           <span className="meta">{m.edited_at ? 'edited ' : ''}{clock(m.created_at)}{m.pending ? ' - sending' : ''}</span>
         </button>
         {!m.deleted && firstUrl(m.body) ? <LinkCard url={firstUrl(m.body)} /> : null}
+        {!m.deleted && m.poll ? <PollCard poll={m.poll} onVote={(oid) => vote(m.poll, oid)} onClose={() => closeP(m.poll)} /> : null}
+        {!m.deleted && m.attachments && m.attachments.length ? m.attachments.map((a) => <AttachmentView key={a.id} a={a} />) : null}
+        {!m.deleted && m.thread_count > 0 ? <button type="button" className="thread-link" onClick={() => setThread(m)}><MessageSquare size={14} /> {m.thread_count} {m.thread_count === 1 ? 'reply' : 'replies'}</button> : null}
         {m.failed ? (
           <span className="fail">Not sent.
             <button type="button" onClick={() => retry(m)}><RefreshCw size={14} /> Retry</button>
@@ -203,6 +252,7 @@ export default function Chat() {
             <div className="quick">{QUICK.map((e) => <button type="button" key={e} aria-label={'React ' + e} onClick={() => react(m, e)}>{e}</button>)}</div>
             <button type="button" onClick={() => { setReply(m); setEditing(null); setSel(null); }}><CornerUpLeft size={16} /> Reply</button>
             <button type="button" onClick={() => copy(m)}><Copy size={16} /> Copy</button>
+            <button type="button" onClick={() => { setThread(m); setSel(null); }}><MessageSquare size={16} /> Reply in thread</button>
             <button type="button" onClick={() => { setFwd(m); setSel(null); }}><Forward size={16} /> Forward</button>
             <button type="button" onClick={() => pin(m)}>{m.pinned ? <PinOff size={16} /> : <Pin size={16} />} {m.pinned ? 'Unpin' : 'Pin'}</button>
             <button type="button" onClick={() => { setLater({ tab: 'remind', message: m }); setSel(null); }}><Clock size={16} /> Remind me</button>
@@ -240,6 +290,8 @@ export default function Chat() {
         {msgs && msgs.length === 0 ? <div className="empty"><p>No messages yet. Say hello.</p></div> : null}
         {items}
       </div>
+      {pollOpen ? <PollSheet conversationId={id} onClose={() => setPollOpen(false)} onDone={() => { setPollOpen(false); setNotice('Poll sent'); load(); }} /> : null}
+      {thread ? <ThreadPanel root={thread} me={me} name={name} onClose={() => setThread(null)} /> : null}
       {fwd ? <ForwardPicker message={fwd} onClose={() => setFwd(null)} onDone={(c) => { setFwd(null); setNotice('Forwarded to ' + fullName(c.other)); }} /> : null}
       {later ? (
         <LaterSheet conversationId={id} {...later} onClose={() => setLater(null)}
@@ -249,6 +301,22 @@ export default function Chat() {
             setNotice(kind === 'schedule' ? 'Message scheduled' : 'Reminder set');
           }} />
       ) : null}
+      {ups.length ? (
+        <div className="ups">
+          {ups.map((u) => (
+            <div className="up" key={u.key}>
+              <Paperclip size={16} /><span className="up-name">{u.file.name}</span>
+              {u.failed ? (
+                <>
+                  <span className="up-err">{u.error}</span>
+                  <button type="button" onClick={() => runUpload(u)}><RefreshCw size={14} /> Retry</button>
+                  <button type="button" onClick={() => setUps((p) => p.filter((x) => x.key !== u.key))}><X size={14} /> Discard</button>
+                </>
+              ) : <span className="up-bar"><i style={{ width: u.progress + '%' }} /></span>}
+            </div>
+          ))}
+        </div>
+      ) : null}
       <div className="composer">
         {reply ? <div className="ctx"><CornerUpLeft size={16} /><span><b>Replying to {reply.sender_id === me ? 'yourself' : name}</b>{reply.body}</span><button type="button" aria-label="Cancel reply" onClick={() => setReply(null)}><X size={16} /></button></div> : null}
         {editing ? <div className="ctx"><Pencil size={16} /><span><b>Editing message</b>A message can be edited once.</span><button type="button" aria-label="Cancel edit" onClick={() => { setEditing(null); setText(''); }}><X size={16} /></button></div> : null}
@@ -256,6 +324,9 @@ export default function Chat() {
           <textarea rows={1} value={text} placeholder="Message" aria-label="Message" maxLength={4000} disabled={!msgs}
             onChange={(e) => { setText(e.target.value); if (!editing) saveDraft(e.target.value); ping(); }}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }} />
+          <input ref={fileRef} type="file" multiple hidden onChange={onFiles} />
+          <button type="button" className="icon-btn" aria-label="Attach file" disabled={!msgs} onClick={() => fileRef.current && fileRef.current.click()}><Paperclip size={20} /></button>
+          <button type="button" className="icon-btn" aria-label="New poll" disabled={!msgs} onClick={() => setPollOpen(true)}><ListChecks size={20} /></button>
           <button type="button" className="icon-btn" aria-label="Schedule or remind" onClick={() => setLater({ tab: 'schedule', text })}><Clock size={20} /></button>
           <button type="button" className="send" aria-label={editing ? 'Save edit' : 'Send'} disabled={!text.trim() || !msgs} onClick={submit}><Send size={20} /></button>
         </div>

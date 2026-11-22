@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Archive, ArchiveRestore, Bell, BellOff, Ellipsis, MessageCircle, Pin, PinOff, Plus, RefreshCw, Search as SearchIcon, X } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
+import Skeleton from '../components/ui/Skeleton';
 import ConvRow from '../components/ConvRow';
 import { listConversations, setFlags, startDirect } from '../lib/api';
 import { searchPeople } from '../lib/search';

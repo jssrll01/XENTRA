@@ -1,0 +1,22 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { FileText, RefreshCw } from 'lucide-react';
+import { fmtSize, signedUrl } from '../lib/files';
+
+export default function AttachmentView({ a }) {
+  const [url, setUrl] = useState(null);
+  const [err, setErr] = useState('');
+  const load = useCallback(async () => {
+    setErr('');
+    const r = await signedUrl(a.path);
+    if (r.ok) setUrl(r.data); else setErr(r.error);
+  }, [a.path]);
+  useEffect(() => { load(); }, [load]);
+  const isImg = a.mime.startsWith('image/');
+  if (err) return <div className="att"><span className="att-t"><b>{a.name}</b><span>{err}</span></span><button type="button" className="icon-btn" aria-label="Retry" onClick={load}><RefreshCw size={16} /></button></div>;
+  if (isImg) return <a className="att img" href={url || undefined} target="_blank" rel="noreferrer">{url ? <img src={url} alt={a.name} loading="lazy" /> : <span className="att-t"><b>{a.name}</b><span>Loading...</span></span>}</a>;
+  return (
+    <a className="att" href={url || undefined} target="_blank" rel="noreferrer" download={a.name}>
+      <FileText size={24} /><span className="att-t"><b>{a.name}</b><span>{fmtSize(a.size)}</span></span>
+    </a>
+  );
+}

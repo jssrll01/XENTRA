@@ -14,6 +14,8 @@ import Notifications from './pages/Notifications';
 import Search from './pages/Search';
 import Messages from './pages/Messages';
 import Chat from './pages/Chat';
+import Contacts from './pages/Contacts';
+import AddContact from './pages/AddContact';
 import AppShell from './components/AppShell';
 import { ProfileProvider } from './lib/profile';
 import { SummaryProvider } from './lib/summary';
@@ -47,6 +49,8 @@ export default function App() {
               <Route path="/search" element={<Search />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/messages/:id" element={<Chat />} />
+              <Route path="/contacts" element={<Contacts />} />
+              <Route path="/add/:code" element={<AddContact />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

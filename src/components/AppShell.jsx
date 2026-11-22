@@ -8,8 +8,9 @@ import { useAuth } from '../lib/auth';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
+import { pingPresence, getMyPresence } from '../lib/api';
 
-const EXTRA = { '/notifications': 'Activity', '/search': 'Search' };
+const EXTRA = { '/notifications': 'Activity', '/search': 'Search', '/settings': 'Settings' };
 
 export default function AppShell() {
   const { pathname } = useLocation();
@@ -19,10 +20,21 @@ export default function AppShell() {
   const { summary } = useSummary();
   const [menu, setMenu] = useState(false);
   const ref = useRef(null);
+  const [pres, setPres] = useState({ status: 'online', status_text: null });
   const title = (NAV.find((n) => pathname.startsWith(n.to)) || {}).label || EXTRA[pathname] || 'XENTRA';
   const unread = (summary && summary.notifications) || 0;
   const name = fullName(profile);
+  const plabel = pres.status === 'dnd' ? 'Do not disturb' : pres.status === 'invisible' ? 'Invisible' : 'Online';
 
+  useEffect(() => {
+    const load = () => { getMyPresence().then((r) => { if (r.ok) setPres(r.data); }); };
+    const ping = () => { if (document.visibilityState === 'visible') pingPresence(); };
+    load(); ping();
+    const t = setInterval(ping, 60000);
+    window.addEventListener('xentra-presence', load);
+    document.addEventListener('visibilitychange', ping);
+    return () => { clearInterval(t); window.removeEventListener('xentra-presence', load); document.removeEventListener('visibilitychange', ping); };
+  }, []);
   useEffect(() => { setMenu(false); }, [pathname]);
   useEffect(() => {
     const k = (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); nav('/search'); } };
@@ -49,9 +61,9 @@ export default function AppShell() {
           ))}
         </nav>
         <div className="side-user">
-          <Avatar name={name} url={profile.avatar_url} size={42} presence="online" />
-          <div className="who"><b>{name}</b><span className="status"><i />Online</span></div>
-          <button type="button" className="icon-btn" aria-label="Profile settings" onClick={() => nav('/profile')}><Settings size={18} /></button>
+          <Avatar name={name} url={profile.avatar_url} size={42} presence={pres.status === 'online' ? 'online' : undefined} />
+          <div className="who"><b>{name}</b><span className="status"><i />{pres.status_text || plabel}</span></div>
+          <button type="button" className="icon-btn" aria-label="Settings" onClick={() => nav('/settings')}><Settings size={18} /></button>
         </div>
       </aside>
 
@@ -67,12 +79,13 @@ export default function AppShell() {
           </button>
           <div className="menu-wrap" ref={ref}>
             <button type="button" className="avatar-btn" aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu" onClick={() => setMenu(!menu)}>
-              <Avatar name={name} url={profile.avatar_url} size={42} presence="online" /><ChevronDown size={16} />
+              <Avatar name={name} url={profile.avatar_url} size={42} presence={pres.status === 'online' ? 'online' : undefined} /><ChevronDown size={16} />
             </button>
             {menu ? (
               <div className="pop glass" role="menu">
                 <div className="pop-head"><b>{name}</b><span>{profile.email}</span></div>
                 <button type="button" role="menuitem" onClick={() => nav('/profile')}><User size={18} /> Profile</button>
+                <button type="button" role="menuitem" onClick={() => nav('/settings')}><Settings size={18} /> Settings</button>
                 <button type="button" role="menuitem" onClick={signOut}><LogOut size={18} /> Sign out</button>
               </div>
             ) : null}

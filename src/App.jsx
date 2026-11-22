@@ -19,6 +19,7 @@ import AddContact from './pages/AddContact';
 import GroupInfo from './pages/GroupInfo';
 import JoinGroup from './pages/JoinGroup';
 import Teams from './pages/Teams';
+import Settings from './pages/Settings';
 import Team from './pages/Team';
 import JoinTeam from './pages/JoinTeam';
 import AppShell from './components/AppShell';
@@ -50,6 +51,7 @@ export default function App() {
             <Route element={<RequireAuth><ProfileProvider><SummaryProvider><AppShell /></SummaryProvider></ProfileProvider></RequireAuth>}>
               <Route path="/home" element={<Home />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/search" element={<Search />} />
               <Route path="/messages" element={<Messages />} />

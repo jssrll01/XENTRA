@@ -8,9 +8,8 @@ import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { listNotifications, getAnnouncement, listMyTeams } from '../lib/api';
 import Avatar from '../components/ui/Avatar';
-import { greeting } from '../lib/format';
+import { greeting, ago } from '../lib/format';
 import RecentChats from '../components/RecentChats';
-import { ago } from '../lib/time';
 
 const TILES = [
   ['unread', 'Unread Messages', MessageCircle, '#3b82f6', 'blue'],

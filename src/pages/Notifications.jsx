@@ -4,7 +4,7 @@ import { Bell } from 'lucide-react';
 import EmptyState from '../components/ui/EmptyState';
 import { listNotifications, markNotificationsRead } from '../lib/api';
 import { useSummary } from '../lib/summary';
-import { ago } from '../lib/time';
+import { ago } from '../lib/format';
 
 export default function Notifications() {
   const nav = useNavigate();

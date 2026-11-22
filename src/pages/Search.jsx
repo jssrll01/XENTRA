@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, Clock, MessageCircle, Search as SearchIcon, UserPlus, Users } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
+import Skeleton from '../components/ui/Skeleton';
 import { useAuth } from '../lib/auth';
 import { searchPeople } from '../lib/search';
 import { startDirect, contactRelations, sendContactRequest } from '../lib/api';
@@ -63,7 +64,7 @@ export default function Search() {
       {err ? <div className="alert err">{err}</div> : null}
       <section className="glass card">
         <div className="card-head"><h2>People</h2></div>
-        {rows === null && busy ? <div className="empty pulse">Searching...</div>
+        {rows === null && busy ? <Skeleton rows={3} />
           : rows === null ? <EmptyState icon={SearchIcon} title="Search XENTRA" text="Type at least 2 characters to find people." />
           : rows.length === 0 ? <EmptyState icon={Users} title="No matches" text="Try a different name or username." />
           : (

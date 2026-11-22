@@ -8,6 +8,7 @@ import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { listNotifications, getAnnouncement, listMyTeams } from '../lib/api';
 import Avatar from '../components/ui/Avatar';
+import Skeleton from '../components/ui/Skeleton';
 import { greeting, ago } from '../lib/format';
 import RecentChats from '../components/RecentChats';
 
@@ -75,7 +76,7 @@ export default function Home() {
           return (
             <div className="glass tile" key={key}>
               <span className={'tile-ic tone-' + tone}><Icon size={22} /></span>
-              <div className="tile-n">{t ? t.value : '-'}</div>
+              {t ? <div className="tile-n">{t.value}</div> : <span className="sk sk-tile-n" />}
               <div className="tile-l">{label}</div>
               <Sparkline series={(t && t.series) || []} color={color} />
             </div>
@@ -88,6 +89,7 @@ export default function Home() {
       <section className="glass card">
         <div className="card-head"><h2><span className="sec-ic"><Layers size={18} /></span>My Teams</h2><Link className="see-all" to="/teams">See all <ArrowRight size={16} /></Link></div>
         {herr ? <div className="alert err with-action"><span>{herr}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => setHk(hk + 1)}><RefreshCw size={16} /> Retry</button></div> : null}
+        {!teams && !herr ? <Skeleton rows={2} /> : null}
         {teams && teams.length === 0 ? <EmptyState icon={Layers} title="No teams yet" text="Create or join a team to see it here." /> : null}
         {teams && teams.length > 0 ? (
           <div className="team-strip">
@@ -105,6 +107,7 @@ export default function Home() {
       <section className="glass card">
         <div className="card-head"><h2><span className="sec-ic"><Bell size={18} /></span>Recent Activity</h2><Link className="see-all" to="/notifications">See all <ArrowRight size={16} /></Link></div>
         {rerr ? <div className="alert err">{rerr}</div> : null}
+        {!recent && !rerr ? <Skeleton rows={2} /> : null}
         {recent && recent.length === 0 ? <EmptyState icon={Bell} title="No activity yet" text="Invitations, mentions and updates will appear here." /> : null}
         {recent && recent.length > 0 ? (
           <div className="rows">

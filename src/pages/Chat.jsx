@@ -15,6 +15,7 @@ import PinBar from '../components/PinBar';
 import ChatSearch from '../components/ChatSearch';
 import ForwardPicker from '../components/ForwardPicker';
 import GroupInfoButton from '../components/GroupInfoButton';
+import Skeleton from '../components/ui/Skeleton';
 import useNames from '../lib/useNames';
 import { getChannelHead } from '../lib/api';
 import LaterSheet from '../components/LaterSheet';
@@ -296,7 +297,7 @@ export default function Chat() {
         {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => { loadOther(); load(); }}><RefreshCw size={16} /> Retry</button></div> : null}
         {notice ? <div className="alert info">{notice}</div> : null}
         {more === true ? <button type="button" className="btn btn-secondary btn-sm more" onClick={earlier}>Load earlier messages</button> : null}
-        {!msgs && !err ? <div className="empty"><p>Loading...</p></div> : null}
+        {!msgs && !err ? <div className="sk-chat" aria-busy="true" aria-label="Loading"><span className="sk sk-bub" /><span className="sk sk-bub me" /><span className="sk sk-bub" /><span className="sk sk-bub me" /></div> : null}
         {msgs && msgs.length === 0 ? <div className="empty"><p>No messages yet. Say hello.</p></div> : null}
         {items}
       </div>

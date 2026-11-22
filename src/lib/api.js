@@ -134,3 +134,5 @@ export const getMyPresence = () => call('get_my_presence');
 export const getPresence = (ids) => call('get_presence', { p_ids: ids });
 export const listDevices = () => call('list_devices');
 export const removeDevice = (id) => call('remove_device', { p_id: id });
+export const savePushSubscription = (endpoint, p256dh, auth, ua) => call('save_push_subscription', { p_endpoint: endpoint, p_p256dh: p256dh, p_auth: auth, p_ua: ua || null });
+export const removePushSubscription = (endpoint) => call('remove_push_subscription', { p_endpoint: endpoint });

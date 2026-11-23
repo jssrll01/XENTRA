@@ -607,3 +607,21 @@ img { -webkit-user-drag: none; }
 .ai-back { align-self: flex-start; }
 .ai-hero { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
 .ai-fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 30; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 32px; border-radius: 999px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25); }
+.ai-logo { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 22%; background: #fff; border: 1px solid var(--line); color: #2563eb; overflow: hidden; }
+.ai-logo img { width: 70%; height: 70%; object-fit: contain; }
+.ai-hero { position: relative; overflow: hidden; padding-top: 88px; }
+.ai-cover { position: absolute; top: 0; left: 0; right: 0; height: 64px; background: linear-gradient(135deg, #1d4ed8, #38bdf8) center / cover; }
+.ai-hero .ai-logo { position: absolute; top: 28px; left: 50%; transform: translateX(-50%); width: 72px; height: 72px; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15); }
+.ai-hero { padding-top: 112px; }
+.ai-block { margin-top: 12px; }
+.ai-block p { margin: 4px 0 0; }
+.ai-facts { display: flex; flex-direction: column; }
+.ai-fact { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.ai-fact:last-child { border-bottom: 0; }
+.ai-fact span { font-size: 13px; color: #64748b; }
+.ai-fact small { color: #64748b; }
+.ai-cta { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; color: #fff; text-decoration: none; background: linear-gradient(135deg, #1d4ed8, #3b82f6 60%, #38bdf8); box-shadow: 0 8px 22px rgba(37, 99, 235, 0.28); }
+.ai-cta-ic { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 14px; background: rgba(255, 255, 255, 0.2); }
+.ai-cta-t { display: flex; flex-direction: column; flex: 1; }
+.ai-cta-t b { font-size: 16px; }
+.ai-cta-t span { font-size: 13px; opacity: 0.9; }

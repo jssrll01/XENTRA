@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, RefreshCw, Search as SearchIcon } from 'lucide-react';
-import Avatar from '../components/ui/Avatar';
+import AiLogo from '../components/AiLogo';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import { listAiDirectory } from '../lib/api';
@@ -34,7 +34,7 @@ export default function AiTools() {
           <div className="rows">
             {c.tools.map((x) => (
               <Link className="row" key={x.slug} to={'/ai/' + x.slug}>
-                <Avatar name={x.name} url={null} size={40} />
+                <AiLogo url={x.logo_url} size={40} />
                 <div className="row-main"><b>{x.name}</b><span>{x.tagline}</span></div>
                 <ChevronRight size={18} />
               </Link>

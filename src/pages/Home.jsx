@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Sparkles as AiSparkles, ChevronRight as AiChevron } from 'lucide-react';
 import { MessageCircle, Users, MailPlus, CalendarClock, RefreshCw, Search, Bell, ArrowRight, Layers, Megaphone } from 'lucide-react';
 import { BrandArt } from '../components/Logo';
 import Sparkline from '../components/ui/Sparkline';
@@ -58,7 +59,6 @@ export default function Home() {
       </section>
 
       <Link to="/search" className="search-bar"><Search size={20} /><span>Search people</span></Link>
-      <Link to="/ai" className="search-bar"><Search size={20} /><span>Explore AI tools</span></Link>
 
       {state === 'error' || state === 'notready' ? (
         <div className="alert err with-action"><span>Could not load your summary.</span><button type="button" className="btn btn-secondary btn-sm" onClick={reload}><RefreshCw size={16} /> Retry</button></div>
@@ -84,6 +84,12 @@ export default function Home() {
           );
         })}
       </section>
+
+      <Link to="/ai" className="ai-cta">
+        <span className="ai-cta-ic"><AiSparkles size={22} /></span>
+        <span className="ai-cta-t"><b>Explore AI tools</b><span>Discover and compare popular AI platforms</span></span>
+        <AiChevron size={20} />
+      </Link>
 
       <RecentChats />
 

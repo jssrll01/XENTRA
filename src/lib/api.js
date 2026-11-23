@@ -229,3 +229,5 @@ async function cachedCall(name, run) {
   }
   return r;
 }
+
+export const avatarCooldown = () => call('avatar_cooldown');

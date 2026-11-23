@@ -6,6 +6,7 @@ import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { updateProfile, setAvatar, checkUsername, getMyDetails, setMyDetails, usernameCooldown } from '../lib/api';
 import { uploadAvatar } from '../lib/cloudinary';
+import { avatarCooldown } from '../lib/api';
 import { fullName } from '../lib/format';
 import { PALETTE, PALETTE_KEYS } from '../lib/palette';
 
@@ -98,6 +99,8 @@ export default function Profile() {
     e.target.value = '';
     if (!file) return;
     setErr(''); setOk(false); setUp(true);
+    const cd = await avatarCooldown();
+    if (cd.ok && cd.data && cd.data.next_at && new Date(cd.data.next_at) > new Date()) { setUp(false); setErr('You can change your photo again on ' + new Date(cd.data.next_at).toLocaleDateString() + '.'); return; }
     const u = await uploadAvatar(file);
     if (!u.ok) { setUp(false); setErr(u.error); return; }
     const r = await setAvatar(u.data);

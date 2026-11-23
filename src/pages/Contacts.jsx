@@ -1,3 +1,4 @@
+import { pressProps } from '../lib/longpress';
 import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Skeleton from '../components/ui/Skeleton';
@@ -28,6 +29,12 @@ export default function Contacts() {
   const [menu, setMenu] = useState(null);
   const [sheet, setSheet] = useState(null);
   const [busy, setBusy] = useState('');
+  useEffect(() => {
+    if (!menu) return undefined;
+    const off = (e) => { if (e.target.closest && e.target.closest('.conv-acts')) return; setMenu(null); };
+    document.addEventListener('pointerdown', off);
+    return () => document.removeEventListener('pointerdown', off);
+  }, [menu]);
 
   const load = useCallback(async () => {
     const [c, l, r, m] = await Promise.all([listContacts(), listLabels(), listRequests(), listContactMeta()]);
@@ -100,12 +107,11 @@ export default function Contacts() {
               <div className="rows">
                 {shown.map((c) => (
                   <div className="conv" key={c.id}>
-                    <div className="row static">
+                    <div className="row static" {...pressProps(() => setMenu(c.id))}>
                       <Avatar name={fullName(c)} url={c.avatar_url} size={46} />
                       <div className="row-main"><b>{fullName(c)}{c.favorite ? <Star size={13} className="ci" /> : null}</b><span>@{c.username}{c.category ? ' - ' + c.category : ''}{c.labels.length ? ' - ' + c.labels.map((x) => x.name).join(', ') : ''}{c.mutual > 0 ? ' - ' + c.mutual + ' mutual' : ''}</span></div>
                     </div>
                     <button type="button" className="icon-btn" aria-label={'Message ' + fullName(c)} disabled={busy === c.id} onClick={() => message(c)}><MessageCircle size={20} /></button>
-                    <button type="button" className="icon-btn" aria-label="Contact options" aria-expanded={menu === c.id} onClick={() => setMenu(menu === c.id ? null : c.id)}><Ellipsis size={20} /></button>
                     {menu === c.id ? (
                       <div className="conv-acts">
                         <button type="button" onClick={() => act(() => setFavorite(c.id, !c.favorite))}><Star size={16} /> {c.favorite ? 'Remove favorite' : 'Favorite'}</button>

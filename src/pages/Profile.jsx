@@ -114,9 +114,11 @@ export default function Profile() {
         <div>
           <b>{fullName(profile) || 'Your profile'}{det.verified ? <BadgeCheck size={18} className="vbadge" aria-label="Verified" /> : null}</b>
           <span>{profile.username ? '@' + profile.username : 'Choose a username below'}</span>
-          <button type="button" className="btn btn-secondary btn-sm" disabled={up} onClick={() => fileRef.current && fileRef.current.click()}>
-            <Camera size={16} /> {up ? 'Uploading...' : 'Change photo'}
-          </button>
+          {!photoNext ? (
+            <button type="button" className="btn btn-secondary btn-sm" disabled={up} onClick={() => fileRef.current && fileRef.current.click()}>
+              <Camera size={16} /> {up ? 'Uploading...' : 'Change photo'}
+            </button>
+          ) : null}
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={pick} />
           {photoNext ? <Cd label="photo" iso={photoNext} onDone={loadExtra} /> : null}
         </div>

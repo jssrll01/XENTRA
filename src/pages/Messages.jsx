@@ -1,3 +1,5 @@
+import { pressProps } from '../lib/longpress';
+import GroupInvitesSheet from '../components/GroupInvitesSheet';
 import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +8,7 @@ import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
 import ConvRow from '../components/ConvRow';
-import { Trash2 as TrashIcon, MailOpen as UnreadIcon, Users as GroupIcon, Download as DownIcon } from 'lucide-react';
+import { Trash2 as TrashIcon, MailOpen as UnreadIcon, Users as GroupIcon, Download as DownIcon, Inbox as InboxIcon } from 'lucide-react';
 import PickSheet from '../components/PickSheet';
 import ExportSheet from '../components/ExportSheet';
 import { listConversations, setFlags, setMute, deleteConversation, startDirect, searchAllMessages, createGroup } from '../lib/api';
@@ -36,6 +38,13 @@ export default function Messages() {
   const [hits, setHits] = useState(null);
   const [herr, setHerr] = useState('');
   const [rt, setRt] = useState(0);
+  const [ginv, setGinv] = useState(false);
+  useEffect(() => {
+    if (!menu) return undefined;
+    const off = (e) => { if (e.target.closest && e.target.closest('.conv-acts')) return; setMenu(null); };
+    document.addEventListener('pointerdown', off);
+    return () => document.removeEventListener('pointerdown', off);
+  }, [menu]);
 
   const load = useCallback(async () => {
     const r = await listConversations();
@@ -121,6 +130,7 @@ export default function Messages() {
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
       {!rows && !err ? <Skeleton rows={3} /> : null}
       {groupOpen ? <PickSheet title="New group" label="Create" withName onSubmit={(ids, n, d) => createGroup(n, ids, d)} onClose={() => setGroupOpen(false)} onDone={(r) => { setGroupOpen(false); nav('/messages/' + r.data.id); }} /> : null}
+      {ginv ? <GroupInvitesSheet onClose={() => setGinv(false)} onJoined={(cid) => { setGinv(false); nav('/messages/' + cid); }} /> : null}
       {expFor ? <ExportSheet conv={expFor} onClose={() => setExpFor(null)} /> : null}
       {rows ? (
         <div className="msg-find">
@@ -135,6 +145,7 @@ export default function Messages() {
           <button type="button" role="tab" aria-selected={tab === 'chats'} className={tab === 'chats' ? 'on' : ''} onClick={() => setTab('chats')}>Chats</button>
           <button type="button" role="tab" aria-selected={tab === 'archived'} className={tab === 'archived' ? 'on' : ''} onClick={() => setTab('archived')}>{nArch ? 'Archived (' + nArch + ')' : 'Archived'}</button>
           <button type="button" role="tab" aria-selected={tab === 'unread'} className={tab === 'unread' ? 'on' : ''} onClick={() => setTab('unread')}><UnreadIcon size={15} /> Unread</button>
+          <button type="button" onClick={() => setGinv(true)}><InboxIcon size={15} /> Group invites</button>
         </div>
       ) : null}
       {rows && shown.length === 0 && !needle ? <EmptyState icon={MessageCircle} title={tab === 'unread' ? 'No unread chats' : tab === 'archived' ? 'No archived chats' : 'No conversations yet'} text={tab === 'unread' ? 'You are all caught up.' : tab === 'archived' ? 'Archived chats appear here.' : 'Tap New to message someone.'} /> : null}
@@ -142,9 +153,8 @@ export default function Messages() {
         <section className="glass card">
           <div className="rows">
             {shown.map((c) => (
-              <div className="conv" key={c.id}>
+              <div className="conv" key={c.id} {...pressProps(() => { setMuteFor(null); setMenu(c.id); })}>
                 <ConvRow c={c} meId={profile.id} />
-                <button type="button" className="icon-btn" aria-label="Chat options" aria-expanded={menu === c.id} onClick={() => { setMuteFor(null); setMenu(menu === c.id ? null : c.id); }}><Ellipsis size={20} /></button>
                 {menu === c.id ? (
                   <div className="conv-acts">
                     <button type="button" onClick={() => flag(c, { p_pinned: !c.pinned })}>{c.pinned ? <PinOff size={16} /> : <Pin size={16} />} {c.pinned ? 'Unpin' : 'Pin'}</button>

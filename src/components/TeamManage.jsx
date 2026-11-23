@@ -5,6 +5,8 @@ import { uploadAvatar } from '../lib/cloudinary';
 import { fullName } from '../lib/format';
 import TeamRulesLog from './TeamRulesLog';
 import TeamCategory from './TeamCategory';
+import TeamRoles from './TeamRoles';
+import InviteQr from './InviteQr';
 
 export default function TeamManage({ team, tick, onChanged }) {
   const file = useRef(null);
@@ -17,7 +19,7 @@ export default function TeamManage({ team, tick, onChanged }) {
   const [name, setName] = useState(team.name);
   const [desc, setDesc] = useState(team.description || '');
   const [cname, setCname] = useState('');
-  const link = team.invite_code ? window.location.origin + '/t/' + team.invite_code : '';
+  const link = team.invite_code ? window.location.origin + '/c/' + team.invite_code : '';
   const load = useCallback(async () => {
     const [a, b, c] = await Promise.all([listChannels(team.id), listJoinRequests(team.id), listBans(team.id)]);
     const bad = [a, b, c].find((x) => !x.ok);
@@ -76,6 +78,7 @@ export default function TeamManage({ team, tick, onChanged }) {
       <section className="glass card add-card">
         <h2>Invite link</h2>
         <span className="qr-code">{team.invite_enabled ? link : 'Link is off'}</span>
+          {team.invite_enabled && link ? <InviteQr link={link} /> : null}
         <span className="req-acts">
           {team.invite_enabled ? <button type="button" className="btn btn-secondary btn-sm" onClick={copy}><Copy size={16} /> Copy</button> : null}
           <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => { if (window.confirm('Make a new link? The old link stops working.')) run(resetTeamInvite(team.id), 'New link ready', true); }}><RefreshCw size={16} /> New link</button>
@@ -110,6 +113,7 @@ export default function TeamManage({ team, tick, onChanged }) {
         </section>
       ) : null}
       <TeamCategory team={team} />
+        <TeamRoles team={team} tick={tick} />
         <TeamRulesLog team={team} tick={tick} />
       {bans && bans.length > 0 ? (
         <section className="glass card">

@@ -188,3 +188,11 @@ export const setGroupPermissions = (id, p) => call('set_group_permissions', { p_
 export const getTeamCategory = (id) => call('get_team_category', { p_id: id });
 export const setTeamCategory = (id, category) => call('set_team_category', { p_id: id, p_category: category || null });
 export const editPost = (id, body) => call('edit_post', { p_id: id, p_body: body });
+
+export const listTeamRoles = (team) => call('list_team_roles', { p_team: team });
+export const saveTeamRole = (team, id, name, p) => call('save_team_role', { p_team: team, p_id: id || null, p_name: name || null, p_edit: p.edit_posts ?? null, p_pin: p.pin_posts ?? null, p_del: p.delete_messages ?? null });
+export const deleteTeamRole = (team, id) => call('delete_team_role', { p_team: team, p_id: id });
+export const assignTeamRole = (team, uid, role) => call('assign_team_role', { p_team: team, p_user: uid, p_role: role || null });
+export const listTeamMemberRoles = (team) => call('list_team_member_roles', { p_team: team });
+export const getChannelPerms = (cid) => call('get_channel_perms', { p_cid: cid });
+export const deleteChannelMessage = (id) => call('delete_channel_message', { p_id: id });

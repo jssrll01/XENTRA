@@ -4,7 +4,7 @@ import { ArrowLeft, Check, CheckCheck, Clock, Copy, CornerUpLeft, Forward, Penci
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
-import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, markRead, toggleReaction, togglePin, listPins, votePoll, retractVote, closePoll, sendAttachment } from '../lib/api';
+import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, deleteChannelMessage, getChannelPerms, markRead, toggleReaction, togglePin, listPins, votePoll, retractVote, closePoll, sendAttachment } from '../lib/api';
 import { fullName, timeAgo } from '../lib/format';
 import usePresence from '../lib/usePresence';
 import { clock, dayKey, dayLabel, fullTime, minKey } from '../lib/chatTime';
@@ -78,6 +78,14 @@ export default function Chat() {
   const name = other ? fullName(other) : 'Conversation';
   const names = useNames(id, !!(other && (other.is_group || other.is_channel)));
   const pr = usePresence(other && !other.is_group && !other.is_channel ? other.id : null);
+  const isCh = !!(other && other.is_channel);
+  const [cperm, setCperm] = useState(null);
+  useEffect(() => {
+    let live = true;
+    if (isCh) getChannelPerms(id).then((r) => { if (live) setCperm(r.ok && r.data && r.data.can_delete ? r.data : null); });
+    else setCperm(null);
+    return () => { live = false; };
+  }, [id, isCh]);
   const pline = !pr ? '' : pr.state === 'online' ? 'Online' : pr.state === 'dnd' ? 'Do not disturb' : pr.last_seen ? 'Last seen ' + timeAgo(pr.last_seen) : '';
 
   const loadOther = useCallback(async () => {
@@ -170,7 +178,7 @@ export default function Chat() {
   const del = async (m) => {
     setSel(null);
     if (!window.confirm('Delete this message?')) return;
-    const r = await deleteMessage(m.id);
+    const r = await (cperm ? deleteChannelMessage(m.id) : deleteMessage(m.id));
     if (r.ok) setMsgs((p) => p.map((x) => (x.id === m.id ? { ...x, deleted: true, body: '', reactions: [] } : x)));
     else setNotice(r.error);
   };
@@ -345,7 +353,7 @@ export default function Chat() {
             <button type="button" onClick={() => pin(m)}>{m.pinned ? <PinOff size={16} /> : <Pin size={16} />} {m.pinned ? 'Unpin' : 'Pin'}</button>
             <button type="button" onClick={() => { setLater({ tab: 'remind', message: m }); setSel(null); }}><Clock size={16} /> Remind me</button>
             {mine && !m.edited_at ? <button type="button" onClick={() => startEdit(m)}><Pencil size={16} /> Edit</button> : null}
-            {mine ? <button type="button" onClick={() => del(m)}><Trash2 size={16} /> Delete</button> : null}
+            {mine || cperm ? <button type="button" onClick={() => del(m)}><Trash2 size={16} /> Delete</button> : null}
           </div>
         ) : null}
       </div>

@@ -68,6 +68,7 @@ export default function App() {
               <Route path="/teams" element={<Teams />} />
               <Route path="/teams/:id" element={<Team />} />
               <Route path="/t/:code" element={<JoinTeam />} />
+              <Route path="/c/:code" element={<JoinTeam />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

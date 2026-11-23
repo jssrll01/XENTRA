@@ -7,6 +7,8 @@ import { timeAgo } from '../lib/format';
 
 export default function TeamHome({ team, tick }) {
   const staff = team.my_role !== 'member';
+  const canEdit = staff || !!(team.perms && team.perms.edit_posts);
+  const canPin = staff || !!(team.perms && team.perms.pin_posts);
   const [ch, setCh] = useState(null);
   const [posts, setPosts] = useState(null);
   const [err, setErr] = useState('');
@@ -73,8 +75,8 @@ export default function TeamHome({ team, tick }) {
                   ) : (
                     <div className="row-main"><b>{p.author_name}{p.pinned ? <Pin size={13} className="ci" /> : null}</b><span>{p.body}</span><span>{timeAgo(p.created_at)}</span></div>
                   )}
-                {staff ? <button type="button" className="icon-btn" aria-label="Edit post" disabled={busy} onClick={() => { setEd(p.id); setEdText(p.body); }}><Pencil size={18} /></button> : null}
-                  {staff ? <button type="button" className="icon-btn" aria-label={p.pinned ? 'Unpin post' : 'Pin post'} disabled={busy} onClick={() => run(pinPost(p.id, !p.pinned))}>{p.pinned ? <PinOff size={18} /> : <Pin size={18} />}</button> : null}
+                {canEdit ? <button type="button" className="icon-btn" aria-label="Edit post" disabled={busy} onClick={() => { setEd(p.id); setEdText(p.body); }}><Pencil size={18} /></button> : null}
+                  {canPin ? <button type="button" className="icon-btn" aria-label={p.pinned ? 'Unpin post' : 'Pin post'} disabled={busy} onClick={() => run(pinPost(p.id, !p.pinned))}>{p.pinned ? <PinOff size={18} /> : <Pin size={18} />}</button> : null}
                 {staff || p.author === team.me ? <button type="button" className="icon-btn" aria-label="Delete post" disabled={busy} onClick={() => { if (window.confirm('Delete this post?')) run(deletePost(p.id)); }}><Trash2 size={18} /></button> : null}
               </div>
             ))}

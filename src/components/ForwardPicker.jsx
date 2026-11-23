@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import Sheet from './Sheet';
 import Avatar from './ui/Avatar';
 import { forwardMessage, listConversations } from '../lib/api';
@@ -21,7 +22,7 @@ export default function ForwardPicker({ message, onClose, onDone }) {
     <Sheet title="Forward to" onClose={onClose}>
       <div className="quote-prev">{message.body.slice(0, 140)}</div>
       {err ? <div className="alert err">{err}</div> : null}
-      {!rows && !err ? <div className="empty"><p>Loading...</p></div> : null}
+      {!rows && !err ? <Skeleton rows={3} /> : null}
       {rows && rows.length === 0 ? <div className="empty"><p>No conversations yet.</p></div> : null}
       <div className="rows">
         {(rows || []).map((c) => (

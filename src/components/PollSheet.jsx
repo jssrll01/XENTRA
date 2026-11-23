@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Select from './ui/Select';
 import { Plus, X } from 'lucide-react';
 import Sheet from './Sheet';
 import { createPoll } from '../lib/api';
@@ -42,9 +43,9 @@ export default function PollSheet({ conversationId, context = 'chat', onClose, o
       {opts.length < 10 ? <button type="button" className="btn btn-secondary btn-sm" onClick={() => setOpts((p) => [...p, ''])}><Plus size={16} /> Add option</button> : null}
       <label className="po-chk"><input type="checkbox" checked={multi} onChange={(e) => setMulti(e.target.checked)} /> Allow multiple answers</label>
       <label className="po-chk"><input type="checkbox" checked={anon} onChange={(e) => setAnon(e.target.checked)} /> Anonymous voting (nobody sees who voted)</label>
-      <select className="po-sel" aria-label="Closing time" value={after} onChange={(e) => setAfter(e.target.value)}>
+      <Select className="po-sel" aria-label="Closing time" value={after} onChange={(e) => setAfter(e.target.value)}>
         {CLOSE_OPTIONS.map((c) => <option key={c.v} value={c.v}>{c.t}</option>)}
-      </select>
+      </Select>
       <button type="button" className="btn btn-primary btn-block" disabled={!ok} onClick={save}>{busy ? 'Sending...' : 'Send poll'}</button>
     </Sheet>
   );

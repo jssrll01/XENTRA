@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { pollVoters } from '../lib/api';
 
 const nm = (v) => ((v.first_name || '') + ' ' + (v.last_name || '')).trim() || v.username || 'Member';
@@ -60,7 +61,7 @@ export default function PollCard({ poll, onVote, onRetract, onClose }) {
       {open && !poll.anonymous ? (
         <div className="pollc-voters">
           {verr ? <div className="alert err">{verr} <button type="button" onClick={() => setTick((t) => t + 1)}>Retry</button></div> : null}
-          {!verr && voters === null ? <span>Loading...</span> : null}
+          {!verr && voters === null ? <Skeleton rows={2} /> : null}
           {!verr && voters ? poll.options.filter((o) => voters.some((v) => v.option_id === o.id)).map((o) => (
             <div key={o.id}>
               <b>{o.label}</b>

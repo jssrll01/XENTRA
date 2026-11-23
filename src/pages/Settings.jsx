@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Select from '../components/ui/Select';
 import { Link } from 'react-router-dom';
 import { Bell, ChevronRight, CircleDot, Database, Info, KeyRound, Lock, LogOut, Mail, Palette, Pencil, ShieldCheck, Smartphone, Trash2, User } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
@@ -171,9 +172,9 @@ export default function Settings() {
                 ))}
               </div>
               <input type="text" placeholder="Custom status" aria-label="Custom status" maxLength={80} value={text} onChange={(e) => setText(e.target.value)} />
-              <select aria-label="Clear status after" value={hrs} onChange={(e) => setHrs(e.target.value)}>
+              <Select aria-label="Clear status after" value={hrs} onChange={(e) => setHrs(e.target.value)}>
                 {HOURS.map((h) => <option key={h[0]} value={h[0]}>{h[1]}</option>)}
-              </select>
+              </Select>
               {expAt && text.trim() ? <span className="note">Clears {new Date(expAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span> : null}
               <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => saveStatus()}>Save status</button>
             </>

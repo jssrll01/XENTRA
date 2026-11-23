@@ -119,7 +119,7 @@ export default function Messages() {
         </section>
       ) : null}
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!rows && !err ? <div className="empty"><p>Loading...</p></div> : null}
+      {!rows && !err ? <Skeleton rows={3} /> : null}
       {groupOpen ? <PickSheet title="New group" label="Create" withName onSubmit={(ids, n, d) => createGroup(n, ids, d)} onClose={() => setGroupOpen(false)} onDone={(r) => { setGroupOpen(false); nav('/messages/' + r.data.id); }} /> : null}
       {expFor ? <ExportSheet conv={expFor} onClose={() => setExpFor(null)} /> : null}
       {rows ? (
@@ -169,7 +169,7 @@ export default function Messages() {
         <section className="glass card">
           <h3 className="sub-h">Messages</h3>
           {herr ? <div className="alert err with-action"><span>{herr}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => setRt((n) => n + 1)}><RefreshCw size={16} /> Retry</button></div> : null}
-          {!hits && !herr ? <div className="empty"><p>Searching...</p></div> : null}
+          {!hits && !herr ? <Skeleton rows={3} /> : null}
           {hits && hits.length === 0 ? <div className="empty"><p>No messages found.</p></div> : null}
           {hits && hits.length > 0 ? (
             <div className="rows">

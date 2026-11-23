@@ -490,3 +490,38 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .po-sel, .sx-lbl select, .tx-area, .np-sel { background: var(--surface); color: var(--ink); }
 .pf-pub .avatar { border-color: var(--surface); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+
+/* controls baseline (zero specificity: existing classes win) */
+:root[data-theme="dark"] { color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:where(button) { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:where(button:disabled) { cursor: not-allowed; opacity: .6; }
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea) { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; min-height: 42px; max-width: 100%; outline: 0; transition: border-color .15s, box-shadow .15s; }
+:where(input, textarea):where(:focus) { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .14); }
+:where(input, textarea)::placeholder { color: #94a3b8; }
+:where(input, textarea):where(:disabled) { opacity: .6; cursor: not-allowed; }
+:where(input, textarea)[aria-invalid="true"] { border-color: var(--red); }
+:where(input[type="checkbox"], input[type="radio"]) { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; margin: 0 8px 0 0; flex: none; display: inline-grid; place-content: center; vertical-align: middle; border: 1.5px solid #94a3b8; background: var(--surface); cursor: pointer; transition: background .15s, border-color .15s; }
+:where(input[type="checkbox"]) { border-radius: 6px; }
+:where(input[type="radio"]) { border-radius: 50%; }
+:where(input[type="checkbox"]:checked) { border-color: var(--blue); background: var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; }
+:where(input[type="radio"]:checked) { border-color: var(--blue); background: radial-gradient(circle, var(--blue) 0 42%, transparent 46%); }
+:where(input[type="checkbox"], input[type="radio"]):where(:disabled) { opacity: .5; cursor: not-allowed; }
+
+/* shared select (styled dropdown) */
+.sel { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 42px; max-width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.sel:hover:not(:disabled) { border-color: var(--blue); }
+.sel[aria-expanded="true"] { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .14); }
+.sel:disabled { opacity: .6; cursor: not-allowed; }
+.sel svg { flex: none; color: var(--muted); transition: transform .15s; }
+.sel[aria-expanded="true"] svg { transform: rotate(180deg); }
+.sel-val { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sx-lbl .sel, .sx-panel .sel, .po-sel.sel { width: 100%; }
+.sel-back { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; background: rgba(15, 23, 42, .45); }
+.sel-back.at { display: block; background: transparent; }
+.sel-list { position: fixed; left: 0; right: 0; bottom: 0; z-index: 201; margin: 0; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); list-style: none; max-height: 60dvh; overflow-y: auto; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 20px 20px 0 0; box-shadow: 0 -10px 30px rgba(15, 23, 42, .18); outline: 0; }
+.sel-list.at { right: auto; bottom: auto; max-height: 280px; padding: 6px; border-radius: 14px; box-shadow: 0 12px 32px rgba(15, 23, 42, .18); }
+.sel-opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 10px 12px; border-radius: 10px; cursor: pointer; }
+.sel-opt.act { background: rgba(37, 99, 235, .10); }
+.sel-opt.on { color: var(--blue); font-weight: 700; }
+.sel-opt[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Select from './ui/Select';
 import { Check, UserPlus, X } from 'lucide-react';
 import PickSheet from './PickSheet';
 import { getGroupRules, setGroupJoinRules, respondGroupJoinRequest, inviteToGroup } from '../lib/api';
@@ -46,9 +47,9 @@ export default function GroupRules({ id, mem, onChanged }) {
             <button type="button" className={'chip' + (r.approval ? ' on' : '')} aria-pressed={r.approval} onClick={() => save(!r.approval, days)}>Admin approval for link joins</button>
           </div>
           <label className="sx-lbl">New link expiry
-            <select value={days} onChange={(e) => save(r.approval, Number(e.target.value))}>
+            <Select value={days} onChange={(e) => save(r.approval, Number(e.target.value))}>
               {DAYS.map((d) => <option key={d[0]} value={d[0]}>{d[1]}</option>)}
-            </select>
+            </Select>
           </label>
           {r.expires_at ? <p className="note">Current link expires {new Date(r.expires_at).toLocaleDateString()}.</p> : null}
           {r.requests.length > 0 ? <h3 className="sub-h">Join requests</h3> : null}

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Select from './ui/Select';
 import Skeleton from './ui/Skeleton';
 import { Award, Ban, Crown, RefreshCw, UserMinus, Volume2, VolumeX } from 'lucide-react';
 import Avatar from './ui/Avatar';
@@ -77,16 +78,16 @@ export default function TeamMembers({ team, tick }) {
                   {cr[m.id] ? <span className="rel-tag">{cr[m.id].name}</span> : null}
                 <span className="req-acts">
                   {staff && m.role === 'member' && roles.length ? (
-                      <select aria-label={'Custom role for ' + fullName(m)} value={cr[m.id] ? cr[m.id].id : ''} disabled={busy} onChange={(e) => run(assignTeamRole(team.id, m.id, e.target.value || null))}>
+                      <Select aria-label={'Custom role for ' + fullName(m)} value={cr[m.id] ? cr[m.id].id : ''} disabled={busy} onChange={(e) => run(assignTeamRole(team.id, m.id, e.target.value || null))}>
                         <option value="">No role</option>
                         {roles.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
+                      </Select>
                     ) : null}
                     {staff ? <button type="button" className="icon-btn" aria-label={'Badge for ' + fullName(m)} disabled={busy} onClick={() => run(badge(m))}><Award size={18} /></button> : null}
                   {owner && !me ? (
-                    <select aria-label={'Role for ' + fullName(m)} value={m.role} disabled={busy} onChange={(e) => run(setTeamRole(team.id, m.id, e.target.value))}>
+                    <Select aria-label={'Role for ' + fullName(m)} value={m.role} disabled={busy} onChange={(e) => run(setTeamRole(team.id, m.id, e.target.value))}>
                       <option value="admin">admin</option><option value="moderator">moderator</option><option value="member">member</option>
-                    </select>
+                    </Select>
                   ) : null}
                   {owner && !me ? <button type="button" className="icon-btn" aria-label="Transfer ownership" disabled={busy} onClick={() => { if (window.confirm('Make ' + fullName(m) + ' the owner? You become an admin.')) run(transferTeamOwner(team.id, m.id)); }}><Crown size={18} /></button> : null}
                   {act ? <button type="button" className="icon-btn" aria-label={m.muted ? 'Unmute ' + fullName(m) : 'Mute ' + fullName(m)} disabled={busy} onClick={() => run(muteWith(m, !m.muted))}>{m.muted ? <Volume2 size={18} /> : <VolumeX size={18} />}</button> : null}

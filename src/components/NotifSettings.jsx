@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Select from './ui/Select';
 import Skeleton from './ui/Skeleton';
 import { getNotifSettings, setNotifMode, setAnnounceNotifs, listNotifTargets, setConvNotif } from '../lib/api';
 
@@ -61,9 +62,9 @@ export default function NotifSettings() {
           {rows.map((t) => (
             <div className="row static" key={t.conversation_id}>
               <div className="row-main"><b>{t.name}</b><span>{kindOf(t)}</span></div>
-              <select className="np-sel" aria-label={'Notifications for ' + t.name} value={t.mode || 'default'} disabled={busy} onChange={(e) => pickChat(t.conversation_id, e.target.value)}>
+              <Select className="np-sel" aria-label={'Notifications for ' + t.name} value={t.mode || 'default'} disabled={busy} onChange={(e) => pickChat(t.conversation_id, e.target.value)}>
                 {PER.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
+              </Select>
             </div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Skeleton from '../components/ui/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import { Ban, Ellipsis, MessageCircle, QrCode, RefreshCw, ScanLine, Search as SearchIcon, Star, Tag, UserMinus, UserPlus, Users, Inbox } from 'lucide-react';
 import GroupInvitesSheet from '../components/GroupInvitesSheet';
@@ -80,7 +81,7 @@ export default function Contacts() {
         </span>
       </div>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!rows && !err ? <div className="empty"><p>Loading...</p></div> : null}
+      {!rows && !err ? <Skeleton rows={3} /> : null}
       {rows ? (
         <div className="tabs" role="tablist">
           <button type="button" role="tab" aria-selected={tab === 'contacts'} className={tab === 'contacts' ? 'on' : ''} onClick={() => setTab('contacts')}>Contacts ({rows.length})</button>

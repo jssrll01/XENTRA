@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { History, LogIn, ShieldCheck, AtSign } from 'lucide-react';
 import { listMyActivity } from '../lib/api';
 
@@ -34,7 +35,7 @@ export default function ActivityPanel() {
   return (
     <>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}>Retry</button></div> : null}
-      {!rows && !err ? <p className="note">Loading...</p> : null}
+      {!rows && !err ? <Skeleton rows={3} /> : null}
       {rows && rows.length === 0 ? <p className="note"><History size={14} /> No activity yet. Sign-ins and privacy changes appear here.</p> : null}
       {rows && rows.length > 0 ? (
         <div className="rows">

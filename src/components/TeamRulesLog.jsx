@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Skeleton from './ui/Skeleton';
 import { RefreshCw } from 'lucide-react';
 import { getTeamRules, setTeamRules, listTeamLog } from '../lib/api';
 
@@ -37,7 +38,7 @@ export default function TeamRulesLog({ team, tick }) {
       </section>
       <section className="glass card">
         <div className="card-head"><h2>Moderation log</h2></div>
-        {!log && !err ? <p className="note">Loading...</p> : null}
+        {!log && !err ? <Skeleton rows={3} /> : null}
         {log && log.length === 0 ? <p className="note">No membership activity yet.</p> : null}
         <div className="rows">
           {(log || []).map((h) => (

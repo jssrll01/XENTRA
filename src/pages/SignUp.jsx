@@ -48,7 +48,7 @@ export default function SignUp() {
         {top ? <div className="alert err" role="alert">{top}</div> : null}
         <Field icon={User} label="Full Name" required placeholder="Enter your full name" value={f.name} onChange={set('name')} error={err.name} autoComplete="name" />
         <Field icon={AtSign} label="Username" required placeholder="Choose a username" value={f.username} onChange={set('username')} error={err.username} autoCapitalize="none" autoComplete="username" />
-        <Field icon={Mail} label="Email Address" required type="email" placeholder="you@gmail.com" value={f.email} onChange={set('email')} error={err.email} autoComplete="email" />
+        <Field icon={Mail} label="Email Address" required type="email" placeholder="you@example.com" value={f.email} onChange={set('email')} error={err.email} autoComplete="email" />
         <Field icon={Phone} label="Phone (optional)" type="tel" placeholder="Enter your phone number" value={f.phone} onChange={set('phone')} error={err.phone} autoComplete="tel" />
         <Field icon={Lock} label="Password" required type="password" placeholder="Create a strong password" value={f.password} onChange={set('password')} error={err.password} autoComplete="new-password" />
         <Field icon={Lock} label="Confirm Password" required type="password" placeholder="Confirm your password" value={f.confirm} onChange={set('confirm')} error={err.confirm} autoComplete="new-password" />

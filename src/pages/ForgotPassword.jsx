@@ -72,7 +72,7 @@ export default function ForgotPassword() {
       {top ? <div className="alert err" role="alert">{top}</div> : null}
       {step === 'email' ? (
         <form onSubmit={sendCode} noValidate>
-          <Field icon={Mail} label="Email Address" required type="email" placeholder="you@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} error={err.email} autoComplete="email" />
+          <Field icon={Mail} label="Email Address" required type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} error={err.email} autoComplete="email" />
           <Button type="submit" block loading={busy} icon={Send}>Send code</Button>
         </form>
       ) : (

@@ -3,6 +3,7 @@ import { Camera, Copy, RefreshCw } from 'lucide-react';
 import { listChannels, listJoinRequests, listBans, updateTeam, setTeamAvatar, resetTeamInvite, setTeamInviteEnabled, createChannel, updateChannel, archiveChannel, respondJoinRequest, unbanMember } from '../lib/api';
 import { uploadAvatar } from '../lib/cloudinary';
 import { fullName } from '../lib/format';
+import TeamRulesLog from './TeamRulesLog';
 
 export default function TeamManage({ team, tick, onChanged }) {
   const file = useRef(null);
@@ -107,6 +108,7 @@ export default function TeamManage({ team, tick, onChanged }) {
           ))}
         </section>
       ) : null}
+      <TeamRulesLog team={team} tick={tick} />
       {bans && bans.length > 0 ? (
         <section className="glass card">
           <div className="card-head"><h2>Banned</h2></div>

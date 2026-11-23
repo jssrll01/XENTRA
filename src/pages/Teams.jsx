@@ -5,7 +5,8 @@ import { Clock, Layers, Plus, RefreshCw, Search as SearchIcon } from 'lucide-rea
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import NewTeamSheet from '../components/NewTeamSheet';
-import { listMyTeams, discoverTeams, joinTeam } from '../lib/api';
+import { listMyTeams, discoverTeams } from '../lib/api';
+import { joinWithRules } from '../lib/rules';
 import { useSummary } from '../lib/summary';
 
 export default function Teams() {
@@ -35,7 +36,7 @@ export default function Teams() {
   }, [tab, loadFound, tick]);
   const join = async (t) => {
     setBusy(t.id);
-    const r = await joinTeam(t.id);
+    const r = await joinWithRules(t.id);
     setBusy('');
     if (!r.ok) { setErr(r.error); return; }
     if (r.data.status === 'joined') nav('/teams/' + t.id); else { setNote('Request sent to ' + t.name); loadFound(); }

@@ -3,7 +3,8 @@ import Skeleton from '../components/ui/Skeleton';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Layers, RefreshCw, UserPlus } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
-import { previewTeam, joinTeamByCode } from '../lib/api';
+import { previewTeam } from '../lib/api';
+import { joinCodeWithRules } from '../lib/rules';
 
 export default function JoinTeam() {
   const { code } = useParams();
@@ -18,7 +19,7 @@ export default function JoinTeam() {
   useEffect(() => { load(); }, [load]);
   const join = async () => {
     setBusy(true);
-    const r = await joinTeamByCode(code);
+    const r = await joinCodeWithRules(p.id, code);
     setBusy(false);
     if (r.ok) nav('/teams/' + r.data.id); else setErr(r.error);
   };

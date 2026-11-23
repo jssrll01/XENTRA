@@ -173,3 +173,12 @@ export const respondGroupInvite = (id, accept) => call('respond_group_invite', {
 export const setGroupJoinRules = (id, approval, days) => call('set_group_join_rules', { p_id: id, p_approval: approval, p_days: days });
 export const getGroupRules = (id) => call('get_group_rules', { p_id: id });
 export const respondGroupJoinRequest = (id, uid, accept) => call('respond_group_join_request', { p_id: id, p_user: uid, p_accept: accept });
+
+export const setTeamRules = (id, rules) => call('set_team_rules', { p_id: id, p_rules: rules || null });
+export const getTeamRules = (id) => call('get_team_rules', { p_id: id });
+export const acceptTeamRules = (id) => call('accept_team_rules', { p_id: id });
+export const awardTeamBadge = (id, uid, label) => call('award_team_badge', { p_id: id, p_user: uid, p_label: label });
+export const removeTeamBadge = (id) => call('remove_team_badge', { p_id: id });
+export const listTeamBadges = (team) => call('list_team_badges', { p_team: team });
+export const muteMemberFor = (team, uid, minutes) => call('mute_member_for', { p_team: team, p_user: uid, p_minutes: minutes });
+export const listTeamLog = (team) => call('list_team_log', { p_team: team });

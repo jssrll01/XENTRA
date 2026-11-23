@@ -23,7 +23,7 @@ export default function ExportSheet({ conv, onClose }) {
   };
   return (
     <Sheet title="Export chat" onClose={onClose}>
-      <p className="exp-note">{fullName(conv.other)}. Only messages you can see are included. Limit: 3 exports per hour.</p>
+      <p className="exp-note">{fullName(conv.other)}. Only messages you can see are included. Limit: 3 exports per hour. Messages are deleted after 7 days.</p>
       {err ? <div className="alert err">{err}</div> : null}
       <label className="po-chk"><input type="radio" name="exp-fmt" checked={fmt === 'text'} onChange={() => setFmt('text')} /> Plain text (.txt)</label>
       <label className="po-chk"><input type="radio" name="exp-fmt" checked={fmt === 'json'} onChange={() => setFmt('json')} /> JSON (.json)</label>

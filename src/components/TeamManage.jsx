@@ -4,6 +4,7 @@ import { listChannels, listJoinRequests, listBans, updateTeam, setTeamAvatar, re
 import { uploadAvatar } from '../lib/cloudinary';
 import { fullName } from '../lib/format';
 import TeamRulesLog from './TeamRulesLog';
+import TeamCategory from './TeamCategory';
 
 export default function TeamManage({ team, tick, onChanged }) {
   const file = useRef(null);
@@ -108,7 +109,8 @@ export default function TeamManage({ team, tick, onChanged }) {
           ))}
         </section>
       ) : null}
-      <TeamRulesLog team={team} tick={tick} />
+      <TeamCategory team={team} />
+        <TeamRulesLog team={team} tick={tick} />
       {bans && bans.length > 0 ? (
         <section className="glass card">
           <div className="card-head"><h2>Banned</h2></div>

@@ -459,3 +459,4 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .field-body textarea { width: 100%; border: 0; background: transparent; font: inherit; resize: vertical; outline: 0; }
 .chip.cap { text-transform: capitalize; }
 .tx-area { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font: inherit; resize: vertical; }
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }

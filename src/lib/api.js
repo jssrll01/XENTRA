@@ -103,7 +103,7 @@ export const updateTeam = (id, name, description, mode, discoverable) => call('u
 export const setTeamAvatar = (id, url) => call('set_team_avatar', { p_id: id, p_url: url });
 export const getTeam = (id) => call('get_team', { p_id: id });
 export const listMyTeams = () => call('list_my_teams');
-export const discoverTeams = (q) => call('discover_teams', { p_q: q || null });
+export const discoverTeams = (q, category, size) => call('discover_teams', { p_q: q || null, p_category: category || null, p_size: size || null });
 export const previewTeam = (code) => call('preview_team', { p_code: code });
 export const joinTeam = (id) => call('join_team', { p_id: id });
 export const joinTeamByCode = (code) => call('join_team_by_code', { p_code: code });
@@ -184,3 +184,7 @@ export const muteMemberFor = (team, uid, minutes) => call('mute_member_for', { p
 export const listTeamLog = (team) => call('list_team_log', { p_team: team });
 
 export const setGroupPermissions = (id, p) => call('set_group_permissions', { p_id: id, p_send: p.send ?? null, p_edit_info: p.edit_info ?? null, p_add_members: p.add_members ?? null, p_pin: p.pin ?? null });
+
+export const getTeamCategory = (id) => call('get_team_category', { p_id: id });
+export const setTeamCategory = (id, category) => call('set_team_category', { p_id: id, p_category: category || null });
+export const editPost = (id, body) => call('edit_post', { p_id: id, p_body: body });

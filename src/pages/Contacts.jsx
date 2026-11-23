@@ -2,19 +2,15 @@ import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Skeleton from '../components/ui/Skeleton';
 import { useNavigate } from 'react-router-dom';
-import { Ban, Ellipsis, MessageCircle, QrCode, RefreshCw, ScanLine, Search as SearchIcon, Star, Tag, UserMinus, UserPlus, Users, Inbox } from 'lucide-react';
-import GroupInvitesSheet from '../components/GroupInvitesSheet';
-import InviteSheet from '../components/InviteSheet';
+import { Ban, Ellipsis, MessageCircle, RefreshCw, Search as SearchIcon, Star, Tag, UserMinus, Users } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
+import Select from '../components/ui/Select';
 import EmptyState from '../components/ui/EmptyState';
-import CodeSheet from '../components/CodeSheet';
-import ScanSheet from '../components/ScanSheet';
 import LabelSheet from '../components/LabelSheet';
 import MutualSheet from '../components/MutualSheet';
-import PickSheet from '../components/PickSheet';
 import RequestsPane from '../components/RequestsPane';
 import BlockedPane from '../components/BlockedPane';
-import { listContactMeta, listContacts, listLabels, listRequests, startDirect, setFavorite, removeContact, blockUser, createGroup } from '../lib/api';
+import { listContactMeta, listContacts, listLabels, listRequests, startDirect, setFavorite, removeContact, blockUser } from '../lib/api';
 import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
 
@@ -55,7 +51,7 @@ export default function Contacts() {
     setBusy('');
     if (r.ok) nav('/messages/' + r.data.id); else setErr(r.error);
   };
-  const cur = lab !== 'all' && lab !== 'fav' && !labels.some((l) => l.id === lab) ? 'all' : lab;
+  const cur = lab !== 'all' && lab !== 'fav' && !labels.some((l) => String(l.id) === String(lab)) ? 'all' : lab;
   const cats = useMemo(() => {
     const s = new Set(['family', 'work', 'friends']);
     (rows || []).forEach((c) => { if (c.category) s.add(c.category); });
@@ -73,13 +69,6 @@ export default function Contacts() {
     <>
       <div className="page-head">
         <h2>Contacts</h2>
-        <span className="req-acts">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'invite' })}><UserPlus size={16} /> Invite</button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'ginv' })}><Inbox size={16} /> Groups</button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'group' })}><Users size={16} /> Group</button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'scan' })}><ScanLine size={16} /> Scan</button>
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setSheet({ t: 'code' })}><QrCode size={16} /> My code</button>
-        </span>
       </div>
       {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
       {!rows && !err ? <Skeleton rows={3} /> : null}
@@ -93,14 +82,16 @@ export default function Contacts() {
       {rows && tab === 'contacts' ? (
         <>
           <label className="chat-find"><SearchIcon size={18} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search contacts" aria-label="Search contacts" /></label>
-          <div className="chips">
-            <button type="button" className={'chip' + (cur === 'all' ? ' on' : '')} onClick={() => setLab('all')}>All</button>
-            <button type="button" className={'chip' + (cur === 'fav' ? ' on' : '')} onClick={() => setLab('fav')}><Star size={14} /> Favorites</button>
-            {labels.map((l) => <button type="button" key={l.id} className={'chip' + (cur === l.id ? ' on' : '')} onClick={() => setLab(l.id)}>{l.name} ({l.count})</button>)}
-            <button type="button" className="chip" onClick={() => setSheet({ t: 'labels', c: null })}><Tag size={14} /> Labels</button>
-          </div>
-          <div className="chips">
-            {['all'].concat(cats).map((k) => <button type="button" key={k} className={'chip cap' + (catCur === k ? ' on' : '')} aria-pressed={catCur === k} onClick={() => setCat(k)}>{k === 'all' ? 'Any category' : k}</button>)}
+          <div className="filter-bar">
+            <Select aria-label="Filter contacts" value={String(cur)} onChange={(e) => setLab(e.target.value)}>
+              <option value="all">All contacts</option>
+              <option value="fav">Favorites</option>
+              {labels.map((l) => <option key={l.id} value={String(l.id)}>{l.name} ({l.count})</option>)}
+            </Select>
+            <Select aria-label="Category" value={catCur} onChange={(e) => setCat(e.target.value)}>
+              {['all'].concat(cats).map((k) => <option key={k} value={k}>{k === 'all' ? 'Any category' : k.charAt(0).toUpperCase() + k.slice(1)}</option>)}
+            </Select>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'labels', c: null })}><Tag size={14} /> Manage labels</button>
           </div>
           {rows.length === 0 ? <EmptyState icon={Users} title="No contacts yet" text="Search people, or share your code, to add contacts." /> : null}
           {rows.length > 0 && shown.length === 0 ? <EmptyState icon={SearchIcon} title="No matches" text="Try a different search or filter." /> : null}
@@ -133,12 +124,7 @@ export default function Contacts() {
       ) : null}
       {rows && tab === 'requests' ? <RequestsPane onChanged={() => { load(); reloadSummary(); }} /> : null}
       {rows && tab === 'blocked' ? <BlockedPane onChanged={load} /> : null}
-      {sheet && sheet.t === 'code' ? <CodeSheet onClose={() => setSheet(null)} /> : null}
-      {sheet && sheet.t === 'scan' ? <ScanSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'labels' ? <LabelSheet contact={sheet.c} onClose={() => setSheet(null)} onChanged={load} /> : null}
-      {sheet && sheet.t === 'group' ? <PickSheet title="New group" label="Create" withName onSubmit={(ids, n, d) => createGroup(n, ids, d)} onClose={() => setSheet(null)} onDone={(r) => { setSheet(null); nav('/messages/' + r.data.id); }} /> : null}
-      {sheet && sheet.t === 'invite' ? <InviteSheet onClose={() => setSheet(null)} /> : null}
-      {sheet && sheet.t === 'ginv' ? <GroupInvitesSheet onClose={() => setSheet(null)} onJoined={(cid) => { setSheet(null); nav('/messages/' + cid); }} /> : null}
       {sheet && sheet.t === 'mutual' ? <MutualSheet contact={sheet.c} onClose={() => setSheet(null)} /> : null}
     </>
   );

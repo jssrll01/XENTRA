@@ -8,7 +8,6 @@ import NewTeamSheet from '../components/NewTeamSheet';
 import { listMyTeams, discoverTeams } from '../lib/api';
 import { joinWithRules } from '../lib/rules';
 import { useSummary } from '../lib/summary';
-import { CATEGORIES, SIZES } from '../lib/teamCategories';
 
 export default function Teams() {
   const nav = useNavigate();
@@ -17,8 +16,6 @@ export default function Teams() {
   const [mine, setMine] = useState(null);
   const [found, setFound] = useState(null);
   const [q, setQ] = useState('');
-  const [cat, setCat] = useState('');
-  const [size, setSize] = useState('');
   const [err, setErr] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState('');
@@ -28,9 +25,9 @@ export default function Teams() {
     if (r.ok) { setMine(r.data || []); setErr(''); } else setErr(r.error);
   }, []);
   const loadFound = useCallback(async () => {
-    const r = await discoverTeams(q, cat, size);
+    const r = await discoverTeams(q);
     if (r.ok) { setFound(r.data || []); setErr(''); } else setErr(r.error);
-  }, [q, cat, size]);
+  }, [q]);
   useEffect(() => { loadMine(); }, [loadMine, tick]);
   useEffect(() => {
     if (tab !== 'find') return undefined;
@@ -75,14 +72,6 @@ export default function Teams() {
       ) : (
         <>
           <label className="chat-find"><SearchIcon size={18} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search teams" aria-label="Search teams" /></label>
-          <div className="filter-row" role="group" aria-label="Category">
-              <button type="button" className={'chip' + (cat === '' ? ' on' : '')} onClick={() => setCat('')}>All</button>
-              {CATEGORIES.map(([k, l]) => <button type="button" key={k} className={'chip' + (cat === k ? ' on' : '')} onClick={() => setCat(cat === k ? '' : k)}>{l}</button>)}
-            </div>
-            <div className="filter-row" role="group" aria-label="Size">
-              <button type="button" className={'chip' + (size === '' ? ' on' : '')} onClick={() => setSize('')}>Any size</button>
-              {SIZES.map(([k, l]) => <button type="button" key={k} className={'chip' + (size === k ? ' on' : '')} onClick={() => setSize(size === k ? '' : k)}>{l}</button>)}
-            </div>
             {!found && !err ? <Skeleton /> : null}
           {found && found.length === 0 ? <EmptyState icon={SearchIcon} title="No teams found" text="Try a different search." /> : null}
           {found && found.length > 0 ? (

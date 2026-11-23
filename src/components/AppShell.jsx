@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react';
+import { Bell, ChevronDown, Copy, Inbox, LogOut, QrCode, ScanLine, Search, Settings, User, UserPlus } from 'lucide-react';
 import Logo from './Logo';
 import Avatar from './ui/Avatar';
 import { NAV } from '../nav';
@@ -10,6 +10,10 @@ import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
 import { pingPresence, getMyPresence, logSignIn } from '../lib/api';
 import CommandPalette from './CommandPalette';
+import InviteSheet from './InviteSheet';
+import GroupInvitesSheet from './GroupInvitesSheet';
+import CodeSheet from './CodeSheet';
+import ScanSheet from './ScanSheet';
 
 const EXTRA = { '/notifications': 'Activity', '/search': 'Search', '/settings': 'Settings' };
 
@@ -21,12 +25,22 @@ export default function AppShell() {
   const { summary } = useSummary();
   const [menu, setMenu] = useState(false);
   const [pal, setPal] = useState(false);
+  const [sheet, setSheet] = useState(null);
+  const [copied, setCopied] = useState('');
   const um = Number(summary && summary.unread && summary.unread.value) || 0;
   const ref = useRef(null);
   const [pres, setPres] = useState({ status: 'online', status_text: null });
   const title = (NAV.find((n) => pathname.startsWith(n.to)) || {}).label || EXTRA[pathname] || 'XENTRA';
   const unread = (summary && summary.notifications) || 0;
   const name = fullName(profile);
+  const openSheet = (t) => { setMenu(false); setSheet({ t }); };
+  const copyCode = async () => {
+    setMenu(false);
+    let msg = 'Profile code copied';
+    try { await navigator.clipboard.writeText(window.location.origin + '/u/' + profile.username); } catch (x) { msg = 'Could not copy'; }
+    setCopied(msg);
+    setTimeout(() => setCopied(''), 2200);
+  };
   const plabel = pres.status === 'dnd' ? 'Do not disturb' : pres.status === 'invisible' ? 'Invisible' : 'Online';
 
   useEffect(() => {
@@ -57,6 +71,11 @@ export default function AppShell() {
   return (
     <div className="app">
       {pal ? <CommandPalette uid={profile.id} onClose={() => setPal(false)} /> : null}
+      {sheet && sheet.t === 'invite' ? <InviteSheet onClose={() => setSheet(null)} /> : null}
+      {sheet && sheet.t === 'ginv' ? <GroupInvitesSheet onClose={() => setSheet(null)} onJoined={(cid) => { setSheet(null); nav('/messages/' + cid); }} /> : null}
+      {sheet && sheet.t === 'scan' ? <ScanSheet onClose={() => setSheet(null)} /> : null}
+      {sheet && sheet.t === 'code' ? <CodeSheet onClose={() => setSheet(null)} /> : null}
+      {copied ? <div className="toast" role="status">{copied}</div> : null}
       <aside className="side" aria-label="Sidebar">
         <Logo size={40} />
         <button type="button" className="side-search" onClick={() => setPal(true)}><Search size={18} /><span>Search people</span><kbd>Ctrl K</kbd></button>
@@ -91,6 +110,11 @@ export default function AppShell() {
                 <div className="pop-head"><b>{name}</b><span>{profile.email}</span></div>
                 <button type="button" role="menuitem" onClick={() => nav('/profile')}><User size={18} /> Profile</button>
                 <button type="button" role="menuitem" onClick={() => nav('/settings')}><Settings size={18} /> Settings</button>
+                {profile.username ? <button type="button" role="menuitem" onClick={copyCode}><Copy size={18} /> Copy profile code</button> : null}
+                <button type="button" role="menuitem" onClick={() => openSheet('invite')}><UserPlus size={18} /> Invite</button>
+                <button type="button" role="menuitem" onClick={() => openSheet('ginv')}><Inbox size={18} /> Group invites</button>
+                <button type="button" role="menuitem" onClick={() => openSheet('scan')}><ScanLine size={18} /> Scan</button>
+                <button type="button" role="menuitem" onClick={() => openSheet('code')}><QrCode size={18} /> My code</button>
                 <button type="button" role="menuitem" onClick={signOut}><LogOut size={18} /> Sign out</button>
               </div>
             ) : null}

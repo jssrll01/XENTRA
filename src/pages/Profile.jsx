@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AtSign, BadgeCheck, Camera, Copy, Mail, Phone, User } from 'lucide-react';
+import { AtSign, BadgeCheck, Camera, Mail, Phone, User } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { updateProfile, setAvatar, checkUsername, getMyDetails, setMyDetails, usernameCooldown } from '../lib/api';
@@ -19,15 +19,28 @@ function Item({ icon: Icon, label, required, wide, ...rest }) {
   );
 }
 
+function Cd({ label, iso, onDone }) {
+  const [now, setNow] = useState(Date.now());
+  const fired = useRef(false);
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const left = Math.floor((new Date(iso).getTime() - now) / 1000);
+  useEffect(() => { if (left <= 0 && !fired.current) { fired.current = true; onDone(); } }, [left, onDone]);
+  if (left <= 0) return null;
+  const d = Math.floor(left / 86400);
+  const h = Math.floor((left % 86400) / 3600);
+  const m = Math.floor((left % 3600) / 60);
+  return <p className="note">You can change your {label} again in {d > 0 ? d + 'd ' : ''}{h}h {m}m {left % 60}s.</p>;
+}
+
 const fromProfile = (p) => ({ first: p.first_name || '', last: p.last_name || '', username: p.username || '', phone: p.phone || '' });
 const UN_MSG = { check: 'Checking...', ok: 'Username is available.', taken: 'That username is taken.', bad: '3 to 20 characters: letters, numbers or underscore.', fail: 'Could not check the username. Try again.' };
-const day = (iso) => new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 
 export default function Profile() {
   const { profile, reload } = useProfile();
   const [f, setF] = useState(fromProfile(profile));
   const [det, setDet] = useState({ bio: '', cover: '', accent: '', verified: false });
   const [cool, setCool] = useState(null);
+  const [photoNext, setPhotoNext] = useState('');
   const [derr, setDerr] = useState('');
   const [err, setErr] = useState('');
   const [ok, setOk] = useState(false);
@@ -38,11 +51,12 @@ export default function Profile() {
   const fileRef = useRef(null);
 
   const loadExtra = useCallback(async () => {
-    const [d, c] = await Promise.all([getMyDetails(), usernameCooldown()]);
+    const [d, c, a] = await Promise.all([getMyDetails(), usernameCooldown(), avatarCooldown()]);
     if (!d.ok || !c.ok) { setDerr(d.ok ? c.error : d.error); return; }
     setDerr('');
     setDet({ bio: d.data.bio || '', cover: d.data.cover || '', accent: d.data.accent || '', verified: Boolean(d.data.verified) });
     setCool(c.data);
+    setPhotoNext(a.ok && a.data && a.data.next_at && new Date(a.data.next_at) > new Date() ? a.data.next_at : '');
   }, []);
   useEffect(() => { loadExtra(); }, [loadExtra]);
 
@@ -90,11 +104,7 @@ export default function Profile() {
     setUp(false);
     if (!r.ok) { setErr(r.error); return; }
     await reload();
-  };
-
-  const copyLink = async () => {
-    setErr(''); setOk(false);
-    try { await navigator.clipboard.writeText(window.location.origin + '/u/' + profile.username); setNote('Profile link copied.'); } catch (x) { setErr('Could not copy the link.'); }
+    await loadExtra();
   };
 
   return (
@@ -103,11 +113,12 @@ export default function Profile() {
         <Avatar name={fullName(profile)} url={profile.avatar_url} size={72} />
         <div>
           <b>{fullName(profile) || 'Your profile'}{det.verified ? <BadgeCheck size={18} className="vbadge" aria-label="Verified" /> : null}</b>
-          <span>{profile.username ? '@' + profile.username : 'Choose a username below'}{profile.username ? <button type="button" className="icon-btn" aria-label="Copy profile link" onClick={copyLink}><Copy size={16} /></button> : null}</span>
+          <span>{profile.username ? '@' + profile.username : 'Choose a username below'}</span>
           <button type="button" className="btn btn-secondary btn-sm" disabled={up} onClick={() => fileRef.current && fileRef.current.click()}>
             <Camera size={16} /> {up ? 'Uploading...' : 'Change photo'}
           </button>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={pick} />
+          {photoNext ? <Cd label="photo" iso={photoNext} onDone={loadExtra} /> : null}
         </div>
       </section>
 
@@ -129,7 +140,7 @@ export default function Profile() {
           </div>
         </div>
         <p className="note">{det.bio.length}/160</p>
-        {locked ? <p className="note" role="status">You can change your username again on {day(cool.next_change_at)}.</p> : null}
+        {locked ? <Cd label="username" iso={cool.next_change_at} onDone={loadExtra} /> : null}
         {!locked && UN_MSG[un] ? <p className="note" role="status">{UN_MSG[un]}</p> : null}
         {err ? <div className="alert err">{err}</div> : null}
         {ok ? <div className="alert ok">Profile saved.</div> : null}

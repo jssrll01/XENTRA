@@ -28,7 +28,6 @@ export default function Messages() {
   const [serr, setSerr] = useState('');
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState('chats');
-  const [unreadOnly, setUnreadOnly] = useState(false);
   const [muteFor, setMuteFor] = useState(null);
   const [groupOpen, setGroupOpen] = useState(false);
   const [expFor, setExpFor] = useState(null);
@@ -89,7 +88,7 @@ export default function Messages() {
     if (r.ok) load(); else setErr(r.error);
   };
   const needle = cq.trim().toLowerCase();
-  const shown = (rows || []).filter((c) => (needle ? fullName(c.other).toLowerCase().indexOf(needle) >= 0 : (tab === 'archived') === c.archived && (!unreadOnly || c.unread > 0)));
+  const shown = (rows || []).filter((c) => (needle ? fullName(c.other).toLowerCase().indexOf(needle) >= 0 : (tab === 'archived' ? c.archived : !c.archived && (tab !== 'unread' || c.unread > 0))));
   const nArch = (rows || []).filter((c) => c.archived).length;
   const searching = q.trim().length >= 2;
 
@@ -135,10 +134,10 @@ export default function Messages() {
         <div className="tabs" role="tablist">
           <button type="button" role="tab" aria-selected={tab === 'chats'} className={tab === 'chats' ? 'on' : ''} onClick={() => setTab('chats')}>Chats</button>
           <button type="button" role="tab" aria-selected={tab === 'archived'} className={tab === 'archived' ? 'on' : ''} onClick={() => setTab('archived')}>{nArch ? 'Archived (' + nArch + ')' : 'Archived'}</button>
-          <button type="button" aria-pressed={unreadOnly} className={unreadOnly ? 'on' : ''} onClick={() => setUnreadOnly((v) => !v)}><UnreadIcon size={15} /> Unread</button>
+          <button type="button" role="tab" aria-selected={tab === 'unread'} className={tab === 'unread' ? 'on' : ''} onClick={() => setTab('unread')}><UnreadIcon size={15} /> Unread</button>
         </div>
       ) : null}
-      {rows && shown.length === 0 && !needle ? <EmptyState icon={MessageCircle} title={unreadOnly ? 'No unread chats' : tab === 'archived' ? 'No archived chats' : 'No conversations yet'} text={unreadOnly ? 'You are all caught up.' : tab === 'archived' ? 'Archived chats appear here.' : 'Tap New to message someone.'} /> : null}
+      {rows && shown.length === 0 && !needle ? <EmptyState icon={MessageCircle} title={tab === 'unread' ? 'No unread chats' : tab === 'archived' ? 'No archived chats' : 'No conversations yet'} text={tab === 'unread' ? 'You are all caught up.' : tab === 'archived' ? 'Archived chats appear here.' : 'Tap New to message someone.'} /> : null}
       {shown.length > 0 ? (
         <section className="glass card">
           <div className="rows">

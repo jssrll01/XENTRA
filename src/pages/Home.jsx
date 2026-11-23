@@ -58,6 +58,7 @@ export default function Home() {
       </section>
 
       <Link to="/search" className="search-bar"><Search size={20} /><span>Search people</span></Link>
+      <Link to="/ai" className="search-bar"><Search size={20} /><span>Explore AI tools</span></Link>
 
       {state === 'error' || state === 'notready' ? (
         <div className="alert err with-action"><span>Could not load your summary.</span><button type="button" className="btn btn-secondary btn-sm" onClick={reload}><RefreshCw size={16} /> Retry</button></div>

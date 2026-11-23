@@ -23,6 +23,8 @@ import GroupInfo from './pages/GroupInfo';
 import JoinGroup from './pages/JoinGroup';
 import Teams from './pages/Teams';
 import Settings from './pages/Settings';
+import AiTools from './pages/AiTools';
+import AiTool from './pages/AiTool';
 import Team from './pages/Team';
 import JoinTeam from './pages/JoinTeam';
 import AppShell from './components/AppShell';
@@ -60,6 +62,7 @@ export default function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/search" element={<Search />} />
+              <Route path="/ai" element={<AiTools />} />
               <Route path="/u/:username" element={<PublicProfile />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/messages/:id" element={<Chat />} />
@@ -72,6 +75,7 @@ export default function App() {
               <Route path="/t/:code" element={<JoinTeam />} />
               <Route path="/c/:code" element={<JoinTeam />} />
             </Route>
+            <Route path="/ai/:slug" element={<RequireAuth><AiTool /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

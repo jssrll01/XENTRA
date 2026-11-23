@@ -228,3 +228,6 @@ async function cachedCall(name, run) {
 }
 
 export const avatarCooldown = () => call('avatar_cooldown');
+
+export const listAiDirectory = () => call('list_ai_directory');
+export const getAiTool = (slug) => call('get_ai_tool', { p_slug: slug });

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Bell, RefreshCw, ShieldAlert } from 'lucide-react';
 import { Splash } from './Guards';
-import { pushSupported, pushPermission, enablePush, ensureSubscribed } from '../lib/push';
+import { pushSupported, pushPermission, enablePush, ensureSubscribed, currentSub } from '../lib/push';
 
 export default function PushGate({ children }) {
   const [state, setState] = useState('checking');
@@ -13,6 +13,8 @@ export default function PushGate({ children }) {
     const p = pushPermission();
     if (p === 'denied') { setState('blocked'); return; }
     if (p !== 'granted') { setState('ask'); return; }
+    const have = await currentSub().catch(() => null);
+    if (have) { setErr(''); setState('ready'); ensureSubscribed(); return; }
     const r = await ensureSubscribed();
     if (r.ok) { setErr(''); setState('ready'); } else { setErr(r.error); setState('error'); }
   }, []);

@@ -474,3 +474,15 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .pg-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:0;border-radius:12px;background:#2563eb;color:#fff;font:inherit;font-weight:600;cursor:pointer}
 .pg-btn:disabled{opacity:.6;cursor:default}
 .pg-card .pg-err{color:#b91c1c;font-size:14px}
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [role="tab"]:focus-visible, [role="menuitem"]:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+:root[data-theme="dark"] .pg-wrap{background:#0b1220;color:#e5e7eb}
+:root[data-theme="dark"] .pg-card p,:root[data-theme="dark"] .pg-steps{color:#94a3b8}
+:root[data-theme="dark"] .pg-ic{background:#1e3a8a;color:#bfdbfe}
+:root[data-theme="dark"] .pg-card .pg-err{color:#fca5a5}
+@media (prefers-color-scheme: dark){
+:root:not([data-theme="light"]) .pg-wrap{background:#0b1220;color:#e5e7eb}
+:root:not([data-theme="light"]) .pg-card p,:root:not([data-theme="light"]) .pg-steps{color:#94a3b8}
+:root:not([data-theme="light"]) .pg-ic{background:#1e3a8a;color:#bfdbfe}
+:root:not([data-theme="light"]) .pg-card .pg-err{color:#fca5a5}
+}

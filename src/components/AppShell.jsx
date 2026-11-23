@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, ChevronDown, Share2, LogOut, QrCode, ScanLine, Search, Settings, User, UserPlus } from 'lucide-react';
+import { Bell, ChevronDown, Share2, LogOut, QrCode, ScanLine, Search, Settings, User } from 'lucide-react';
 import Logo from './Logo';
 import Avatar from './ui/Avatar';
 import { NAV } from '../nav';
@@ -10,7 +10,6 @@ import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
 import { pingPresence, getMyPresence, logSignIn } from '../lib/api';
 import CommandPalette from './CommandPalette';
-import InviteSheet from './InviteSheet';
 import CodeSheet from './CodeSheet';
 import ScanSheet from './ScanSheet';
 
@@ -75,7 +74,6 @@ export default function AppShell() {
   return (
     <div className="app">
       {pal ? <CommandPalette uid={profile.id} onClose={() => setPal(false)} /> : null}
-      {sheet && sheet.t === 'invite' ? <InviteSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'scan' ? <ScanSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'code' ? <CodeSheet onClose={() => setSheet(null)} /> : null}
       {copied ? <div className="toast" role="status">{copied}</div> : null}
@@ -112,12 +110,13 @@ export default function AppShell() {
               <div className="pop glass" role="menu">
                 <div className="pop-head"><b>{name}</b><span>{profile.email}</span></div>
                 <button type="button" role="menuitem" onClick={() => nav('/profile')}><User size={18} /> Profile</button>
-                <button type="button" role="menuitem" onClick={() => nav('/settings')}><Settings size={18} /> Settings</button>
-                {profile.username ? <button type="button" role="menuitem" onClick={shareProfile}><Share2 size={18} /> Share profile</button> : null}
-                <button type="button" role="menuitem" onClick={() => openSheet('invite')}><UserPlus size={18} /> Invite</button>
+                <button type="button" role="menuitem" onClick={() => openSheet('code')}><QrCode size={18} /> My QR</button>
                 <button type="button" role="menuitem" onClick={() => openSheet('scan')}><ScanLine size={18} /> Scan</button>
-                <button type="button" role="menuitem" onClick={() => openSheet('code')}><QrCode size={18} /> My code</button>
-                <button type="button" role="menuitem" onClick={signOut}><LogOut size={18} /> Sign out</button>
+                {profile.username ? <button type="button" role="menuitem" onClick={shareProfile}><Share2 size={18} /> Share profile</button> : null}
+                <div className="pop-sep" role="separator" />
+                <button type="button" role="menuitem" onClick={() => nav('/settings')}><Settings size={18} /> Settings</button>
+                <div className="pop-sep" role="separator" />
+                <button type="button" role="menuitem" onClick={signOut}><LogOut size={18} /> Log out</button>
               </div>
             ) : null}
           </div>

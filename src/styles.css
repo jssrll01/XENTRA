@@ -601,3 +601,5 @@ img { -webkit-user-drag: none; }
 .np-opt:hover { border-color: var(--blue); }
 .np-sec .row.static { padding: 8px 0; }
 .np-sel { min-width: 150px; }
+
+.pop-sep { height: 1px; margin: 6px 4px; background: var(--line); }

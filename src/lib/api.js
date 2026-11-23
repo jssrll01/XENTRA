@@ -165,9 +165,6 @@ export const searchPeopleRpc = (q) => call('search_people', { p_q: q });
 export const toggleContactLabel = (uid, labelId, on) => call('toggle_contact_label', { p_user: uid, p_label: String(labelId), p_on: on });
 export const setContactCategory = (uid, cat) => call('set_contact_category', { p_user: uid, p_category: cat || null });
 export const listContactMeta = () => call('list_contact_meta');
-export const createInvite = (email) => call('create_invite', { p_email: email || null });
-export const listMyInvites = () => call('list_my_invites');
-export const revokeInvite = (id) => call('revoke_invite', { p_id: id });
 export const acceptInvite = (code) => call('accept_invite', { p_code: code });
 
 export const inviteToGroup = (id, uid) => call('invite_to_group', { p_id: id, p_user: uid });

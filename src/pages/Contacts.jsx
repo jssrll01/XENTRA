@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ban, Ellipsis, MessageCircle, QrCode, RefreshCw, ScanLine, Search as SearchIcon, Star, Tag, UserMinus, UserPlus, Users } from 'lucide-react';
+import { Ban, Ellipsis, MessageCircle, QrCode, RefreshCw, ScanLine, Search as SearchIcon, Star, Tag, UserMinus, UserPlus, Users, Inbox } from 'lucide-react';
+import GroupInvitesSheet from '../components/GroupInvitesSheet';
 import InviteSheet from '../components/InviteSheet';
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
@@ -72,6 +73,7 @@ export default function Contacts() {
         <h2>Contacts</h2>
         <span className="req-acts">
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'invite' })}><UserPlus size={16} /> Invite</button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'ginv' })}><Inbox size={16} /> Groups</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'group' })}><Users size={16} /> Group</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'scan' })}><ScanLine size={16} /> Scan</button>
           <button type="button" className="btn btn-primary btn-sm" onClick={() => setSheet({ t: 'code' })}><QrCode size={16} /> My code</button>
@@ -134,6 +136,7 @@ export default function Contacts() {
       {sheet && sheet.t === 'labels' ? <LabelSheet contact={sheet.c} onClose={() => setSheet(null)} onChanged={load} /> : null}
       {sheet && sheet.t === 'group' ? <PickSheet title="New group" label="Create" withName onSubmit={(ids, n, d) => createGroup(n, ids, d)} onClose={() => setSheet(null)} onDone={(r) => { setSheet(null); nav('/messages/' + r.data.id); }} /> : null}
       {sheet && sheet.t === 'invite' ? <InviteSheet onClose={() => setSheet(null)} /> : null}
+      {sheet && sheet.t === 'ginv' ? <GroupInvitesSheet onClose={() => setSheet(null)} onJoined={(cid) => { setSheet(null); nav('/messages/' + cid); }} /> : null}
       {sheet && sheet.t === 'mutual' ? <MutualSheet contact={sheet.c} onClose={() => setSheet(null)} /> : null}
     </>
   );

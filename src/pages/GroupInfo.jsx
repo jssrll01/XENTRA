@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Camera, Copy, Crown, LogOut, RefreshCw, ShieldCheck, ShieldOff, UserMinus, UserPlus } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import PickSheet from '../components/PickSheet';
+import GroupRules from '../components/GroupRules';
 import { getGroup, listGroupMembers, updateGroup, setGroupAvatar, resetGroupInvite, setGroupInviteEnabled, addGroupMembers, removeGroupMember, leaveGroup, setMemberRole, transferOwnership } from '../lib/api';
 import { uploadAvatar } from '../lib/cloudinary';
 import { fullName } from '../lib/format';
@@ -20,6 +21,7 @@ export default function GroupInfo() {
   const [add, setAdd] = useState(false);
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
+  const [mq, setMq] = useState('');
   const load = useCallback(async () => {
     const [a, b] = await Promise.all([getGroup(id), listGroupMembers(id)]);
     if (!a.ok) { setErr(a.error); return; }
@@ -98,11 +100,12 @@ export default function GroupInfo() {
             </section>
           ) : null}
           <section className="glass card">
+            <label className="chat-find"><input value={mq} onChange={(e) => setMq(e.target.value)} placeholder="Search members" aria-label="Search members" /></label>
             <div className="card-head"><h2>Members</h2>
               {admin ? <button type="button" className="btn btn-primary btn-sm" onClick={() => setAdd(true)}><UserPlus size={16} /> Add</button> : null}
             </div>
             <div className="rows">
-              {(mem || []).map((m) => {
+              {(mem || []).filter((m) => !mq.trim() || (fullName(m) + ' ' + (m.username || '')).toLowerCase().includes(mq.trim().toLowerCase())).map((m) => {
                 const mine = m.id === g.me;
                 const canRm = !mine && (owner || (g.my_role === 'admin' && m.role === 'member'));
                 return (
@@ -120,6 +123,7 @@ export default function GroupInfo() {
               })}
             </div>
           </section>
+          {admin ? <GroupRules id={id} mem={mem} onChanged={load} /> : null}
           <button type="button" className="btn btn-secondary btn-block" disabled={busy} onClick={leave}><LogOut size={16} /> Leave group</button>
         </>
       ) : null}

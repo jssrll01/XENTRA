@@ -166,3 +166,10 @@ export const createInvite = (email) => call('create_invite', { p_email: email ||
 export const listMyInvites = () => call('list_my_invites');
 export const revokeInvite = (id) => call('revoke_invite', { p_id: id });
 export const acceptInvite = (code) => call('accept_invite', { p_code: code });
+
+export const inviteToGroup = (id, uid) => call('invite_to_group', { p_id: id, p_user: uid });
+export const listMyGroupInvites = () => call('list_my_group_invites');
+export const respondGroupInvite = (id, accept) => call('respond_group_invite', { p_id: id, p_accept: accept });
+export const setGroupJoinRules = (id, approval, days) => call('set_group_join_rules', { p_id: id, p_approval: approval, p_days: days });
+export const getGroupRules = (id) => call('get_group_rules', { p_id: id });
+export const respondGroupJoinRequest = (id, uid, accept) => call('respond_group_join_request', { p_id: id, p_user: uid, p_accept: accept });

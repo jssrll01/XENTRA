@@ -464,3 +464,13 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .np-sec{display:flex;flex-direction:column;gap:8px}
 .np-opt{display:flex;align-items:center;gap:10px;min-height:40px}
 .np-sel{min-width:130px}
+
+.pg-wrap{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg,#fff);color:var(--text,#0f172a);overflow:auto}
+.pg-card{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;text-align:center}
+.pg-ic{width:64px;height:64px;border-radius:18px;margin:0 auto;display:flex;align-items:center;justify-content:center;background:#eff6ff;color:#2563eb}
+.pg-card h1{margin:0;font-size:22px}
+.pg-card p{margin:0;color:var(--muted)}
+.pg-steps{text-align:left;margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+.pg-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:0;border-radius:12px;background:#2563eb;color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.pg-btn:disabled{opacity:.6;cursor:default}
+.pg-card .pg-err{color:#b91c1c;font-size:14px}

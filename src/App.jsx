@@ -29,6 +29,7 @@ import AppShell from './components/AppShell';
 import { ProfileProvider } from './lib/profile';
 import { SummaryProvider } from './lib/summary';
 import NotFound from './pages/NotFound';
+import PushGate from './components/PushGate';
 
 export default function App() {
   if (!configured) {
@@ -52,7 +53,7 @@ export default function App() {
             <Route path="/verify-email" element={<PublicOnly><VerifyEmail /></PublicOnly>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/invite/:code" element={<InvitePage />} />
-            <Route element={<RequireAuth><ProfileProvider><SummaryProvider><InviteResume /><AppShell /></SummaryProvider></ProfileProvider></RequireAuth>}>
+            <Route element={<RequireAuth><ProfileProvider><PushGate><SummaryProvider><InviteResume /><AppShell /></SummaryProvider></PushGate></ProfileProvider></RequireAuth>}>
               <Route path="/home" element={<Home />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />

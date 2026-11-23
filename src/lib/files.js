@@ -1,6 +1,7 @@
 import { supabase, SUPABASE_URL, SUPABASE_KEY } from './supabase';
+import { cfg } from './config';
 
-export const MAX_FILE = 25 * 1024 * 1024;
+export const maxFile = () => Number(cfg('file_max_bytes')) || 0;
 const safe = (n) => String(n || 'file').replace(/[^A-Za-z0-9._-]+/g, '_').slice(-80) || 'file';
 
 export const fmtSize = (n) => (n < 1024 ? n + ' B' : n < 1048576 ? Math.round(n / 1024) + ' KB' : (n / 1048576).toFixed(1) + ' MB');

@@ -23,7 +23,7 @@ import PollSheet from '../components/PollSheet';
 import PollCard from '../components/PollCard';
 import ThreadPanel from '../components/ThreadPanel';
 import AttachmentView from '../components/AttachmentView';
-import { MAX_FILE, uploadChatFile } from '../lib/files';
+import { maxFile, uploadChatFile } from '../lib/files';
 import { draftOf, queueDraft, useDrafts } from '../lib/drafts';
 import ReactorsSheet from '../components/ReactorsSheet';
 
@@ -295,7 +295,9 @@ export default function Chat() {
     e.target.value = '';
     for (const f of files) {
       if (f.size < 1) { setNotice(f.name + ' is empty.'); continue; }
-      if (f.size > MAX_FILE) { setNotice(f.name + ' is over 25 MB.'); continue; }
+      const lim = maxFile();
+      if (!lim) { setNotice('Settings are unavailable. Reload and try again.'); continue; }
+      if (f.size > lim) { setNotice(f.name + ' is over ' + Math.round(lim / 1048576) + ' MB.'); continue; }
       const u = { key: crypto.randomUUID(), file: f, progress: 0, failed: false, error: '', path: null };
       setUps((p) => [...p, u]);
       runUpload(u);

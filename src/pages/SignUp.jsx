@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, AtSign, Mail, Phone, Lock, UserPlus, ShieldCheck } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
 import Field from '../components/ui/Field';
 import Button from '../components/ui/Button';
-import { signUpEmail, isGmail, normEmail } from '../lib/authApi';
+import { signUpEmail, normEmail } from '../lib/authApi';
+import { emailCheck, domainText, loadSignupConfig } from '../lib/config';
 
 const check = (f) => {
   const e = {};
   if (f.name.trim().length < 2) e.name = 'Enter your full name.';
   if (!/^[a-z0-9_.]{3,20}$/.test(f.username.trim().toLowerCase())) e.username = '3 to 20 characters: letters, numbers, dot or underscore.';
-  if (!isGmail(f.email)) e.email = 'Use a @gmail.com address.';
+  const ec = emailCheck(f.email);
+  if (ec === null) { e.email = 'Sign-up settings are unavailable. Check your connection and tap Sign up again.'; loadSignupConfig(); }
+  else if (!ec) e.email = 'Use a ' + domainText() + ' address.';
   if (f.phone.trim() && !/^[+0-9\s-]{7,16}$/.test(f.phone.trim())) e.phone = 'Enter a valid phone number or leave it empty.';
   if (f.password.length < 8 || !/[A-Za-z]/.test(f.password) || !/\d/.test(f.password)) e.password = 'At least 8 characters with a letter and a number.';
   if (f.confirm !== f.password) e.confirm = 'Passwords do not match.';
@@ -19,6 +22,7 @@ const check = (f) => {
 
 export default function SignUp() {
   const nav = useNavigate();
+  useEffect(() => { loadSignupConfig(); }, []);
   const [f, setF] = useState({ name: '', username: '', email: '', phone: '', password: '', confirm: '' });
   const [err, setErr] = useState({});
   const [top, setTop] = useState('');

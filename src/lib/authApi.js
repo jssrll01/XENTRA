@@ -23,7 +23,7 @@ const wrap = async (fn) => {
 };
 
 export const normEmail = (e) => String(e || '').trim().toLowerCase();
-export const isGmail = (e) => /^[^\s@]+@gmail\.com$/i.test(String(e || '').trim());
+
 
 export async function signUpEmail(f) {
   const parts = f.name.trim().split(/\s+/);

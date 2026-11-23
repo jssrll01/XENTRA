@@ -1,4 +1,4 @@
-import { VAPID_PUBLIC } from './vapid';
+import { cfg } from './config';
 import { savePushSubscription, removePushSubscription } from './api';
 
 export const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -29,6 +29,7 @@ export async function currentSub() {
 
 export async function ensureSubscribed() {
   if (!pushSupported()) return { ok: false, error: 'This browser does not support notifications.' };
+  const VAPID_PUBLIC = cfg('vapid_public_key');
   if (!VAPID_PUBLIC) return { ok: false, error: 'Notifications are not configured. The public key is missing.' };
   try {
     const reg = await ready();

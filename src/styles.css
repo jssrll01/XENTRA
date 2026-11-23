@@ -724,3 +724,21 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
   .tm-btns { flex-direction: row; }
   .tm-btns .tm-btn { flex: 1; }
 }
+.rl-back { position: fixed; inset: 0; z-index: 210; display: flex; align-items: center; justify-content: center; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); background: rgba(11, 31, 58, .55); animation: xa-fade .16s ease; }
+.rl { display: flex; flex-direction: column; width: 100%; max-width: 520px; max-height: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 24px 60px rgba(11, 31, 58, .35); animation: xa-pop .2s ease; transform-origin: center; }
+.rl-head { display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.rl-head b { display: block; font-size: 18px; }
+.rl-head span:not(.rl-ic) { display: block; font-size: 13px; color: var(--muted); }
+.rl-ic { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: rgba(37, 99, 235, .12); color: var(--blue); }
+.rl-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 18px; }
+.rl-intro { margin: 0 0 14px; font-size: 14px; line-height: 1.55; color: var(--muted); }
+.rl-list { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.rl-item { display: flex; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.rl-n { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 13px; font-weight: 700; }
+.rl-item b { display: block; margin-bottom: 2px; font-size: 15px; }
+.rl-item p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; }
+.rl-note { margin: 14px 0 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.rl-foot { flex-shrink: 0; padding: 12px 18px calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
+.rl-agree { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; font-size: 14px; cursor: pointer; }
+.rl-acts { display: flex; gap: 8px; }
+.rl-acts .btn { flex: 1; height: 44px; padding: 0 12px; }

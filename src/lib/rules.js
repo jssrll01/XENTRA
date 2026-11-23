@@ -1,11 +1,11 @@
-import { ask } from './dialog';
+import { askRules } from './rulesDialog';
 import { getTeamRules, acceptTeamRules, joinTeam, joinTeamByCode } from './api';
 
 async function accept(id) {
   const g = await getTeamRules(id);
   if (!g.ok) return g;
   if (g.data.rules && !g.data.accepted) {
-    if (!await ask('Community rules:\n\n' + g.data.rules + '\n\nDo you accept these rules?')) return { ok: false, error: 'Accept the rules to join.' };
+    if (!await askRules(g.data.rules)) return { ok: false, error: 'Accept the rules to join.' };
     const a = await acceptTeamRules(id);
     if (!a.ok) return a;
   }

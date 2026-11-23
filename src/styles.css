@@ -486,3 +486,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 :root:not([data-theme="light"]) .pg-ic{background:#1e3a8a;color:#bfdbfe}
 :root:not([data-theme="light"]) .pg-card .pg-err{color:#fca5a5}
 }
+
+.po-sel, .sx-lbl select, .tx-area, .np-sel { background: var(--surface); color: var(--ink); }
+.pf-pub .avatar { border-color: var(--surface); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }

@@ -14,18 +14,18 @@ import { supabase } from './supabase';
 
 const NOT_READY = new Set(['PGRST202', 'PGRST205', '42883', '42P01']);
 
-export async function call(name, args = {}) {
+async function call(name, args = {}) {
   try {
     const { data, error } = await supabase.rpc(name, args);
     if (error) {
       if (NOT_READY.has(error.code)) return { ok: false, notReady: true, error: 'The database is still being set up.' };
-      return { ok: false, error: error.message || 'Request failed.' };
+      return { ok: false, network: navigator.onLine === false || /fetch|network/i.test(error.message || ''), error: error.message || 'Request failed.' };
     }
     if (data && typeof data === 'object' && data.ok === false) return { ok: false, error: data.error || 'Request failed.' };
     const payload = data && typeof data === 'object' && 'data' in data ? data.data : data;
     return { ok: true, data: payload };
   } catch (e) {
-    return { ok: false, error: 'Network problem. Check your connection and try again.' };
+    return { ok: false, network: true, error: 'Network problem. Check your connection and try again.' };
   }
 }
 
@@ -36,8 +36,11 @@ export const homeSummary = () => call('home_summary');
 export const listNotifications = (limit = 50) => call('list_notifications', { p_limit: limit });
 export const markNotificationsRead = (ids = null) => call('mark_notifications_read', { p_ids: ids });
 export const startDirect = (userId) => call('start_direct', { p_user: userId });
-export const listConversations = () => call('list_conversations');
-export const listMessages = (cid, before = null, limit = 50) => call('list_messages', { p_conversation: cid, p_before: before, p_limit: limit });
+export const listConversations = () => cachedCall('conversations', () => call('list_conversations'));
+export const listMessages = (cid, before = null, limit = 50) => {
+  const run = () => call('list_messages', { p_conversation: cid, p_before: before, p_limit: limit });
+  return before === null ? cachedCall('msgs:' + cid, run) : run();
+};
 export const sendMessage = (cid, body, clientId, replyTo = null) => call('send_message', { p_conversation: cid, p_body: body, p_client_id: clientId, p_reply_to: replyTo });
 export const editMessage = (id, body) => call('edit_message', { p_id: id, p_body: body });
 export const deleteMessage = (id) => call('delete_message', { p_id: id });
@@ -202,3 +205,27 @@ export const setNotifMode = (mode) => call('set_notification_mode', { p_mode: mo
 export const setAnnounceNotifs = (on) => call('set_announcement_notifs', { p_on: on });
 export const listNotifTargets = () => call('list_notif_targets');
 export const setConvNotif = (cid, mode) => call('set_conversation_notif', { p_conversation: cid, p_mode: mode });
+
+const CACHE = 'xentra-cache:';
+async function cacheKey(name) {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const u = data && data.session && data.session.user;
+    return u ? CACHE + u.id + ':' + name : null;
+  } catch (e) { return null; }
+}
+async function cachedCall(name, run) {
+  const r = await run();
+  const k = await cacheKey(name);
+  if (r.ok) {
+    if (k) { try { localStorage.setItem(k, JSON.stringify(r.data)); } catch (e) { /* storage full */ } }
+    return r;
+  }
+  if (r.network && k) {
+    try {
+      const v = localStorage.getItem(k);
+      if (v) return { ok: true, data: JSON.parse(v), stale: true };
+    } catch (e) { /* unreadable cache */ }
+  }
+  return r;
+}

@@ -1,3 +1,4 @@
+import ProfileQr from '../components/ProfileQr';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AtSign, BadgeCheck, Camera, Copy, Eye, Mail, Phone, User } from 'lucide-react';
@@ -155,6 +156,7 @@ export default function Profile() {
           <div className="pf-acts">
             <Link className="btn btn-secondary btn-sm" to={'/u/' + profile.username}><Eye size={16} /> View as others see it</Link>
             <button type="button" className="btn btn-secondary btn-sm" onClick={copyLink}><Copy size={16} /> Copy profile link</button>
+            <ProfileQr username={profile.username} />
           </div>
         ) : null}
       </form>

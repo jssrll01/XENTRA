@@ -52,7 +52,7 @@ export default function Settings() {
   const load = useCallback(async () => {
     const [a, b] = await Promise.all([getMyPresence(), listDevices()]);
     if (!a.ok || !b.ok) { setErr(a.ok ? b.error : a.error); return; }
-    setSt(a.data.status); setText(a.data.status_text || ''); setDev(b.data || []); setErr('');
+    setSt(a.data.status); setExpAt(a.data.status_expires_at || ''); setText(a.data.status_text || ''); setDev(b.data || []); setErr('');
   }, []);
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
@@ -65,13 +65,14 @@ export default function Settings() {
     if (!r.ok) { setErr(r.error); return; }
     setErr(''); setNote(pushOn ? 'Notifications off' : 'Notifications on'); setPushOn(!pushOn); load();
   };
+  const [expAt, setExpAt] = useState('');
   const saveStatus = async (next) => {
     setBusy(true); setNote('');
     const exp = Number(hrs) > 0 && text.trim() ? new Date(Date.now() + Number(hrs) * 3600000).toISOString() : null;
     const r = await setPresence(next || st, text, exp);
     setBusy(false);
     if (!r.ok) { setErr(r.error); return; }
-    setErr(''); setNote('Status saved');
+    setErr(''); setNote('Status saved'); setExpAt(exp || '');
     window.dispatchEvent(new Event('xentra-presence'));
   };
   const pick = (s) => { setSt(s); saveStatus(s); };
@@ -171,6 +172,7 @@ export default function Settings() {
               <select aria-label="Clear status after" value={hrs} onChange={(e) => setHrs(e.target.value)}>
                 {HOURS.map((h) => <option key={h[0]} value={h[0]}>{h[1]}</option>)}
               </select>
+              {expAt && text.trim() ? <span className="note">Clears {new Date(expAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span> : null}
               <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => saveStatus()}>Save status</button>
             </>
           )}

@@ -4,6 +4,7 @@ import '@fontsource-variable/inter';
 import './styles.css';
 import './lib/lockdown';
 import App from './App.jsx';
+import DialogHost from './lib/dialog';
 import { getTheme, applyTheme } from './lib/theme';
 
 applyTheme(getTheme());
@@ -11,6 +12,7 @@ applyTheme(getTheme());
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
+    <DialogHost />
   </React.StrictMode>
 );
 

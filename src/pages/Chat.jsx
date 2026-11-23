@@ -1,3 +1,4 @@
+import { pressProps } from '../lib/longpress';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, CheckCheck, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X, ListChecks, MessageSquare, Paperclip, Plus, Users } from 'lucide-react';
@@ -53,6 +54,12 @@ export default function Chat() {
   const [err, setErr] = useState('');
   const [notice, setNotice] = useState('');
   const [sel, setSel] = useState(null);
+  useEffect(() => {
+    if (!sel) return undefined;
+    const off = (e) => { if (e.target.closest && e.target.closest('.acts')) return; setSel(null); };
+    document.addEventListener('pointerdown', off);
+    return () => document.removeEventListener('pointerdown', off);
+  }, [sel]);
   const [text, setText] = useState('');
   const [reply, setReply] = useState(null);
   const [editing, setEditing] = useState(null);
@@ -317,7 +324,7 @@ export default function Chat() {
     return (
       <div key={m.id} id={'m-' + m.id} className={'msg' + (mine ? ' mine' : '')}>
         <button type="button" className={'bubble' + (m.deleted ? ' gone' : '') + (m.failed ? ' failed' : '')} aria-expanded={sel === m.id}
-          onClick={() => { if (!m.local && !m.deleted) setSel(sel === m.id ? null : m.id); }}>
+          {...pressProps(() => { if (!m.local && !m.deleted) setSel(m.id); })}>
           {!mine && names[m.sender_id] ? <span className="sname">{names[m.sender_id]}</span> : null}
           {m.forwarded ? <span className="fwd"><Forward size={12} /> {m.forwarded_from_name ? 'Forwarded from ' + m.forwarded_from_name : 'Forwarded'}</span> : null}
           {m.reply ? <span className="quote" role="button" tabIndex={0} aria-label="Go to original message" onClick={(e) => { e.stopPropagation(); goQuote(m.reply.id); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); goQuote(m.reply.id); } }}><b>{m.reply.sender_id === me ? 'You' : (names[m.reply.sender_id] || name)}</b>{m.reply.deleted ? 'Message deleted' : m.reply.body}</span> : null}

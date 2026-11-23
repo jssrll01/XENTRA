@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Select from '../components/ui/Select';
 import { Link } from 'react-router-dom';
-import { Bell, ChevronRight, CircleDot, Database, Info, KeyRound, Lock, LogOut, Mail, Palette, Pencil, ShieldCheck, Smartphone, Trash2, User } from 'lucide-react';
+import { Bell, ChevronRight, CircleDot, Database, Info, KeyRound, Lock, LogOut, Palette, Pencil, ShieldCheck, Smartphone, Trash2, Check, X } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { useProfile } from '../lib/profile';
 import { getMyPresence, setPresence, listDevices, removeDevice } from '../lib/api';
@@ -14,9 +13,9 @@ import { pushSupported, currentSub, enablePush } from '../lib/push';
 import { getTheme, applyTheme } from '../lib/theme';
 
 import PrivacyPanel from '../components/PrivacyPanel';
-import ActivityPanel from '../components/ActivityPanel';
 import NotifSettings from '../components/NotifSettings';
-import { Eye as EyeIcon, History as HistoryIcon } from 'lucide-react';
+import { Eye as EyeIcon } from 'lucide-react';
+import { sendResetCode, verifyRecovery, setNewPassword } from '../lib/authApi';
 const STATES = [['online', 'Online'], ['dnd', 'Do not disturb'], ['invisible', 'Invisible']];
 const HOURS = [['0', 'Never clears'], ['1', '1 hour'], ['4', '4 hours'], ['24', '24 hours']];
 const THEMES = [['system', 'System'], ['light', 'Light'], ['dark', 'Dark']];
@@ -45,6 +44,8 @@ export default function Settings() {
   const [hrs, setHrs] = useState('0');
   const [dev, setDev] = useState(null);
   const [pw, setPw] = useState('');
+  const [pwStep, setPwStep] = useState(0);
+  const [code, setCode] = useState('');
   const [err, setErr] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -78,12 +79,26 @@ export default function Settings() {
     window.dispatchEvent(new Event('xentra-presence'));
   };
   const pick = (s) => { setSt(s); saveStatus(s); };
-  const changePw = async () => {
-    setBusy(true); setNote('');
-    const r = await supabase.auth.updateUser({ password: pw });
+  const sendCode = async () => {
+    setBusy(true); setNote(''); setErr('');
+    const r = await sendResetCode(profile.email);
     setBusy(false);
-    if (r.error) { setErr(r.error.message); return; }
-    setErr(''); setPw(''); setNote('Password changed');
+    if (!r.ok) { setErr(r.error); return; }
+    setPwStep(1); setNote('A code was sent to ' + profile.email);
+  };
+  const checkCode = async () => {
+    setBusy(true); setNote(''); setErr('');
+    const r = await verifyRecovery(profile.email, code);
+    setBusy(false);
+    if (!r.ok) { setErr(r.error); return; }
+    setCode(''); setPwStep(2); setNote('Identity verified. Choose a new password.');
+  };
+  const changePw = async () => {
+    setBusy(true); setNote(''); setErr('');
+    const r = await setNewPassword(pw);
+    setBusy(false);
+    if (!r.ok) { setErr(r.error); return; }
+    setPw(''); setPwStep(0); setNote('Password changed');
   };
   const drop = async (d) => {
     setBusy(true);
@@ -101,6 +116,7 @@ export default function Settings() {
       setNote('Cache cleared');
     } catch (x) { setErr('Could not clear the cache.'); }
   };
+  const pwOk = [[pw.length >= 8, 'At least 8 characters'], [/[a-zA-Z]/.test(pw), 'A letter'], [/\d/.test(pw), 'A number']];
   const plabel = (STATES.find((s) => s[0] === st) || [0, ''])[1];
   const tlabel = (THEMES.find((t) => t[0] === theme) || [0, ''])[1];
   const R = { open, setOpen };
@@ -116,21 +132,32 @@ export default function Settings() {
       </section>
 
       <section className="glass card sx-group">
-        <Row {...R} id="account" icon={User} title="Account Information" sub="View your account details">
-          <label className="sx-lbl">Email<input type="email" value={profile.email || ''} readOnly disabled aria-label="Email (cannot be changed)" /></label>
-          <p className="note"><Mail size={14} /> Your email cannot be changed.</p>
-          <label className="sx-lbl">Username<input type="text" value={profile.username ? '@' + profile.username : ''} readOnly disabled aria-label="Username" /></label>
-          <Link className="btn btn-secondary btn-sm" to="/profile"><Pencil size={16} /> Edit name, username, phone and photo</Link>
-        </Row>
         <Row {...R} id="privacy" icon={ShieldCheck} title="Privacy & Security" sub="Password and sign-in">
-          <input type="password" placeholder="New password (8+ characters)" aria-label="New password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} />
-          <button type="button" className="btn btn-secondary btn-sm" disabled={busy || pw.length < 8} onClick={changePw}><KeyRound size={16} /> Change password</button>
+          {pwStep === 0 ? (
+            <>
+              <p className="note">To change your password we send a code to {profile.email} to verify it is you.</p>
+              <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={sendCode}><KeyRound size={16} /> Send code</button>
+            </>
+          ) : null}
+          {pwStep === 1 ? (
+            <>
+              <input type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="Code from your email" aria-label="Verification code" maxLength={8} value={code} onChange={(e) => setCode(e.target.value)} />
+              <div className="req-acts">
+                <button type="button" className="btn btn-primary btn-sm" disabled={busy || code.replace(/\D/g, '').length < 6} onClick={checkCode}>Verify</button>
+                <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={sendCode}>Resend code</button>
+              </div>
+            </>
+          ) : null}
+          {pwStep === 2 ? (
+            <>
+              <input type="password" placeholder="New password" aria-label="New password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} />
+              <ul className="pw-hint">{pwOk.map((c) => <li key={c[1]} className={c[0] ? 'ok' : ''}>{c[0] ? <Check size={14} /> : <X size={14} />} {c[1]}</li>)}</ul>
+              <button type="button" className="btn btn-primary btn-sm" disabled={busy || !pwOk.every((c) => c[0])} onClick={changePw}><KeyRound size={16} /> Change password</button>
+            </>
+          ) : null}
         </Row>
         <Row {...R} id="who" icon={EyeIcon} title="Profile Privacy" sub="Who can see or contact you">
           <PrivacyPanel />
-        </Row>
-        <Row {...R} id="activity" icon={HistoryIcon} title="Account Activity" sub="Sign-ins and privacy changes">
-          <ActivityPanel />
         </Row>
         <Row {...R} id="notif" icon={Bell} title="Notifications" sub="Push alerts and devices" tag={pushOn ? 'On' : 'Off'}>
           {pushSupported() ? (
@@ -165,11 +192,6 @@ export default function Settings() {
             <>
               <div className="chips">
                 {STATES.map((s) => <button type="button" key={s[0]} className={'chip' + (st === s[0] ? ' on' : '')} disabled={busy} onClick={() => pick(s[0])}>{s[1]}</button>)}
-              </div>
-              <div className="chips">
-                {['😀', '📚', '💼', '🎧', '🏖️', '🤒', '🚗', '🍽️'].map((e) => (
-                  <button type="button" key={e} className="chip" aria-label={'Use ' + e + ' in status'} onClick={() => setText(e + ' ' + text.replace(/^\p{Extended_Pictographic}\uFE0F?\s*/u, ''))}>{e}</button>
-                ))}
               </div>
               <input type="text" placeholder="Custom status" aria-label="Custom status" maxLength={80} value={text} onChange={(e) => setText(e.target.value)} />
               <Select aria-label="Clear status after" value={hrs} onChange={(e) => setHrs(e.target.value)}>

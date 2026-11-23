@@ -149,3 +149,13 @@ export const searchAllMessages = (q) => call('search_all_messages', { p_q: q });
 export const updateScheduledTime = (id, at) => call('update_scheduled_time', { p_id: id, p_send_at: at });
 export const getDrafts = () => call('get_drafts');
 export const setDraft = (cid, body) => call('set_draft', { p_conversation: cid, p_body: body });
+
+export const getMyDetails = () => call('get_my_details');
+export const setMyDetails = (bio, cover, accent) => call('set_my_details', { p_bio: bio || null, p_cover: cover || null, p_accent: accent || null });
+export const getMyPrivacy = () => call('get_my_privacy');
+export const setPrivacy = (settings) => call('set_privacy', { p_settings: settings });
+export const usernameCooldown = () => call('username_cooldown');
+export const logSignIn = (device) => call('log_signin', { p_device: device });
+export const listMyActivity = (limit = 50) => call('list_my_activity', { p_limit: limit });
+export const getPublicProfile = (username) => call('get_public_profile', { p_username: username });
+export const searchPeopleRpc = (q) => call('search_people', { p_q: q });

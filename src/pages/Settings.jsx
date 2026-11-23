@@ -12,6 +12,9 @@ import { ago, fullName } from '../lib/format';
 import { pushSupported, currentSub, enablePush, disablePush } from '../lib/push';
 import { getTheme, applyTheme } from '../lib/theme';
 
+import PrivacyPanel from '../components/PrivacyPanel';
+import ActivityPanel from '../components/ActivityPanel';
+import { Eye as EyeIcon, History as HistoryIcon } from 'lucide-react';
 const STATES = [['online', 'Online'], ['dnd', 'Do not disturb'], ['invisible', 'Invisible']];
 const HOURS = [['0', 'Never clears'], ['1', '1 hour'], ['4', '4 hours'], ['24', '24 hours']];
 const THEMES = [['system', 'System'], ['light', 'Light'], ['dark', 'Dark']];
@@ -120,6 +123,12 @@ export default function Settings() {
           <input type="password" placeholder="New password (8+ characters)" aria-label="New password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} />
           <button type="button" className="btn btn-secondary btn-sm" disabled={busy || pw.length < 8} onClick={changePw}><KeyRound size={16} /> Change password</button>
         </Row>
+        <Row {...R} id="who" icon={EyeIcon} title="Profile Privacy" sub="Who can see or contact you">
+          <PrivacyPanel />
+        </Row>
+        <Row {...R} id="activity" icon={HistoryIcon} title="Account Activity" sub="Sign-ins and privacy changes">
+          <ActivityPanel />
+        </Row>
         <Row {...R} id="notif" icon={Bell} title="Notifications" sub="Push alerts and devices" tag={pushOn ? 'On' : 'Off'}>
           {pushSupported() ? (
             <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={togglePush}><Bell size={16} /> {pushOn ? 'Turn off on this device' : 'Turn on for this device'}</button>
@@ -152,6 +161,11 @@ export default function Settings() {
             <>
               <div className="chips">
                 {STATES.map((s) => <button type="button" key={s[0]} className={'chip' + (st === s[0] ? ' on' : '')} disabled={busy} onClick={() => pick(s[0])}>{s[1]}</button>)}
+              </div>
+              <div className="chips">
+                {['😀', '📚', '💼', '🎧', '🏖️', '🤒', '🚗', '🍽️'].map((e) => (
+                  <button type="button" key={e} className="chip" aria-label={'Use ' + e + ' in status'} onClick={() => setText(e + ' ' + text.replace(/^\p{Extended_Pictographic}\uFE0F?\s*/u, ''))}>{e}</button>
+                ))}
               </div>
               <input type="text" placeholder="Custom status" aria-label="Custom status" maxLength={80} value={text} onChange={(e) => setText(e.target.value)} />
               <select aria-label="Clear status after" value={hrs} onChange={(e) => setHrs(e.target.value)}>

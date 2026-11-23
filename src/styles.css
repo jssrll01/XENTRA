@@ -444,3 +444,4 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .po-sel { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font: inherit; }
 .head-acts { display: flex; gap: 8px; }
 .exp-note { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+.sx-lbl select { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font: inherit; }

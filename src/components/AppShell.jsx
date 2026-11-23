@@ -8,7 +8,7 @@ import { useAuth } from '../lib/auth';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
-import { pingPresence, getMyPresence } from '../lib/api';
+import { pingPresence, getMyPresence, logSignIn } from '../lib/api';
 import CommandPalette from './CommandPalette';
 
 const EXTRA = { '/notifications': 'Activity', '/search': 'Search', '/settings': 'Settings' };
@@ -31,6 +31,7 @@ export default function AppShell() {
 
   useEffect(() => {
     const load = () => { getMyPresence().then((r) => { if (r.ok) setPres(r.data); }); };
+    logSignIn(navigator.userAgent);
     const ping = () => { if (document.visibilityState === 'visible') pingPresence(); };
     load(); ping();
     const t = setInterval(ping, 60000);

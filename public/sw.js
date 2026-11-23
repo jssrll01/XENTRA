@@ -28,7 +28,7 @@ self.addEventListener('push', (e) => {
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = {}; }
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => {
     if (cs.some((c) => c.visibilityState === 'visible' && c.focused)) return null;
-    return self.registration.showNotification(d.title || 'XENTRA', { body: d.body || '', tag: d.tag, icon: '/icon.svg', data: { url: d.url || '/messages' } });
+    return self.registration.showNotification(d.title || 'XENTRA', { body: d.body || '', tag: d.tag, icon: '/icon-192.png', data: { url: d.url || '/messages' } });
   }));
 });
 self.addEventListener('notificationclick', (e) => {

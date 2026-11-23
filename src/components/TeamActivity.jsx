@@ -1,9 +1,29 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Activity } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
-import { Activity, RefreshCw } from 'lucide-react';
 import EmptyState from './ui/EmptyState';
+import { TeamErr } from './TeamSub';
 import { listTeamActivity } from '../lib/api';
 import { timeAgo } from '../lib/format';
+
+function dayLabel(iso) {
+  const d = new Date(iso);
+  const t = new Date();
+  const y = new Date(Date.now() - 86400000);
+  if (d.toDateString() === t.toDateString()) return 'Today';
+  if (d.toDateString() === y.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString([], d.getFullYear() === t.getFullYear() ? { month: 'short', day: 'numeric' } : { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function group(rows) {
+  const out = [];
+  rows.forEach((a) => {
+    const l = dayLabel(a.created_at);
+    const last = out[out.length - 1];
+    if (last && last.l === l) last.items.push(a); else out.push({ l, items: [a] });
+  });
+  return out;
+}
 
 export default function TeamActivity({ team, tick }) {
   const [rows, setRows] = useState(null);
@@ -14,20 +34,24 @@ export default function TeamActivity({ team, tick }) {
   }, [team.id]);
   useEffect(() => { load(); }, [load, tick]);
   return (
-    <>
-      {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={load}><RefreshCw size={16} /> Retry</button></div> : null}
-      {!rows && !err ? <Skeleton /> : null}
-      {rows && rows.length === 0 ? <EmptyState icon={Activity} title="No activity yet" text="Joins, posts and changes appear here." /> : null}
+    <div className="tm-stack">
+      {err ? <TeamErr msg={err} retry={load} /> : null}
+      {!rows && !err ? <Skeleton rows={4} /> : null}
+      {rows && rows.length === 0 ? <section className="tm-card"><EmptyState icon={Activity} title="No activity yet" text="Joins, posts and changes appear here." /></section> : null}
       {rows && rows.length > 0 ? (
-        <section className="glass card"><div className="rows">
-          {rows.map((a) => (
-            <div className="row static" key={a.id}>
-              <div className="row-main"><b>{a.actor_name}</b><span>{a.text}</span></div>
-              <span className="row-time">{timeAgo(a.created_at)}</span>
+        <section className="tm-card">
+          {group(rows).map((g) => (
+            <div key={g.l}>
+              <h3 className="tm-label tm-day">{g.l}</h3>
+              <ul className="tm-tl">
+                {g.items.map((a) => (
+                  <li key={a.id}><b>{a.actor_name}</b><span>{a.text}</span><time>{timeAgo(a.created_at)}</time></li>
+                ))}
+              </ul>
             </div>
           ))}
-        </div></section>
+        </section>
       ) : null}
-    </>
+    </div>
   );
 }

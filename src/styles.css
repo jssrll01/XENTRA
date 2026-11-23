@@ -457,3 +457,4 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; background: var(--sw); cursor: pointer; }
 .swatch.on { border-color: #0f172a; }
 .field-body textarea { width: 100%; border: 0; background: transparent; font: inherit; resize: vertical; outline: 0; }
+.chip.cap { text-transform: capitalize; }

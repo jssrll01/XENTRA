@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ban, Ellipsis, MessageCircle, QrCode, RefreshCw, ScanLine, Search as SearchIcon, Star, Tag, UserMinus, Users } from 'lucide-react';
+import { Ban, Ellipsis, MessageCircle, QrCode, RefreshCw, ScanLine, Search as SearchIcon, Star, Tag, UserMinus, UserPlus, Users } from 'lucide-react';
+import InviteSheet from '../components/InviteSheet';
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import CodeSheet from '../components/CodeSheet';
@@ -10,7 +11,7 @@ import MutualSheet from '../components/MutualSheet';
 import PickSheet from '../components/PickSheet';
 import RequestsPane from '../components/RequestsPane';
 import BlockedPane from '../components/BlockedPane';
-import { listContacts, listLabels, listRequests, startDirect, setFavorite, removeContact, blockUser, createGroup } from '../lib/api';
+import { listContactMeta, listContacts, listLabels, listRequests, startDirect, setFavorite, removeContact, blockUser, createGroup } from '../lib/api';
 import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
 
@@ -23,16 +24,17 @@ export default function Contacts() {
   const [err, setErr] = useState('');
   const [tab, setTab] = useState('contacts');
   const [lab, setLab] = useState('all');
+  const [cat, setCat] = useState('all');
   const [q, setQ] = useState('');
   const [menu, setMenu] = useState(null);
   const [sheet, setSheet] = useState(null);
   const [busy, setBusy] = useState('');
 
   const load = useCallback(async () => {
-    const [c, l, r] = await Promise.all([listContacts(), listLabels(), listRequests()]);
-    const bad = [c, l, r].find((x) => !x.ok);
+    const [c, l, r, m] = await Promise.all([listContacts(), listLabels(), listRequests(), listContactMeta()]);
+    const bad = [c, l, r, m].find((x) => !x.ok);
     if (bad) { setErr(bad.error); return; }
-    setRows(c.data || []);
+    setRows((c.data || []).map((x) => ({ ...x, labels: (m.data[x.id] && m.data[x.id].labels) || [], category: (m.data[x.id] && m.data[x.id].category) || null })));
     setLabels(l.data || []);
     setPending((r.data.incoming || []).length);
     setErr('');
@@ -51,17 +53,25 @@ export default function Contacts() {
     if (r.ok) nav('/messages/' + r.data.id); else setErr(r.error);
   };
   const cur = lab !== 'all' && lab !== 'fav' && !labels.some((l) => l.id === lab) ? 'all' : lab;
+  const cats = useMemo(() => {
+    const s = new Set(['family', 'work', 'friends']);
+    (rows || []).forEach((c) => { if (c.category) s.add(c.category); });
+    return Array.from(s);
+  }, [rows]);
+  const catCur = cat === 'all' || cats.includes(cat) ? cat : 'all';
   const shown = useMemo(() => {
     const t = q.trim().toLowerCase();
-    return (rows || []).filter((c) => (cur === 'all' || (cur === 'fav' ? c.favorite : c.label_id === cur))
+    return (rows || []).filter((c) => (cur === 'all' || (cur === 'fav' ? c.favorite : c.labels.some((x) => String(x.id) === String(cur))))
+      && (catCur === 'all' || c.category === catCur)
       && (!t || (fullName(c) + ' ' + (c.username || '')).toLowerCase().includes(t)));
-  }, [rows, cur, q]);
+  }, [rows, cur, catCur, q]);
 
   return (
     <>
       <div className="page-head">
         <h2>Contacts</h2>
         <span className="req-acts">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'invite' })}><UserPlus size={16} /> Invite</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'group' })}><Users size={16} /> Group</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSheet({ t: 'scan' })}><ScanLine size={16} /> Scan</button>
           <button type="button" className="btn btn-primary btn-sm" onClick={() => setSheet({ t: 'code' })}><QrCode size={16} /> My code</button>
@@ -85,6 +95,9 @@ export default function Contacts() {
             {labels.map((l) => <button type="button" key={l.id} className={'chip' + (cur === l.id ? ' on' : '')} onClick={() => setLab(l.id)}>{l.name} ({l.count})</button>)}
             <button type="button" className="chip" onClick={() => setSheet({ t: 'labels', c: null })}><Tag size={14} /> Labels</button>
           </div>
+          <div className="chips">
+            {['all'].concat(cats).map((k) => <button type="button" key={k} className={'chip cap' + (catCur === k ? ' on' : '')} aria-pressed={catCur === k} onClick={() => setCat(k)}>{k === 'all' ? 'Any category' : k}</button>)}
+          </div>
           {rows.length === 0 ? <EmptyState icon={Users} title="No contacts yet" text="Search people, or share your code, to add contacts." /> : null}
           {rows.length > 0 && shown.length === 0 ? <EmptyState icon={SearchIcon} title="No matches" text="Try a different search or filter." /> : null}
           {shown.length > 0 ? (
@@ -94,14 +107,14 @@ export default function Contacts() {
                   <div className="conv" key={c.id}>
                     <div className="row static">
                       <Avatar name={fullName(c)} url={c.avatar_url} size={46} />
-                      <div className="row-main"><b>{fullName(c)}{c.favorite ? <Star size={13} className="ci" /> : null}</b><span>@{c.username}{c.label ? ' - ' + c.label : ''}{c.mutual > 0 ? ' - ' + c.mutual + ' mutual' : ''}</span></div>
+                      <div className="row-main"><b>{fullName(c)}{c.favorite ? <Star size={13} className="ci" /> : null}</b><span>@{c.username}{c.category ? ' - ' + c.category : ''}{c.labels.length ? ' - ' + c.labels.map((x) => x.name).join(', ') : ''}{c.mutual > 0 ? ' - ' + c.mutual + ' mutual' : ''}</span></div>
                     </div>
                     <button type="button" className="icon-btn" aria-label={'Message ' + fullName(c)} disabled={busy === c.id} onClick={() => message(c)}><MessageCircle size={20} /></button>
                     <button type="button" className="icon-btn" aria-label="Contact options" aria-expanded={menu === c.id} onClick={() => setMenu(menu === c.id ? null : c.id)}><Ellipsis size={20} /></button>
                     {menu === c.id ? (
                       <div className="conv-acts">
                         <button type="button" onClick={() => act(() => setFavorite(c.id, !c.favorite))}><Star size={16} /> {c.favorite ? 'Remove favorite' : 'Favorite'}</button>
-                        <button type="button" onClick={() => { setMenu(null); setSheet({ t: 'labels', c }); }}><Tag size={16} /> Label</button>
+                        <button type="button" onClick={() => { setMenu(null); setSheet({ t: 'labels', c }); }}><Tag size={16} /> Labels and category</button>
                         {c.mutual > 0 ? <button type="button" onClick={() => { setMenu(null); setSheet({ t: 'mutual', c }); }}><Users size={16} /> Mutual</button> : null}
                         <button type="button" onClick={() => { if (window.confirm('Remove ' + fullName(c) + ' from your contacts?')) act(() => removeContact(c.id)); }}><UserMinus size={16} /> Remove</button>
                         <button type="button" onClick={() => { if (window.confirm('Block ' + fullName(c) + '? They are removed from your contacts and cannot message you.')) act(() => blockUser(c.id)); }}><Ban size={16} /> Block</button>
@@ -120,6 +133,7 @@ export default function Contacts() {
       {sheet && sheet.t === 'scan' ? <ScanSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'labels' ? <LabelSheet contact={sheet.c} onClose={() => setSheet(null)} onChanged={load} /> : null}
       {sheet && sheet.t === 'group' ? <PickSheet title="New group" label="Create" withName onSubmit={(ids, n, d) => createGroup(n, ids, d)} onClose={() => setSheet(null)} onDone={(r) => { setSheet(null); nav('/messages/' + r.data.id); }} /> : null}
+      {sheet && sheet.t === 'invite' ? <InviteSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'mutual' ? <MutualSheet contact={sheet.c} onClose={() => setSheet(null)} /> : null}
     </>
   );

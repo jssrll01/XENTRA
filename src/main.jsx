@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import '@fontsource-variable/inter';
 import './styles.css';
+import './lib/lockdown';
 import App from './App.jsx';
 import { getTheme, applyTheme } from './lib/theme';
 

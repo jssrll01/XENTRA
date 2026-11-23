@@ -620,8 +620,6 @@ img { -webkit-user-drag: none; }
 .ai-fact:last-child { border-bottom: 0; }
 .ai-fact span { font-size: 13px; color: #64748b; }
 .ai-fact small { color: #64748b; }
-.ai-cta { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; color: #fff; text-decoration: none; background: linear-gradient(135deg, #1d4ed8, #3b82f6 60%, #38bdf8); box-shadow: 0 8px 22px rgba(37, 99, 235, 0.28); }
-.ai-cta-ic { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 14px; background: rgba(255, 255, 255, 0.2); }
-.ai-cta-t { display: flex; flex-direction: column; flex: 1; }
-.ai-cta-t b { font-size: 16px; }
-.ai-cta-t span { font-size: 13px; opacity: 0.9; }
+.ai-link { display: flex; flex-direction: row; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
+.ai-link .row-main { flex: 1; min-width: 0; }
+.ai-link-go { flex-shrink: 0; color: #2563eb; }

@@ -85,10 +85,10 @@ export default function Home() {
         })}
       </section>
 
-      <Link to="/ai" className="ai-cta">
-        <span className="ai-cta-ic"><AiSparkles size={22} /></span>
-        <span className="ai-cta-t"><b>Explore AI tools</b><span>Discover and compare popular AI platforms</span></span>
-        <AiChevron size={20} />
+      <Link to="/ai" className="glass card ai-link">
+        <span className="sec-ic"><AiSparkles size={18} /></span>
+        <div className="row-main"><b>Explore AI tools</b><span>Discover and compare popular AI platforms</span></div>
+        <AiChevron size={20} className="ai-link-go" />
       </Link>
 
       <RecentChats />

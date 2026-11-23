@@ -182,3 +182,5 @@ export const removeTeamBadge = (id) => call('remove_team_badge', { p_id: id });
 export const listTeamBadges = (team) => call('list_team_badges', { p_team: team });
 export const muteMemberFor = (team, uid, minutes) => call('mute_member_for', { p_team: team, p_user: uid, p_minutes: minutes });
 export const listTeamLog = (team) => call('list_team_log', { p_team: team });
+
+export const setGroupPermissions = (id, p) => call('set_group_permissions', { p_id: id, p_send: p.send ?? null, p_edit_info: p.edit_info ?? null, p_add_members: p.add_members ?? null, p_pin: p.pin ?? null });

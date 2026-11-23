@@ -5,6 +5,7 @@ import { Camera, Copy, Crown, LogOut, RefreshCw, ShieldCheck, ShieldOff, UserMin
 import Avatar from '../components/ui/Avatar';
 import PickSheet from '../components/PickSheet';
 import GroupRules from '../components/GroupRules';
+import GroupPermissions from '../components/GroupPermissions';
 import { getGroup, listGroupMembers, updateGroup, setGroupAvatar, resetGroupInvite, setGroupInviteEnabled, addGroupMembers, removeGroupMember, leaveGroup, setMemberRole, transferOwnership } from '../lib/api';
 import { uploadAvatar } from '../lib/cloudinary';
 import { fullName } from '../lib/format';
@@ -76,7 +77,7 @@ export default function GroupInfo() {
                 <input type="text" aria-label="Group name" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />
                 <input type="text" aria-label="Group description" placeholder="Description" maxLength={300} value={desc} onChange={(e) => setDesc(e.target.value)} />
                 <button type="button" className="btn btn-primary btn-sm" disabled={busy || !name.trim()} onClick={() => run(updateGroup(id, name, desc, null), 'Saved')}>Save</button>
-                <button type="button" className={'chip' + (g.announcement_only ? ' on' : '')} disabled={busy} onClick={() => run(updateGroup(id, null, null, !g.announcement_only))}>Only admins can send</button>
+                
               </>
             ) : (
               <>
@@ -86,6 +87,13 @@ export default function GroupInfo() {
               </>
             )}
             <span>{g.members} members</span>
+              {!admin && g.can_edit ? (
+                <>
+                  <input type="text" aria-label="Group name" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />
+                  <input type="text" aria-label="Group description" placeholder="Description" maxLength={300} value={desc} onChange={(e) => setDesc(e.target.value)} />
+                  <button type="button" className="btn btn-primary btn-sm" disabled={busy || !name.trim()} onClick={() => run(updateGroup(id, name, desc, null), 'Saved')}>Save</button>
+                </>
+              ) : null}
             <Link className="see-all" to={'/messages/' + id}>Back to chat</Link>
           </section>
           {admin && g.invite_code ? (
@@ -102,7 +110,7 @@ export default function GroupInfo() {
           <section className="glass card">
             <label className="chat-find"><input value={mq} onChange={(e) => setMq(e.target.value)} placeholder="Search members" aria-label="Search members" /></label>
             <div className="card-head"><h2>Members</h2>
-              {admin ? <button type="button" className="btn btn-primary btn-sm" onClick={() => setAdd(true)}><UserPlus size={16} /> Add</button> : null}
+              {admin || g.can_add ? <button type="button" className="btn btn-primary btn-sm" onClick={() => setAdd(true)}><UserPlus size={16} /> Add</button> : null}
             </div>
             <div className="rows">
               {(mem || []).filter((m) => !mq.trim() || (fullName(m) + ' ' + (m.username || '')).toLowerCase().includes(mq.trim().toLowerCase())).map((m) => {
@@ -123,7 +131,8 @@ export default function GroupInfo() {
               })}
             </div>
           </section>
-          {admin ? <GroupRules id={id} mem={mem} onChanged={load} /> : null}
+          {admin && g.perms ? <GroupPermissions id={id} perms={g.perms} onChanged={load} /> : null}
+            {admin ? <GroupRules id={id} mem={mem} onChanged={load} /> : null}
           <button type="button" className="btn btn-secondary btn-block" disabled={busy} onClick={leave}><LogOut size={16} /> Leave group</button>
         </>
       ) : null}

@@ -70,10 +70,16 @@ export default function GroupInfo() {
         <>
           <section className="glass card add-card">
             <Avatar name={g.name} url={g.avatar_url} size={80} />
-            {admin ? (
+            {admin || g.can_edit ? (
               <>
                 <input ref={file} type="file" accept="image/*" hidden onChange={pick} />
                 <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => file.current && file.current.click()}><Camera size={16} /> Change photo</button>
+              </>
+            ) : null}
+            {admin ? (
+              <>
+                
+                
                 <input type="text" aria-label="Group name" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />
                 <input type="text" aria-label="Group description" placeholder="Description" maxLength={300} value={desc} onChange={(e) => setDesc(e.target.value)} />
                 <button type="button" className="btn btn-primary btn-sm" disabled={busy || !name.trim()} onClick={() => run(updateGroup(id, name, desc, null), 'Saved')}>Save</button>

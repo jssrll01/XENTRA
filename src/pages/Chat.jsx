@@ -392,6 +392,7 @@ export default function Chat() {
       </div>
       {searching ? <ChatSearch conversationId={id} onClose={() => setSearching(false)} onJump={(m) => { setSearching(false); goQuote(m.id); }} /> : null}
       {pins.length ? <PinBar pins={pins} onJump={jump} /> : null}
+      <p className="purge-note"><Clock size={12} /> Messages are deleted after 7 days</p>
       <div className="chat-box" ref={box}>
         {err ? <div className="alert err with-action"><span>{err}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => { loadOther(); load(); }}><RefreshCw size={16} /> Retry</button></div> : null}
         {notice ? <div className="alert info">{notice}</div> : null}

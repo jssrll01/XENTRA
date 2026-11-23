@@ -445,3 +445,11 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .head-acts { display: flex; gap: 8px; }
 .exp-note { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
 .sx-lbl select { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font: inherit; }
+.pf-cover { height: 64px; margin-bottom: 8px; border-radius: 14px; background: var(--cover, #e2e8f0); }
+.pf-pub { text-align: center; }
+.pf-pub h2 { margin: 8px 0 2px; }
+.pf-pub .avatar { margin: -52px auto 0; border: 3px solid #fff; }
+.pf-bio { margin: 10px 0 12px; white-space: pre-wrap; }
+.pf-acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.pf-accent .btn-primary { background: var(--accent, #2563eb); }
+.vbadge { color: #2563eb; vertical-align: -3px; margin-left: 4px; }

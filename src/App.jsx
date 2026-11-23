@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import PublicProfile from './pages/PublicProfile';
 import { configured } from './lib/supabase';
 import { AuthProvider } from './lib/auth';
 import { ToastProvider } from './components/ui/Toast';
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/search" element={<Search />} />
+              <Route path="/u/:username" element={<PublicProfile />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/messages/:id" element={<Chat />} />
               <Route path="/contacts" element={<Contacts />} />

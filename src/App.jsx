@@ -17,6 +17,8 @@ import Messages from './pages/Messages';
 import Chat from './pages/Chat';
 import Contacts from './pages/Contacts';
 import AddContact from './pages/AddContact';
+import InvitePage from './pages/InvitePage';
+import InviteResume from './components/InviteResume';
 import GroupInfo from './pages/GroupInfo';
 import JoinGroup from './pages/JoinGroup';
 import Teams from './pages/Teams';
@@ -49,7 +51,8 @@ export default function App() {
             <Route path="/signin" element={<PublicOnly><SignIn /></PublicOnly>} />
             <Route path="/verify-email" element={<PublicOnly><VerifyEmail /></PublicOnly>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route element={<RequireAuth><ProfileProvider><SummaryProvider><AppShell /></SummaryProvider></ProfileProvider></RequireAuth>}>
+            <Route path="/invite/:code" element={<InvitePage />} />
+            <Route element={<RequireAuth><ProfileProvider><SummaryProvider><InviteResume /><AppShell /></SummaryProvider></ProfileProvider></RequireAuth>}>
               <Route path="/home" element={<Home />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />

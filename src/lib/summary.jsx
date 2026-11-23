@@ -21,8 +21,8 @@ export function SummaryProvider({ children }) {
     reload();
     const vis = () => { if (document.visibilityState === 'visible') reload(); };
     document.addEventListener('visibilitychange', vis);
-    const t = setInterval(reload, 60000);
-    return () => { document.removeEventListener('visibilitychange', vis); clearInterval(t); };
+    
+    return () => { document.removeEventListener('visibilitychange', vis); };
   }, [reload]);
 
   useMessageEvents(reload, profile.id);

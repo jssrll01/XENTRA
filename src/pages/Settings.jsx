@@ -9,11 +9,12 @@ import { useAuth } from '../lib/auth';
 import { useProfile } from '../lib/profile';
 import { getMyPresence, setPresence, listDevices, removeDevice } from '../lib/api';
 import { ago, fullName } from '../lib/format';
-import { pushSupported, currentSub, enablePush, disablePush } from '../lib/push';
+import { pushSupported, currentSub, enablePush } from '../lib/push';
 import { getTheme, applyTheme } from '../lib/theme';
 
 import PrivacyPanel from '../components/PrivacyPanel';
 import ActivityPanel from '../components/ActivityPanel';
+import NotifSettings from '../components/NotifSettings';
 import { Eye as EyeIcon, History as HistoryIcon } from 'lucide-react';
 const STATES = [['online', 'Online'], ['dnd', 'Do not disturb'], ['invisible', 'Invisible']];
 const HOURS = [['0', 'Never clears'], ['1', '1 hour'], ['4', '4 hours'], ['24', '24 hours']];
@@ -60,10 +61,10 @@ export default function Settings() {
   }, []);
   const togglePush = async () => {
     setBusy(true); setNote('');
-    const r = pushOn ? await disablePush() : await enablePush();
+    const r = await enablePush();
     setBusy(false);
     if (!r.ok) { setErr(r.error); return; }
-    setErr(''); setNote(pushOn ? 'Notifications off' : 'Notifications on'); setPushOn(!pushOn); load();
+    setErr(''); setNote('This device is registered'); setPushOn(true); load();
   };
   const [expAt, setExpAt] = useState('');
   const saveStatus = async (next) => {
@@ -132,9 +133,10 @@ export default function Settings() {
         </Row>
         <Row {...R} id="notif" icon={Bell} title="Notifications" sub="Push alerts and devices" tag={pushOn ? 'On' : 'Off'}>
           {pushSupported() ? (
-            <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={togglePush}><Bell size={16} /> {pushOn ? 'Turn off on this device' : 'Turn on for this device'}</button>
+            <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={togglePush}><Bell size={16} /> Re-register this device</button>
           ) : <p className="note">This browser does not support push notifications. On iPhone, add XENTRA to the Home Screen first.</p>}
           <p className="note">Muted chats and Do not disturb stay silent.</p>
+          <NotifSettings />
           {!dev ? <Skeleton rows={1} /> : null}
           {dev && dev.length === 0 ? <EmptyState icon={Smartphone} title="No devices" text="Devices with notifications turned on appear here." /> : null}
           {dev && dev.length > 0 ? (

@@ -1,14 +1,11 @@
-import ProfileQr from '../components/ProfileQr';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { AtSign, BadgeCheck, Camera, Copy, Eye, Mail, Phone, User } from 'lucide-react';
+import { AtSign, BadgeCheck, Camera, Copy, Mail, Phone, User } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { updateProfile, setAvatar, checkUsername, getMyDetails, setMyDetails, usernameCooldown } from '../lib/api';
 import { uploadAvatar } from '../lib/cloudinary';
 import { avatarCooldown } from '../lib/api';
 import { fullName } from '../lib/format';
-import { PALETTE, PALETTE_KEYS } from '../lib/palette';
 
 function Item({ icon: Icon, label, required, wide, ...rest }) {
   return (
@@ -18,20 +15,6 @@ function Item({ icon: Icon, label, required, wide, ...rest }) {
         <span className="field-label">{label}{required ? <b>*</b> : null}</span>
         <input {...rest} />
       </label>
-    </div>
-  );
-}
-
-function Swatches({ label, value, onChange }) {
-  return (
-    <div className="pf-sw">
-      <span className="field-label">{label}</span>
-      <div className="chips">
-        <button type="button" className={'chip' + (!value ? ' on' : '')} onClick={() => onChange('')}>None</button>
-        {PALETTE_KEYS.map((k) => (
-          <button type="button" key={k} className={'swatch' + (value === k ? ' on' : '')} style={{ '--sw': PALETTE[k] }} aria-label={k} aria-pressed={value === k} onClick={() => onChange(k)} />
-        ))}
-      </div>
     </div>
   );
 }
@@ -116,12 +99,11 @@ export default function Profile() {
 
   return (
     <>
-      <div className="pf-cover" style={det.cover ? { '--cover': PALETTE[det.cover] } : undefined} />
       <section className="glass card profile-top">
         <Avatar name={fullName(profile)} url={profile.avatar_url} size={72} />
         <div>
           <b>{fullName(profile) || 'Your profile'}{det.verified ? <BadgeCheck size={18} className="vbadge" aria-label="Verified" /> : null}</b>
-          <span>{profile.username ? '@' + profile.username : 'Choose a username below'}</span>
+          <span>{profile.username ? '@' + profile.username : 'Choose a username below'}{profile.username ? <button type="button" className="icon-btn" aria-label="Copy profile link" onClick={copyLink}><Copy size={16} /></button> : null}</span>
           <button type="button" className="btn btn-secondary btn-sm" disabled={up} onClick={() => fileRef.current && fileRef.current.click()}>
             <Camera size={16} /> {up ? 'Uploading...' : 'Change photo'}
           </button>
@@ -149,19 +131,10 @@ export default function Profile() {
         <p className="note">{det.bio.length}/160</p>
         {locked ? <p className="note" role="status">You can change your username again on {day(cool.next_change_at)}.</p> : null}
         {!locked && UN_MSG[un] ? <p className="note" role="status">{UN_MSG[un]}</p> : null}
-        <Swatches label="Cover color" value={det.cover} onChange={(v) => setDet({ ...det, cover: v })} />
-        <Swatches label="Accent color" value={det.accent} onChange={(v) => setDet({ ...det, accent: v })} />
         {err ? <div className="alert err">{err}</div> : null}
         {ok ? <div className="alert ok">Profile saved.</div> : null}
         {note ? <div className="alert info" role="status">{note}</div> : null}
         <button type="submit" className="btn btn-primary btn-block" disabled={busy || un === 'taken' || un === 'bad'}>{busy ? 'Saving...' : 'Save changes'}</button>
-        {profile.username ? (
-          <div className="pf-acts">
-            <Link className="btn btn-secondary btn-sm" to={'/u/' + profile.username}><Eye size={16} /> View as others see it</Link>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={copyLink}><Copy size={16} /> Copy profile link</button>
-            <ProfileQr username={profile.username} />
-          </div>
-        ) : null}
       </form>
     </>
   );

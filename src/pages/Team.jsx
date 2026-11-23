@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import Skeleton from '../components/ui/Skeleton';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -24,7 +25,7 @@ export default function Team() {
   }, [id]);
   useEffect(() => { load(); }, [load, tick]);
   const leave = async () => {
-    if (!window.confirm('Leave this team?')) return;
+    if (!await ask('Leave this team?')) return;
     setBusy(true);
     const r = await leaveTeam(id);
     setBusy(false);

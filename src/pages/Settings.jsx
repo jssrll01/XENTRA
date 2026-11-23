@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import Select from '../components/ui/Select';
 import { Link } from 'react-router-dom';
@@ -108,7 +109,7 @@ export default function Settings() {
     load();
   };
   const clear = async () => {
-    if (!window.confirm('Clear cached data?')) return;
+    if (!await ask('Clear cached data?')) return;
     try {
       const ks = await caches.keys();
       await Promise.all(ks.map((k) => caches.delete(k)));

@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import { pressProps } from '../lib/longpress';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -184,7 +185,7 @@ export default function Chat() {
   const startEdit = (m) => { setEditing(m); setText(m.body); setReply(null); setSel(null); };
   const del = async (m) => {
     setSel(null);
-    if (!window.confirm('Delete this message?')) return;
+    if (!await ask('Delete this message?')) return;
     const r = await (cperm ? deleteChannelMessage(m.id) : deleteMessage(m.id));
     if (r.ok) setMsgs((p) => p.map((x) => (x.id === m.id ? { ...x, deleted: true, body: '', reactions: [] } : x)));
     else setNotice(r.error);
@@ -277,7 +278,7 @@ export default function Chat() {
     if (r.ok) load(); else setNotice(r.error);
   };
   const closeP = async (p) => {
-    if (!window.confirm('Close this poll? Voting will stop.')) return;
+    if (!await ask('Close this poll? Voting will stop.')) return;
     const r = await closePoll(p.id);
     if (r.ok) load(); else setNotice(r.error);
   };

@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Archive, ArchiveRestore, Bell, BellOff, Ellipsis, MessageCircle, Pin, PinOff, Plus, RefreshCw, Search as SearchIcon, X } from 'lucide-react';
@@ -83,7 +84,7 @@ export default function Messages() {
   };
   const del = async (c) => {
     setMenu(null);
-    if (!window.confirm('Delete this chat for you? History is hidden until a new message arrives. Other members keep theirs.')) return;
+    if (!await ask('Delete this chat for you? History is hidden until a new message arrives. Other members keep theirs.')) return;
     const r = await deleteConversation(c.id);
     if (r.ok) load(); else setErr(r.error);
   };

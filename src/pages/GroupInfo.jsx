@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from '../components/ui/Skeleton';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -55,7 +56,7 @@ export default function GroupInfo() {
     try { await navigator.clipboard.writeText(link); setNote('Link copied'); } catch (x) { setNote('Could not copy.'); }
   };
   const leave = async () => {
-    if (!window.confirm('Leave this group?')) return;
+    if (!await ask('Leave this group?')) return;
     setBusy(true);
     const r = await leaveGroup(id);
     setBusy(false);
@@ -108,7 +109,7 @@ export default function GroupInfo() {
               <span className="qr-code">{g.invite_enabled ? link : 'Link is off'}</span>
               <span className="req-acts">
                 {g.invite_enabled ? <button type="button" className="btn btn-secondary btn-sm" onClick={copy}><Copy size={16} /> Copy</button> : null}
-                <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => { if (window.confirm('Make a new link? The old link stops working.')) run(resetGroupInvite(id), 'New link ready'); }}><RefreshCw size={16} /> New link</button>
+                <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={async () => { if (await ask('Make a new link? The old link stops working.')) run(resetGroupInvite(id), 'New link ready'); }}><RefreshCw size={16} /> New link</button>
                 <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => run(setGroupInviteEnabled(id, !g.invite_enabled))}>{g.invite_enabled ? 'Turn off' : 'Turn on'}</button>
               </span>
             </section>
@@ -129,8 +130,8 @@ export default function GroupInfo() {
                     {m.role !== 'member' ? <span className="rel-tag">{m.role}</span> : null}
                     <span className="req-acts">
                       {owner && !mine ? <button type="button" className="icon-btn" aria-label={m.role === 'admin' ? 'Remove admin' : 'Make admin'} disabled={busy} onClick={() => run(setMemberRole(id, m.id, m.role === 'admin' ? 'member' : 'admin'))}>{m.role === 'admin' ? <ShieldOff size={18} /> : <ShieldCheck size={18} />}</button> : null}
-                      {owner && !mine ? <button type="button" className="icon-btn" aria-label="Transfer ownership" disabled={busy} onClick={() => { if (window.confirm('Make ' + fullName(m) + ' the owner? You become an admin.')) run(transferOwnership(id, m.id), 'Ownership transferred'); }}><Crown size={18} /></button> : null}
-                      {canRm ? <button type="button" className="icon-btn" aria-label={'Remove ' + fullName(m)} disabled={busy} onClick={() => { if (window.confirm('Remove ' + fullName(m) + ' from the group?')) run(removeGroupMember(id, m.id)); }}><UserMinus size={18} /></button> : null}
+                      {owner && !mine ? <button type="button" className="icon-btn" aria-label="Transfer ownership" disabled={busy} onClick={async () => { if (await ask('Make ' + fullName(m) + ' the owner? You become an admin.')) run(transferOwnership(id, m.id), 'Ownership transferred'); }}><Crown size={18} /></button> : null}
+                      {canRm ? <button type="button" className="icon-btn" aria-label={'Remove ' + fullName(m)} disabled={busy} onClick={async () => { if (await ask('Remove ' + fullName(m) + ' from the group?')) run(removeGroupMember(id, m.id)); }}><UserMinus size={18} /></button> : null}
                     </span>
                   </div>
                 );

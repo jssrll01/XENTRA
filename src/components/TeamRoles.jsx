@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import { listTeamRoles, saveTeamRole, deleteTeamRole } from '../lib/api';
@@ -36,7 +37,7 @@ export default function TeamRoles({ team, tick }) {
               {PERMS.map(([k, l]) => <button type="button" role="switch" aria-checked={!!r[k]} key={k} className={'chip' + (r[k] ? ' on' : '')} disabled={busy} onClick={() => run(saveTeamRole(team.id, r.id, null, { [k]: !r[k] }))}>{l}</button>)}
             </span>
           </div>
-          <button type="button" className="icon-btn" aria-label={'Delete role ' + r.name} disabled={busy} onClick={() => { if (window.confirm('Delete the role ' + r.name + '? Members lose its rights.')) run(deleteTeamRole(team.id, r.id)); }}><Trash2 size={18} /></button>
+          <button type="button" className="icon-btn" aria-label={'Delete role ' + r.name} disabled={busy} onClick={async () => { if (await ask('Delete the role ' + r.name + '? Members lose its rights.')) run(deleteTeamRole(team.id, r.id)); }}><Trash2 size={18} /></button>
         </div>
       ))}
       <div className="lbl-row">

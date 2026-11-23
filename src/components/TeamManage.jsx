@@ -1,3 +1,4 @@
+import { ask, promptText } from '../lib/dialog';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera, Copy, RefreshCw } from 'lucide-react';
 import { listChannels, listJoinRequests, listBans, updateTeam, setTeamAvatar, resetTeamInvite, setTeamInviteEnabled, createChannel, updateChannel, archiveChannel, respondJoinRequest, unbanMember } from '../lib/api';
@@ -53,8 +54,8 @@ export default function TeamManage({ team, tick, onChanged }) {
   const copy = async () => {
     try { await navigator.clipboard.writeText(link); setNote('Link copied'); } catch (x) { setNote('Could not copy.'); }
   };
-  const rename = (c) => {
-    const n = window.prompt('Channel name', c.name);
+  const rename = async (c) => {
+    const n = await promptText('Channel name', c.name);
     if (n && n.trim() && n.trim() !== c.name) run(updateChannel(c.id, n, null));
   };
   const addCh = async () => { if (await run(createChannel(team.id, cname, false), 'Channel created')) setCname(''); };
@@ -81,7 +82,7 @@ export default function TeamManage({ team, tick, onChanged }) {
           {team.invite_enabled && link ? <InviteQr link={link} /> : null}
         <span className="req-acts">
           {team.invite_enabled ? <button type="button" className="btn btn-secondary btn-sm" onClick={copy}><Copy size={16} /> Copy</button> : null}
-          <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => { if (window.confirm('Make a new link? The old link stops working.')) run(resetTeamInvite(team.id), 'New link ready', true); }}><RefreshCw size={16} /> New link</button>
+          <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={async () => { if (await ask('Make a new link? The old link stops working.')) run(resetTeamInvite(team.id), 'New link ready', true); }}><RefreshCw size={16} /> New link</button>
           <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => run(setTeamInviteEnabled(team.id, !team.invite_enabled), '', true)}>{team.invite_enabled ? 'Turn off' : 'Turn on'}</button>
         </span>
       </section>

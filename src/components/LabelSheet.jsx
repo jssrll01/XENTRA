@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import Skeleton from './ui/Skeleton';
 import { Check, Pencil, Trash2 } from 'lucide-react';
@@ -33,7 +34,7 @@ export default function LabelSheet({ contact, onClose, onChanged }) {
   };
   const add = async () => { if (await run(createLabel(name))) setName(''); };
   const save = async () => { if (await run(renameLabel(edit.id, edit.name))) setEdit(null); };
-  const del = (l) => { if (window.confirm('Delete the label ' + l.name + '? Contacts keep their other labels.')) run(deleteLabel(l.id)); };
+  const del = async (l) => { if (await ask('Delete the label ' + l.name + '? Contacts keep their other labels.')) run(deleteLabel(l.id)); };
   const setCat = async (c) => { if (await run(setContactCategory(contact.id, c))) setCname(''); };
   const cats = mine.category && !BASE.includes(mine.category) ? BASE.concat([mine.category]) : BASE;
   return (

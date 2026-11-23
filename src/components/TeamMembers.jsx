@@ -1,3 +1,4 @@
+import { ask, promptText } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import Select from './ui/Select';
 import Skeleton from './ui/Skeleton';
@@ -21,12 +22,12 @@ export default function TeamMembers({ team, tick }) {
   const staff = mine >= RANK.admin;
   const muteWith = async (m, on) => {
     if (!on) return muteMember(team.id, m.id, false);
-    const v = window.prompt('Mute ' + fullName(m) + ' for how many minutes? (5 to 43200)', '60');
+    const v = await promptText('Mute ' + fullName(m) + ' for how many minutes? (5 to 43200)', '60');
     if (!v) return { ok: true, data: {} };
     return muteMemberFor(team.id, m.id, parseInt(v, 10) || 0);
   };
   const badge = async (m) => {
-    const l = window.prompt('Badge for ' + fullName(m) + ' (up to 24 characters). Type - to remove the last badge.');
+    const l = await promptText('Badge for ' + fullName(m) + ' (up to 24 characters). Type - to remove the last badge.');
     if (!l || !l.trim()) return { ok: true, data: {} };
     if (l.trim() === '-') {
       const list = bd[m.id] || [];
@@ -89,10 +90,10 @@ export default function TeamMembers({ team, tick }) {
                       <option value="admin">admin</option><option value="moderator">moderator</option><option value="member">member</option>
                     </Select>
                   ) : null}
-                  {owner && !me ? <button type="button" className="icon-btn" aria-label="Transfer ownership" disabled={busy} onClick={() => { if (window.confirm('Make ' + fullName(m) + ' the owner? You become an admin.')) run(transferTeamOwner(team.id, m.id)); }}><Crown size={18} /></button> : null}
+                  {owner && !me ? <button type="button" className="icon-btn" aria-label="Transfer ownership" disabled={busy} onClick={async () => { if (await ask('Make ' + fullName(m) + ' the owner? You become an admin.')) run(transferTeamOwner(team.id, m.id)); }}><Crown size={18} /></button> : null}
                   {act ? <button type="button" className="icon-btn" aria-label={m.muted ? 'Unmute ' + fullName(m) : 'Mute ' + fullName(m)} disabled={busy} onClick={() => run(muteWith(m, !m.muted))}>{m.muted ? <Volume2 size={18} /> : <VolumeX size={18} />}</button> : null}
-                  {act ? <button type="button" className="icon-btn" aria-label={'Remove ' + fullName(m)} disabled={busy} onClick={() => { if (window.confirm('Remove ' + fullName(m) + ' from the team?')) run(kickMember(team.id, m.id)); }}><UserMinus size={18} /></button> : null}
-                  {act ? <button type="button" className="icon-btn" aria-label={'Ban ' + fullName(m)} disabled={busy} onClick={() => { if (window.confirm('Ban ' + fullName(m) + '? They cannot rejoin until unbanned.')) run(banMember(team.id, m.id)); }}><Ban size={18} /></button> : null}
+                  {act ? <button type="button" className="icon-btn" aria-label={'Remove ' + fullName(m)} disabled={busy} onClick={async () => { if (await ask('Remove ' + fullName(m) + ' from the team?')) run(kickMember(team.id, m.id)); }}><UserMinus size={18} /></button> : null}
+                  {act ? <button type="button" className="icon-btn" aria-label={'Ban ' + fullName(m)} disabled={busy} onClick={async () => { if (await ask('Ban ' + fullName(m) + '? They cannot rejoin until unbanned.')) run(banMember(team.id, m.id)); }}><Ban size={18} /></button> : null}
                 </span>
               </div>
             );

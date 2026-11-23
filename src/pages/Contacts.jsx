@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Skeleton from '../components/ui/Skeleton';
 import { useNavigate } from 'react-router-dom';
@@ -119,8 +120,8 @@ export default function Contacts() {
                         <button type="button" onClick={() => act(() => setFavorite(c.id, !c.favorite))}><Star size={16} /> {c.favorite ? 'Remove favorite' : 'Favorite'}</button>
                         <button type="button" onClick={() => { setMenu(null); setSheet({ t: 'labels', c }); }}><Tag size={16} /> Labels and category</button>
                         {c.mutual > 0 ? <button type="button" onClick={() => { setMenu(null); setSheet({ t: 'mutual', c }); }}><Users size={16} /> Mutual</button> : null}
-                        <button type="button" onClick={() => { if (window.confirm('Remove ' + fullName(c) + ' from your contacts?')) act(() => removeContact(c.id)); }}><UserMinus size={16} /> Remove</button>
-                        <button type="button" onClick={() => { if (window.confirm('Block ' + fullName(c) + '? They are removed from your contacts and cannot message you.')) act(() => blockUser(c.id)); }}><Ban size={16} /> Block</button>
+                        <button type="button" onClick={async () => { if (await ask('Remove ' + fullName(c) + ' from your contacts?')) act(() => removeContact(c.id)); }}><UserMinus size={16} /> Remove</button>
+                        <button type="button" onClick={async () => { if (await ask('Block ' + fullName(c) + '? They are removed from your contacts and cannot message you.')) act(() => blockUser(c.id)); }}><Ban size={16} /> Block</button>
                       </div>
                     ) : null}
                   </div>

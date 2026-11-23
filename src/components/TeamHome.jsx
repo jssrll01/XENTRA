@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import Skeleton from './ui/Skeleton';
 import { Link } from 'react-router-dom';
@@ -77,7 +78,7 @@ export default function TeamHome({ team, tick }) {
                   )}
                 {canEdit ? <button type="button" className="icon-btn" aria-label="Edit post" disabled={busy} onClick={() => { setEd(p.id); setEdText(p.body); }}><Pencil size={18} /></button> : null}
                   {canPin ? <button type="button" className="icon-btn" aria-label={p.pinned ? 'Unpin post' : 'Pin post'} disabled={busy} onClick={() => run(pinPost(p.id, !p.pinned))}>{p.pinned ? <PinOff size={18} /> : <Pin size={18} />}</button> : null}
-                {staff || p.author === team.me ? <button type="button" className="icon-btn" aria-label="Delete post" disabled={busy} onClick={() => { if (window.confirm('Delete this post?')) run(deletePost(p.id)); }}><Trash2 size={18} /></button> : null}
+                {staff || p.author === team.me ? <button type="button" className="icon-btn" aria-label="Delete post" disabled={busy} onClick={async () => { if (await ask('Delete this post?')) run(deletePost(p.id)); }}><Trash2 size={18} /></button> : null}
               </div>
             ))}
           </div>

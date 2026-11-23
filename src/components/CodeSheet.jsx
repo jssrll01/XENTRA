@@ -1,3 +1,4 @@
+import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import Skeleton from './ui/Skeleton';
 import { Copy, RefreshCw } from 'lucide-react';
@@ -20,7 +21,7 @@ export default function CodeSheet({ onClose }) {
   }, []);
   useEffect(() => { getMyCode().then(apply); }, [apply]);
   const regen = async () => {
-    if (!window.confirm('Make a new code? Your old QR code and link stop working.')) return;
+    if (!await ask('Make a new code? Your old QR code and link stop working.')) return;
     setNote('');
     apply(await regenerateMyCode());
   };

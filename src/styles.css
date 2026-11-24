@@ -750,3 +750,14 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
 .app.full .chat { height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
 .app.full .chat-head { padding-top: calc(10px + env(safe-area-inset-top)); }
 .app.full .chat { padding-bottom: env(safe-area-inset-bottom); }
+
+/* no inner focus ring inside wrapped fields (the wrapper shows focus) */
+.field-body input, .field-body textarea, .field-body select,
+.chat-find input, .msg-find input, .tm-search input, .lbl-row input {
+  border: 0; border-radius: 0; box-shadow: none; outline: 0; background: transparent; min-height: 0; padding: 2px 0 0;
+}
+.field-body input:focus, .field-body textarea:focus, .field-body select:focus,
+.chat-find input:focus, .msg-find input:focus, .tm-search input:focus {
+  border: 0; box-shadow: none; outline: 0;
+}
+.chat-find:focus-within, .tm-search:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .14); }

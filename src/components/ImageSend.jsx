@@ -43,6 +43,7 @@ export default function ImageSend({ conversationId, disabled, onSent, onNotice }
   const [pct, setPct] = useState(0);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [cap, setCap] = useState('');
   useEffect(() => () => { if (sel) URL.revokeObjectURL(sel.url); }, [sel]);
 
   const pick = async (e) => {
@@ -56,6 +57,7 @@ export default function ImageSend({ conversationId, disabled, onSent, onNotice }
     const max = Number(cfg('file_max_bytes'));
     if (max && out.size > max) { onNotice('That image is too large. The limit is ' + fmtSize(max) + '.'); return; }
     setErr(''); setPct(0);
+    setCap('');
     setSel({ file: out, url: URL.createObjectURL(out) });
   };
   const close = () => { if (!busy) setSel(null); };
@@ -66,7 +68,7 @@ export default function ImageSend({ conversationId, disabled, onSent, onNotice }
     if (!rs.ok) { setBusy(false); setErr(rs.error); return; }
     const up = await uploadChatFile(rs.data.path, f, setPct);
     if (!up.ok) { setBusy(false); setErr(up.error); return; }
-    const s = await sendAttachment(conversationId, rs.data.path, f.name, f.type, f.size, crypto.randomUUID());
+    const s = await sendAttachment(conversationId, rs.data.path, f.name, f.type, f.size, crypto.randomUUID(), cap.trim());
     setBusy(false);
     if (!s.ok) { setErr(s.error); return; }
     setSel(null);
@@ -81,6 +83,7 @@ export default function ImageSend({ conversationId, disabled, onSent, onNotice }
           <div className="is-card">
             <img src={sel.url} alt="Selected" />
             <p className="note">{sel.file.name} - {fmtSize(sel.file.size)}</p>
+            <input type="text" className="is-cap" placeholder="Add a caption (optional)" aria-label="Caption" maxLength={1000} value={cap} disabled={busy} onChange={(e) => setCap(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !busy) send(); }} />
             {busy ? <div className="up-bar"><span style={{ width: pct + '%' }} /></div> : null}
             {err ? <div className="alert err" role="alert">{err}</div> : null}
             <div className="is-acts">

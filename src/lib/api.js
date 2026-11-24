@@ -70,7 +70,7 @@ export const sendThreadReply = (rid, body, clientId) => call('send_thread_reply'
 export const reserveUpload = (cid, name, mime, size) => call('reserve_upload', { p_conversation: cid, p_name: name, p_mime: mime, p_size: size });
 export const releaseUpload = (id) => call('release_upload', { p_id: id });
 export const getUploadQuota = () => call('get_upload_quota');
-export const sendAttachment = (cid, path, name, mime, size, clientId) => call('send_attachment', { p_conversation: cid, p_path: path, p_name: name, p_mime: mime, p_size: size, p_client_id: clientId });
+export const sendAttachment = (cid, path, name, mime, size, clientId, caption = null) => call('send_attachment', { p_conversation: cid, p_path: path, p_name: name, p_mime: mime, p_size: size, p_caption: caption || null, p_client_id: clientId });
 export const getMyCode = () => call('get_my_code');
 export const regenerateMyCode = () => call('regenerate_my_code');
 export const lookupCode = (code) => call('lookup_code', { p_code: code });

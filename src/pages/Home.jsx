@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles as AiSparkles, ChevronRight as AiChevron } from 'lucide-react';
-import { MessageCircle, Users, MailPlus, CalendarClock, RefreshCw, Search, Bell, ArrowRight, Layers, Megaphone } from 'lucide-react';
-import { BrandArt } from '../components/Logo';
-import Sparkline from '../components/ui/Sparkline';
+import { MessageCircle, Users, MailPlus, CalendarClock, RefreshCw, Search, Bell, ArrowRight, Layers, Megaphone, Sparkles, ChevronRight } from 'lucide-react';
 import EmptyState from '../components/ui/EmptyState';
+import Avatar from '../components/ui/Avatar';
+import Skeleton from '../components/ui/Skeleton';
 import { useProfile } from '../lib/profile';
 import { useSummary } from '../lib/summary';
 import { listNotifications, getAnnouncement, listMyTeams } from '../lib/api';
-import Avatar from '../components/ui/Avatar';
-import Skeleton from '../components/ui/Skeleton';
 import { greeting, ago } from '../lib/format';
 import RecentChats from '../components/RecentChats';
 import ClockWidget from '../components/ClockWidget';
@@ -18,15 +15,18 @@ import CalendarWidget from '../components/CalendarWidget';
 import NotesWidget from '../components/NotesWidget';
 
 const TILES = [
-  ['unread', 'Unread Messages', MessageCircle, '#3b82f6', 'blue'],
-  ['active', 'Active Conversations', Users, '#8b5cf6', 'violet'],
-  ['invites', 'Pending Invitations', MailPlus, '#f59e0b', 'amber'],
-  ['scheduled', 'Scheduled & Reminders', CalendarClock, '#10b981', 'green'],
+  ['unread', 'Unread messages', MessageCircle, 'blue'],
+  ['active', 'Active conversations', Users, 'violet'],
+  ['invites', 'Pending invitations', MailPlus, 'amber'],
+  ['scheduled', 'Scheduled and reminders', CalendarClock, 'green'],
 ];
+
+const today = () => new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 export default function Home() {
   const { profile } = useProfile();
   const { summary, state, reload, tick } = useSummary();
+  const [tab, setTab] = useState('overview');
   const [recent, setRecent] = useState(null);
   const [rerr, setRerr] = useState('');
   const [ann, setAnn] = useState(null);
@@ -55,12 +55,11 @@ export default function Home() {
   }, [tick, hk]);
 
   return (
-    <>
-      <section className="glass hero">
+    <div className="hm">
+      <header className="hm-head">
         <h1>{greeting()}, <span>{profile.first_name || 'there'}</span>.</h1>
-        <p>Your workspace, all in one place.</p>
-        <div className="hero-art"><BrandArt size={170} /></div>
-      </section>
+        <p>{today()}</p>
+      </header>
 
       <Link to="/search" className="search-bar"><Search size={20} /><span>Search people</span></Link>
 
@@ -75,68 +74,78 @@ export default function Home() {
         </section>
       ) : null}
 
-      <section className="tiles" aria-label="Summary">
-        {TILES.map(([key, label, Icon, color, tone]) => {
+      <section className="glass hm-stats" aria-label="Summary">
+        {TILES.map(([key, label, Icon, tone]) => {
           const t = summary && summary[key];
           return (
-            <div className="glass tile" key={key}>
+            <div className="hm-stat" key={key}>
               <span className={'tile-ic tone-' + tone}><Icon size={22} /></span>
-              {t ? <div className="tile-n">{t.value}</div> : <span className="sk sk-tile-n" />}
-              <div className="tile-l">{label}</div>
-              <Sparkline series={(t && t.series) || []} color={color} />
+              <div>
+                {t ? <div className="tile-n">{t.value}</div> : <span className="sk sk-tile-n" />}
+                <div className="tile-l">{label}</div>
+              </div>
             </div>
           );
         })}
       </section>
 
-      <Link to="/ai" className="glass card ai-link">
-        <span className="sec-ic"><AiSparkles size={18} /></span>
-        <div className="row-main"><b>Explore AI tools</b><span>Discover and compare popular AI platforms</span></div>
-        <AiChevron size={20} className="ai-link-go" />
-      </Link>
+      <div className="hm-tabs" role="tablist" aria-label="Home sections">
+        <button type="button" role="tab" id="hm-t-overview" aria-selected={tab === 'overview'} aria-controls="hm-p-overview" onClick={() => setTab('overview')}>Overview</button>
+        <button type="button" role="tab" id="hm-t-planner" aria-selected={tab === 'planner'} aria-controls="hm-p-planner" onClick={() => setTab('planner')}>Planner</button>
+      </div>
 
-      <ClockWidget />
-      <TodoWidget />
-      <CalendarWidget />
-      <NotesWidget />
+      <div className="hm-panel" role="tabpanel" id="hm-p-overview" aria-labelledby="hm-t-overview" hidden={tab !== 'overview'}>
+        <RecentChats />
 
-      <RecentChats />
+        <section className="glass card">
+          <div className="card-head"><h2><span className="sec-ic"><Layers size={18} /></span>My Teams</h2><Link className="see-all" to="/teams">See all <ArrowRight size={16} /></Link></div>
+          {herr ? <div className="alert err with-action"><span>{herr}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => setHk(hk + 1)}><RefreshCw size={16} /> Retry</button></div> : null}
+          {!teams && !herr ? <Skeleton rows={2} /> : null}
+          {teams && teams.length === 0 ? <EmptyState icon={Layers} title="No teams yet" text="Create or join a team to see it here." /> : null}
+          {teams && teams.length > 0 ? (
+            <div className="rows">
+              {teams.slice(0, 5).map((t) => (
+                <Link className="row" key={t.id} to={'/teams/' + t.id}>
+                  <Avatar name={t.name} url={t.avatar_url} size={40} />
+                  <div className="row-main"><b>{t.name}</b><span>{t.members} members</span></div>
+                  <ChevronRight size={18} className="hm-go" />
+                </Link>
+              ))}
+            </div>
+          ) : null}
+        </section>
 
-      <section className="glass card">
-        <div className="card-head"><h2><span className="sec-ic"><Layers size={18} /></span>My Teams</h2><Link className="see-all" to="/teams">See all <ArrowRight size={16} /></Link></div>
-        {herr ? <div className="alert err with-action"><span>{herr}</span><button type="button" className="btn btn-secondary btn-sm" onClick={() => setHk(hk + 1)}><RefreshCw size={16} /> Retry</button></div> : null}
-        {!teams && !herr ? <Skeleton rows={2} /> : null}
-        {teams && teams.length === 0 ? <EmptyState icon={Layers} title="No teams yet" text="Create or join a team to see it here." /> : null}
-        {teams && teams.length > 0 ? (
-          <div className="team-strip">
-            {teams.map((t) => (
-              <Link className="team-card" key={t.id} to={'/teams/' + t.id}>
-                <Avatar name={t.name} url={t.avatar_url} size={48} />
-                <b>{t.name}</b>
-                <span>{t.members} members</span>
-              </Link>
-            ))}
-          </div>
-        ) : null}
-      </section>
+        <section className="glass card">
+          <div className="card-head"><h2><span className="sec-ic"><Bell size={18} /></span>Recent Activity</h2><Link className="see-all" to="/notifications">See all <ArrowRight size={16} /></Link></div>
+          {rerr ? <div className="alert err">{rerr}</div> : null}
+          {!recent && !rerr ? <Skeleton rows={2} /> : null}
+          {recent && recent.length === 0 ? <EmptyState icon={Bell} title="No activity yet" text="Invitations, mentions and updates will appear here." /> : null}
+          {recent && recent.length > 0 ? (
+            <div className="rows">
+              {recent.map((n) => (
+                <Link className="row" key={n.id} to="/notifications">
+                  <span className={n.read_at ? 'dot off' : 'dot'} />
+                  <div className="row-main"><b>{n.title}</b>{n.body ? <span>{n.body}</span> : null}</div>
+                  <span className="row-time">{ago(n.created_at)}</span>
+                </Link>
+              ))}
+            </div>
+          ) : null}
+        </section>
 
-      <section className="glass card">
-        <div className="card-head"><h2><span className="sec-ic"><Bell size={18} /></span>Recent Activity</h2><Link className="see-all" to="/notifications">See all <ArrowRight size={16} /></Link></div>
-        {rerr ? <div className="alert err">{rerr}</div> : null}
-        {!recent && !rerr ? <Skeleton rows={2} /> : null}
-        {recent && recent.length === 0 ? <EmptyState icon={Bell} title="No activity yet" text="Invitations, mentions and updates will appear here." /> : null}
-        {recent && recent.length > 0 ? (
-          <div className="rows">
-            {recent.map((n) => (
-              <Link className="row" key={n.id} to="/notifications">
-                <span className={n.read_at ? 'dot off' : 'dot'} />
-                <div className="row-main"><b>{n.title}</b>{n.body ? <span>{n.body}</span> : null}</div>
-                <span className="row-time">{ago(n.created_at)}</span>
-              </Link>
-            ))}
-          </div>
-        ) : null}
-      </section>
-    </>
+        <Link to="/ai" className="glass card ai-link">
+          <span className="sec-ic"><Sparkles size={18} /></span>
+          <div className="row-main"><b>Explore AI tools</b><span>Discover and compare popular AI platforms</span></div>
+          <ChevronRight size={20} className="ai-link-go" />
+        </Link>
+      </div>
+
+      <div className="hm-panel" role="tabpanel" id="hm-p-planner" aria-labelledby="hm-t-planner" hidden={tab !== 'planner'}>
+        <ClockWidget />
+        <TodoWidget />
+        <CalendarWidget />
+        <NotesWidget />
+      </div>
+    </div>
   );
 }

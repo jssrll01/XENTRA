@@ -24,6 +24,34 @@ const wrap = async (fn) => {
 
 export const normEmail = (e) => String(e || '').trim().toLowerCase();
 
+let memDevice = null;
+const deviceId = () => {
+  try {
+    let d = localStorage.getItem('xentra-device');
+    if (!d) { d = crypto.randomUUID(); localStorage.setItem('xentra-device', d); }
+    return d;
+  } catch (e) {
+    if (!memDevice) memDevice = crypto.randomUUID();
+    return memDevice;
+  }
+};
+
+const guard = async (body) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('auth-guard', { body: { ...body, device: deviceId() } });
+    if (error || !data) return { ok: false, error: 'Sign-in service is unavailable. Please try again.' };
+    if (!data.ok) return { ok: false, code: data.code, error: data.error, retry_after: data.retry_after };
+    if (data.session) {
+      const s = await supabase.auth.setSession(data.session);
+      if (s.error) return { ok: false, error: msg(s.error) };
+      return { ok: true, data: s.data };
+    }
+    return { ok: true, data: {} };
+  } catch (e) {
+    return { ok: false, error: msg(e) };
+  }
+};
+
 
 export async function signUpEmail(f) {
   const parts = f.name.trim().split(/\s+/);
@@ -37,17 +65,17 @@ export async function signUpEmail(f) {
   return r;
 }
 
-export const verifySignup = (email, code) => wrap(() => supabase.auth.verifyOtp({ email: normEmail(email), token: String(code).replace(/\D/g, ''), type: 'signup' }));
+export const verifySignup = (email, code) => guard({ action: 'verify', type: 'signup', email: normEmail(email), code: String(code).replace(/\D/g, '') });
 export const resendCode = (email) => wrap(() => supabase.auth.resend({ type: 'signup', email: normEmail(email) }));
 
 export async function signIn(email, password) {
-  const r = await wrap(() => supabase.auth.signInWithPassword({ email: normEmail(email), password }));
-  if (!r.ok && r.raw && /not confirmed/i.test(String(r.raw.message))) return { ok: false, code: 'unconfirmed', error: 'Your email is not verified yet.' };
+  const r = await guard({ action: 'signin', email: normEmail(email), password });
+  
   return r;
 }
 
 export const signOutApi = () => wrap(() => supabase.auth.signOut());
 
 export const sendResetCode = (email) => wrap(() => supabase.auth.resetPasswordForEmail(normEmail(email)));
-export const verifyRecovery = (email, code) => wrap(() => supabase.auth.verifyOtp({ email: normEmail(email), token: String(code).replace(/\D/g, ''), type: 'recovery' }));
+export const verifyRecovery = (email, code) => guard({ action: 'verify', type: 'recovery', email: normEmail(email), code: String(code).replace(/\D/g, '') });
 export const setNewPassword = (password) => wrap(() => supabase.auth.updateUser({ password }));

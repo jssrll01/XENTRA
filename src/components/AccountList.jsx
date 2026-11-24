@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Check, LogOut, UserPlus } from 'lucide-react';
 import Avatar from './ui/Avatar';
 import { useAuth } from '../lib/auth';
+import { useProfile } from '../lib/profile';
 import { ask } from '../lib/dialog';
 import { listAccounts, switchAccount, signOutOne } from '../lib/accounts';
 
 export default function AccountList({ onClose }) {
-  const { user, signOutAll } = useAuth();
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const nav = useNavigate();
   const [rows, setRows] = useState(() => listAccounts());
   const [busy, setBusy] = useState(false);
@@ -30,12 +32,6 @@ export default function AccountList({ onClose }) {
     setBusy(false);
     reload();
   };
-  const all = async () => {
-    if (!await ask('Sign out of all accounts on this device?')) return;
-    setBusy(true);
-    await signOutAll();
-    setBusy(false);
-  };
 
   return (
     <div className="ac-list" role="group" aria-label="Accounts">
@@ -43,7 +39,7 @@ export default function AccountList({ onClose }) {
         <div className="ac-row" key={a.id}>
           <button type="button" role="menuitem" className="ac-main" disabled={busy} onClick={() => go(a)}>
             <Avatar name={a.name} url={a.avatar_url} size={32} />
-            <span className="ac-who"><b>{a.name}</b><span>{a.expired ? 'Sign in again' : a.email}</span></span>
+            <span className="ac-who"><b>{a.name}</b><span>{a.expired ? 'Sign in again' : a.email}</span>{user && a.id === user.id && profile.username ? <span>@{profile.username}</span> : null}</span>
             {user && a.id === user.id ? <Check size={16} aria-label="Current account" /> : null}
           </button>
           <button type="button" className="ac-out" aria-label={'Sign out ' + a.email} disabled={busy} onClick={() => out(a)}><LogOut size={16} /></button>
@@ -51,7 +47,6 @@ export default function AccountList({ onClose }) {
       ))}
       {err ? <p className="ac-err" role="alert">{err}</p> : null}
       <button type="button" role="menuitem" disabled={busy} onClick={() => { onClose(); nav('/add-account'); }}><UserPlus size={18} /> Add account</button>
-      {rows.length > 1 ? <button type="button" role="menuitem" disabled={busy} onClick={all}><LogOut size={18} /> Sign out of all accounts</button> : null}
       <div className="pop-sep" role="separator" />
     </div>
   );

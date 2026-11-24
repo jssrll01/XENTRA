@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Megaphone, Pin, Search as SearchIcon, Users } from 'lucide-react';
+import { ArrowLeft, Megaphone, Pin } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
+import OrgMembers from '../components/OrgMembers';
+import OrgManage, { canManageOrg } from '../components/OrgManage';
 import { TeamErr } from '../components/TeamSub';
 import { ask } from '../lib/dialog';
-import { getOrg, leaveOrg, listOrgAnnouncements, markOrgAnnouncementRead, listOrgMembers } from '../lib/api';
-import { fullName, timeAgo } from '../lib/format';
+import { getOrg, leaveOrg, listOrgAnnouncements, markOrgAnnouncementRead } from '../lib/api';
+import { timeAgo } from '../lib/format';
 import { useSummary } from '../lib/summary';
 
 function Announcements({ org, tick }) {
@@ -49,39 +51,6 @@ function Announcements({ org, tick }) {
   );
 }
 
-function Members({ org, tick }) {
-  const [rows, setRows] = useState(null);
-  const [q, setQ] = useState('');
-  const [err, setErr] = useState('');
-  const load = useCallback(async () => {
-    const r = await listOrgMembers(org.id, q, null);
-    if (r.ok) { setRows(r.data || []); setErr(''); } else setErr(r.error);
-  }, [org.id, q]);
-  useEffect(() => {
-    const t = setTimeout(load, 250);
-    return () => clearTimeout(t);
-  }, [load, tick]);
-  return (
-    <>
-      <label className="tm-search"><SearchIcon size={18} /><input type="search" aria-label="Search members" placeholder="Search members" value={q} onChange={(e) => setQ(e.target.value)} /></label>
-      {err ? <TeamErr msg={err} retry={load} /> : null}
-      {!rows && !err ? <Skeleton /> : null}
-      {rows && rows.length === 0 ? <EmptyState icon={Users} title="No members found" text="Try a different search." /> : null}
-      {rows && rows.length > 0 ? (
-        <section className="tm-card"><div className="tm-list">
-          {rows.map((m) => (
-            <div className="tm-row static" key={m.id}>
-              <Avatar name={fullName(m)} size={40} />
-              <div className="tm-main"><b>{fullName(m)}</b><span>@{m.username}{m.custom_role ? ' - ' + m.custom_role : ''}</span></div>
-              <span className="tm-role">{m.role}</span>
-            </div>
-          ))}
-        </div></section>
-      ) : null}
-    </>
-  );
-}
-
 export default function Organization() {
   const { id } = useParams();
   const nav = useNavigate();
@@ -102,6 +71,9 @@ export default function Organization() {
     setBusy(false);
     if (r.ok) nav('/organizations'); else setErr(r.error);
   };
+  const manage = o && canManageOrg(o);
+  const cur = tab === 'manage' && !manage ? 'home' : tab;
+  const tabs = [['home', 'Home'], ['members', 'Members']].concat(manage ? [['manage', 'Manage']] : []);
   return (
     <div className="tm org">
       {err ? <TeamErr msg={err} retry={load} /> : null}
@@ -116,10 +88,11 @@ export default function Organization() {
           </header>
           {o.description ? <p className="tm-hint">{o.description}</p> : null}
           <div className="tm-tabs" role="tablist">
-            {[['home', 'Home'], ['members', 'Members']].map((x) => <button type="button" role="tab" key={x[0]} aria-selected={tab === x[0]} onClick={() => setTab(x[0])}>{x[1]}</button>)}
+            {tabs.map((x) => <button type="button" role="tab" key={x[0]} aria-selected={cur === x[0]} onClick={() => setTab(x[0])}>{x[1]}</button>)}
           </div>
-          {tab === 'home' ? <Announcements org={o} tick={tick} /> : null}
-          {tab === 'members' ? <Members org={o} tick={tick} /> : null}
+          {cur === 'home' ? <Announcements org={o} tick={tick} /> : null}
+          {cur === 'members' ? <OrgMembers org={o} tick={tick} onChanged={load} /> : null}
+          {cur === 'manage' ? <OrgManage org={o} tick={tick} onChanged={load} /> : null}
           {o.my_role === 'owner' ? <p className="tm-hint">Owners must transfer ownership before leaving.</p> : (
             <div className="tm-foot"><button type="button" className="tm-btn danger" disabled={busy} onClick={leave}>Leave organization</button></div>
           )}

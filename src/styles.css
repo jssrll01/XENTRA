@@ -772,3 +772,5 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
 .org-policy { display: flex; flex-direction: column; gap: 8px; width: 100%; text-align: left; }
 .org-policy-text { max-height: 200px; overflow-y: auto; padding: 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .org-check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; }
+
+.org-link { margin: 0; font-family: ui-monospace, monospace; font-size: 13px; overflow-wrap: anywhere; }

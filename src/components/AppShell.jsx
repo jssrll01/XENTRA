@@ -31,6 +31,7 @@ export default function AppShell() {
   const title = (NAV.find((n) => pathname.startsWith(n.to)) || {}).label || EXTRA[pathname] || 'XENTRA';
   const unread = (summary && summary.notifications) || 0;
   const name = fullName(profile);
+  const full = /^\/messages\/[^/]+/.test(pathname);
   const openSheet = (t) => { setMenu(false); setSheet({ t }); };
   const shareProfile = async () => {
     setMenu(false);
@@ -72,7 +73,7 @@ export default function AppShell() {
   }, [menu]);
 
   return (
-    <div className="app">
+    <div className={'app' + (full ? ' full' : '')}>
       {pal ? <CommandPalette uid={profile.id} onClose={() => setPal(false)} /> : null}
       {sheet && sheet.t === 'scan' ? <ScanSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'code' ? <CodeSheet onClose={() => setSheet(null)} /> : null}

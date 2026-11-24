@@ -742,3 +742,11 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
 .rl-agree { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; font-size: 14px; cursor: pointer; }
 .rl-acts { display: flex; gap: 8px; }
 .rl-acts .btn { flex: 1; height: 44px; padding: 0 12px; }
+
+/* chat as its own page */
+.app.full .topbar, .app.full .bottom-nav { display: none; }
+.app.full .content { padding: 0; max-width: none; }
+.app.full .content > * { animation: none; }
+.app.full .chat { height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
+.app.full .chat-head { padding-top: calc(10px + env(safe-area-inset-top)); }
+.app.full .chat { padding-bottom: env(safe-area-inset-bottom); }

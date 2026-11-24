@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { MessageCircle, Users, MailPlus, CalendarClock, RefreshCw, Search, Bell, ArrowRight, Layers, Megaphone, Sparkles, ChevronRight, ListChecks, CalendarDays, NotebookPen } from 'lucide-react';
 import EmptyState from '../components/ui/EmptyState';
 import Avatar from '../components/ui/Avatar';
@@ -24,10 +24,40 @@ const PLANNER = [
   ['/notes', 'Notes', 'Your personal notes', NotebookPen],
 ];
 
+const HOLD_MS = 300;
+
+function useHold(go) {
+  const timer = useRef(null);
+  const start = useRef(null);
+  const [active, setActive] = useState('');
+  const stop = () => { clearTimeout(timer.current); timer.current = null; setActive(''); };
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const bind = (to) => ({
+    onPointerDown: (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      start.current = { x: e.clientX, y: e.clientY };
+      setActive(to);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => { timer.current = null; setActive(''); go(to); }, HOLD_MS);
+    },
+    onPointerMove: (e) => {
+      if (timer.current && start.current && Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > 10) stop();
+    },
+    onPointerUp: stop,
+    onPointerLeave: stop,
+    onPointerCancel: stop,
+    onContextMenu: (e) => e.preventDefault(),
+    onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(to); } },
+  });
+  return { bind, active };
+}
+
 const today = () => new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 export default function Home() {
   const { profile } = useProfile();
+  const nav = useNavigate();
+  const { bind, active } = useHold(nav);
   const { summary, state, reload, tick } = useSummary();
   const [recent, setRecent] = useState(null);
   const [rerr, setRerr] = useState('');
@@ -95,13 +125,14 @@ export default function Home() {
 
       <section className="glass card" aria-label="Planner">
         <div className="card-head"><h2><span className="sec-ic"><ListChecks size={18} /></span>Planner</h2></div>
+        <p className="tm-hint">Press and hold a row to open it.</p>
         <div className="rows">
           {PLANNER.map(([to, label, hint, Icon]) => (
-            <Link className="row" key={to} to={to}>
+            <button type="button" className={'row hm-hold' + (active === to ? ' on' : '')} key={to} {...bind(to)}>
               <span className="sec-ic"><Icon size={18} /></span>
               <div className="row-main"><b>{label}</b><span>{hint}</span></div>
               <ChevronRight size={18} className="hm-go" />
-            </Link>
+            </button>
           ))}
         </div>
       </section>

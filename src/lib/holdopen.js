@@ -1,4 +1,4 @@
-const SEL = '.avatar-btn, .search-pill, .side-search, .chat-find, .pop [role="menuitem"], .page-head .btn, button[aria-label^="Notifications"]';
+const SEL = '.avatar-btn, .pop [role="menuitem"], .page-head .btn, button[aria-label^="Notifications"]';
 let t = 0;
 let st = 0;
 let sx = 0;

@@ -872,11 +872,6 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
 .hm-stat:nth-child(n+3) { border-bottom: 0; }
 .hm-stat .tile-ic { margin: 0; flex-shrink: 0; }
 .hm-stat .tile-l { font-size: 12px; }
-.hm-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); }
-.hm-tabs button { min-height: 44px; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--muted); font-size: 14px; font-weight: 700; cursor: pointer; }
-.hm-tabs button[aria-selected="true"] { background: var(--surface); color: var(--blue); box-shadow: 0 1px 3px rgba(15, 23, 42, .12); }
-.hm-panel { display: flex; flex-direction: column; gap: 16px; }
-.hm-panel[hidden] { display: none; }
 .hm-go { flex-shrink: 0; color: var(--muted); }
 @media (min-width: 640px) {
   .hm-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -884,3 +879,5 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
   .hm-stat:nth-child(2n) { border-right: 1px solid var(--line); }
   .hm-stat:last-child { border-right: 0; }
 }
+.hm-bar { display: flex; align-items: center; gap: 12px; }
+.hm-bar h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }

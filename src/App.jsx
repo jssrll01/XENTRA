@@ -10,6 +10,9 @@ import SignIn from './pages/SignIn';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
+import PlannerTodo from './pages/PlannerTodo';
+import PlannerCalendar from './pages/PlannerCalendar';
+import PlannerNotes from './pages/PlannerNotes';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
 import Search from './pages/Search';
@@ -61,6 +64,9 @@ export default function App() {
             <Route path="/invite/:code" element={<InvitePage />} />
             <Route element={<RequireAuth><ConfigGate><ProfileProvider><SummaryProvider><InviteResume /><AppShell /></SummaryProvider></ProfileProvider></ConfigGate></RequireAuth>}>
               <Route path="/home" element={<Home />} />
+              <Route path="/todo" element={<PlannerTodo />} />
+              <Route path="/calendar" element={<PlannerCalendar />} />
+              <Route path="/notes" element={<PlannerNotes />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />

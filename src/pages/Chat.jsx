@@ -19,7 +19,7 @@ import ForwardPicker from '../components/ForwardPicker';
 import GroupInfoButton from '../components/GroupInfoButton';
 import Skeleton from '../components/ui/Skeleton';
 import useNames from '../lib/useNames';
-import { getChannelHead } from '../lib/api';
+import { getChannelHead, getChatHead } from '../lib/api';
 import LaterSheet from '../components/LaterSheet';
 import PollSheet from '../components/PollSheet';
 import PollCard from '../components/PollCard';
@@ -86,7 +86,7 @@ export default function Chat() {
   };
   const box = useRef(null);
   const root = useRef(null);
-  const name = other ? fullName(other) : 'Conversation';
+  const name = other ? fullName(other) : '';
   const names = useNames(id, !!(other && (other.is_group || other.is_channel)));
   const pr = usePresence(other && !other.is_group && !other.is_channel ? other.id : null);
   const isCh = !!(other && other.is_channel);
@@ -103,7 +103,7 @@ export default function Chat() {
     const r = await listConversations();
     if (!r.ok) { setErr(r.error); return; }
     const c = (r.data || []).find((x) => x.id === id);
-    if (c) setOther(c.other); else getChannelHead(id).then((t) => { if (t.ok) setOther(t.data); else setErr('Conversation not found.'); });
+    if (c) setOther(c.other); else getChatHead(id).then((t) => { if (t.ok) setOther(t.data); else getChannelHead(id).then((u) => { if (u.ok) setOther(u.data); else setErr('Conversation not found.'); }); });
   }, [id]);
   const load = useCallback(async () => {
     const r = await listMessages(id);
@@ -389,7 +389,7 @@ export default function Chat() {
     <div className="glass chat" ref={root}>
       <div className="chat-head">
         <button type="button" className="icon-btn" aria-label="Back to messages" onClick={() => nav('/messages')}><ArrowLeft size={20} /></button>
-        <Avatar name={name} url={other ? other.avatar_url : null} size={40} />
+        {other ? <Avatar name={name} url={other.avatar_url} size={40} /> : <span className="avatar" style={{ width: 40, height: 40, background: '#e2e8f0' }} />}
         <b>{name}{typing ? <small className="typing">typing...</small> : pline ? <small className="pline">{pline}</small> : null}</b>
         <button type="button" className="icon-btn" aria-label="Search in chat" onClick={() => setSearching(!searching)}><SearchIcon size={20} /></button>
         {other && (other.is_group || other.is_channel) ? <GroupInfoButton id={id} other={other} /> : null}

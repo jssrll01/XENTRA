@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import '@fontsource-variable/inter';
 import './styles.css';
 import './lib/lockdown';
+import './lib/holdopen';
 import App from './App.jsx';
 import DialogHost from './lib/dialog';
 import RulesHost from './lib/rulesDialog';

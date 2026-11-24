@@ -11,12 +11,12 @@ const fromAuth = (u) => {
 
 export function ProfileProvider({ children }) {
   const { user } = useAuth();
-  const [profile, setProfile] = useState(() => fromAuth(user));
+  const [profile, setProfile] = useState(() => { const b = fromAuth(user); try { const c = JSON.parse(sessionStorage.getItem('xentra-prof-' + (user && user.id)) || 'null'); return c ? { ...b, ...c } : b; } catch (e) { return b; } });
   const [notReady, setNotReady] = useState(false);
 
   const reload = useCallback(async () => {
     const r = await getMyProfile();
-    if (r.ok && r.data) { setProfile((p) => ({ ...p, ...r.data })); setNotReady(false); } else if (r.notReady) setNotReady(true);
+    if (r.ok && r.data) { setProfile((p) => ({ ...p, ...r.data })); setNotReady(false); try { sessionStorage.setItem('xentra-prof-' + r.data.id, JSON.stringify({ ...r.data, phone: undefined })); } catch (e) { /* ignore */ } } else if (r.notReady) setNotReady(true);
   }, []);
   useEffect(() => { reload(); }, [reload]);
 

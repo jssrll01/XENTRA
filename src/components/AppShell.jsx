@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, Share2, LogOut, QrCode, ScanLine, Search, Settings, User } from 'lucide-react';
 import Logo from './Logo';
-import { Building2 } from 'lucide-react';
 import Avatar from './ui/Avatar';
 import { NAV } from '../nav';
 import { useAuth } from '../lib/auth';
@@ -117,7 +116,6 @@ export default function AppShell() {
                 <div className="pop-head"><b>{name}</b><span>{profile.email}</span></div>
                 <AccountList onClose={() => setMenu(false)} />
                 <button type="button" role="menuitem" onClick={() => nav('/profile')}><User size={18} /> Profile</button>
-                <button type="button" role="menuitem" onClick={() => nav('/organizations')}><Building2 size={18} /> Organizations</button>
                 <button type="button" role="menuitem" onClick={() => openSheet('code')}><QrCode size={18} /> My QR</button>
                 <button type="button" role="menuitem" onClick={() => openSheet('scan')}><ScanLine size={18} /> Scan</button>
                 {profile.username ? <button type="button" role="menuitem" onClick={shareProfile}><Share2 size={18} /> Share profile</button> : null}

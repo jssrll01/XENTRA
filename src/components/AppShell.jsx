@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import useExit from '../lib/useExit';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, Share2, LogOut, QrCode, ScanLine, Search, Settings, User } from 'lucide-react';
 import Logo from './Logo';
@@ -24,6 +25,7 @@ export default function AppShell() {
   const { profile } = useProfile();
   const { summary } = useSummary();
   const [menu, setMenu] = useState(false);
+  const popX = useExit(menu);
   const [pal, setPal] = useState(false);
   const [sheet, setSheet] = useState(null);
   const [copied, setCopied] = useState('');
@@ -111,8 +113,8 @@ export default function AppShell() {
             <button type="button" className="avatar-btn" aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu" onClick={() => setMenu(!menu)}>
               <Avatar name={name} url={profile.avatar_url} size={42} presence={pres.status === 'online' ? 'online' : undefined} /><ChevronDown size={16} />
             </button>
-            {menu ? (
-              <div className="pop glass" role="menu">
+            {popX.mounted ? (
+              <div className={'pop glass' + (popX.out ? ' out' : '')} role="menu">
                 <div className="pop-head"><b>{name}</b><span>{profile.email}</span></div>
                 <AccountList onClose={() => setMenu(false)} />
                 <button type="button" role="menuitem" onClick={() => nav('/profile')}><User size={18} /> Profile</button>

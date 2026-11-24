@@ -848,3 +848,12 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
 @keyframes xa-sheet-out { to { opacity: 0; transform: translateY(24px); } }
 .sheet-back.out { pointer-events: none; animation: xa-fade-out .18s ease forwards; }
 .sheet-back.out .sheet { animation: xa-sheet-out .18s ease forwards; }
+
+/* exit motion (160ms, matches useExit) */
+@keyframes xa-pop-out { to { opacity: 0; transform: translateY(6px) scale(.97); } }
+@keyframes xa-sheet-out { to { opacity: 0; transform: translateY(24px); } }
+@keyframes xa-fade-out { to { opacity: 0; } }
+.pop.out { animation: xa-pop-out .16s ease forwards; pointer-events: none; }
+.sel-list.at.out { animation: xa-pop-out .16s ease forwards; pointer-events: none; }
+.sel-list.out:not(.at) { animation: xa-sheet-out .16s ease forwards; pointer-events: none; }
+.sel-back.out { animation: xa-fade-out .16s ease forwards; }

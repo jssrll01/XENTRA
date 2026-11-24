@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
+import useExit from '../../lib/useExit';
 
 export default function Select({ value, onChange, disabled, className = '', children, ...rest }) {
   const uid = 'sel' + useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -9,6 +10,7 @@ export default function Select({ value, onChange, disabled, className = '', chil
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState(null);
   const [act, setAct] = useState(0);
+  const ex = useExit(open);
   const opts = React.Children.toArray(children).filter((c) => c && c.props).map((c) => ({ v: String(c.props.value == null ? '' : c.props.value), t: c.props.children, d: Boolean(c.props.disabled) }));
   const cur = String(value == null ? '' : value);
   const idx = opts.findIndex((o) => o.v === cur);
@@ -61,9 +63,9 @@ export default function Select({ value, onChange, disabled, className = '', chil
         <span className="sel-val">{idx >= 0 ? opts[idx].t : ''}</span>
         <ChevronDown size={16} />
       </button>
-      {open ? createPortal(
-        <div className={'sel-back' + (pos ? ' at' : '')} onClick={close}>
-          <ul className={'sel-list' + (pos ? ' at' : '')} ref={list} role="listbox" tabIndex={-1} aria-label={rest['aria-label']} aria-activedescendant={uid + act} style={pos || undefined} onKeyDown={key} onClick={(e) => e.stopPropagation()}>
+      {ex.mounted ? createPortal(
+        <div className={'sel-back' + (pos ? ' at' : '') + (ex.out ? ' out' : '')} onClick={close}>
+          <ul className={'sel-list' + (pos ? ' at' : '') + (ex.out ? ' out' : '')} ref={list} role="listbox" tabIndex={-1} aria-label={rest['aria-label']} aria-activedescendant={uid + act} style={pos || undefined} onKeyDown={key} onClick={(e) => e.stopPropagation()}>
             {opts.map((o, i) => (
               <li key={o.v + ':' + i} id={uid + i} role="option" aria-selected={o.v === cur} aria-disabled={o.d || undefined} className={'sel-opt' + (i === act ? ' act' : '') + (o.v === cur ? ' on' : '')} onMouseEnter={() => setAct(i)} onClick={() => pick(o)}>
                 <span>{o.t}</span>{o.v === cur ? <Check size={16} /> : null}

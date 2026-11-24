@@ -8,7 +8,6 @@ const ADD = [['everyone', 'Everyone'], ['contacts', 'People with a mutual contac
 const FIELDS = [
   ['last_seen', 'Last seen and online status', WHO],
   ['photo', 'Profile photo', WHO],
-  ['bio', 'Bio', WHO],
   ['status', 'Custom status', WHO],
   ['message', 'Who can message me', WHO],
   ['add_me', 'Who can add me', ADD],

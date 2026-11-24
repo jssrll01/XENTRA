@@ -46,7 +46,6 @@ export default function PublicProfile() {
         <h2>{name}{p.verified ? <BadgeCheck size={20} className="vbadge" aria-label="Verified" /> : null}</h2>
         <span className="note">@{p.username}</span>
         {p.status_text ? <p className="pf-bio">{p.status_text}</p> : null}
-          {p.bio ? <p className="pf-bio">{p.bio}</p> : null}
         {err ? <div className="alert err">{err}</div> : null}
         <div className="pf-acts">
           {p.rel === 'self' ? <Link className="btn btn-primary btn-sm" to="/profile">Edit profile</Link> : null}

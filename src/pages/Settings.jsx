@@ -10,11 +10,10 @@ import { useAuth } from '../lib/auth';
 import { useProfile } from '../lib/profile';
 import { getMyPresence, setPresence, listDevices, removeDevice } from '../lib/api';
 import { ago, fullName } from '../lib/format';
-import { pushSupported, currentSub, enablePush } from '../lib/push';
+import { pushSupported, currentSub, enablePush, disablePush } from '../lib/push';
 import { getTheme, applyTheme } from '../lib/theme';
 
 import PrivacyPanel from '../components/PrivacyPanel';
-import NotifSettings from '../components/NotifSettings';
 import { Eye as EyeIcon } from 'lucide-react';
 import { sendResetCode, verifyRecovery, setNewPassword } from '../lib/authApi';
 const STATES = [['online', 'Online'], ['dnd', 'Do not disturb'], ['invisible', 'Invisible']];
@@ -160,25 +159,17 @@ export default function Settings() {
         <Row {...R} id="who" icon={EyeIcon} title="Profile Privacy" sub="Who can see or contact you">
           <PrivacyPanel />
         </Row>
-        <Row {...R} id="notif" icon={Bell} title="Notifications" sub="Push alerts and devices" tag={pushOn ? 'On' : 'Off'}>
+        <Row {...R} id="notif" icon={Bell} title="Notifications" sub="Push alerts on this device" tag={pushOn ? 'On' : 'Off'}>
           {pushSupported() ? (
-            <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={togglePush}><Bell size={16} /> Re-register this device</button>
+            <button type="button" role="switch" aria-checked={pushOn} className={'sx-switch' + (pushOn ? ' on' : '')} disabled={busy} onClick={async () => {
+              setBusy(true); setNote('');
+              const r = pushOn ? await disablePush() : await enablePush();
+              setBusy(false);
+              if (!r.ok) { setErr(r.error); return; }
+              setErr(''); setPushOn(!pushOn); setNote(pushOn ? 'Notifications off' : 'Notifications on');
+            }}><span className="sx-knob" />Push notifications</button>
           ) : <p className="note">This browser does not support push notifications. On iPhone, add XENTRA to the Home Screen first.</p>}
-          <p className="note">Muted chats and Do not disturb stay silent.</p>
-          <NotifSettings />
-          {!dev ? <Skeleton rows={1} /> : null}
-          {dev && dev.length === 0 ? <EmptyState icon={Smartphone} title="No devices" text="Devices with notifications turned on appear here." /> : null}
-          {dev && dev.length > 0 ? (
-            <div className="rows">
-              {dev.map((d) => (
-                <div className="row static" key={d.id}>
-                  <Smartphone size={18} />
-                  <div className="row-main"><b>{(d.user_agent || 'Device').slice(0, 40)}</b><span>{ago(d.last_used_at || d.created_at) === 'now' ? 'Active now' : 'Active ' + ago(d.last_used_at || d.created_at) + ' ago'}</span></div>
-                  <button type="button" className="icon-btn" aria-label="Remove device" disabled={busy} onClick={() => drop(d)}><Trash2 size={18} /></button>
-                </div>
-              ))}
-            </div>
-          ) : null}
+          <p className="note">When on, you are notified about everything except muted chats and Do not disturb. Turning it off removes this device.</p>
         </Row>
         <Row {...R} id="look" icon={Palette} title="Appearance" sub="Theme and display" tag={tlabel}>
           <div className="chips">

@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, CheckCheck, Clock, Copy, CornerUpLeft, Forward, Pencil, Pin, PinOff, RefreshCw, Search as SearchIcon, Send, Trash2, X, ListChecks, MessageSquare, Paperclip, Plus, Users } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
+import ImageSend from '../components/ImageSend';
 import { useSummary } from '../lib/summary';
 import { listConversations, listMessages, sendMessage, editMessage, deleteMessage, deleteChannelMessage, getChannelPerms, markRead, toggleReaction, togglePin, listPins, votePoll, retractVote, closePoll, sendAttachment } from '../lib/api';
 import { fullName, timeAgo } from '../lib/format';
@@ -443,6 +444,7 @@ export default function Chat() {
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }} />
           <input ref={fileRef} type="file" multiple hidden accept={acceptList()} onChange={onFiles} />
           <button type="button" className="icon-btn" aria-label="Attach file" disabled={!msgs} onClick={() => fileRef.current && fileRef.current.click()}><Paperclip size={20} /></button>
+          <ImageSend conversationId={id} disabled={!msgs} onSent={() => load()} onNotice={setNotice} />
           <button type="button" className="icon-btn" aria-label="New poll" disabled={!msgs} onClick={() => setPollOpen(true)}><ListChecks size={20} /></button>
           <button type="button" className="icon-btn" aria-label="Schedule or remind" onClick={() => setLater({ tab: 'schedule', text })}><Clock size={20} /></button>
           <button type="button" className="send" aria-label={editing ? 'Save edit' : 'Send'} disabled={!text.trim() || !msgs} onClick={submit}><Send size={20} /></button>

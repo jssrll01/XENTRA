@@ -58,3 +58,16 @@ export async function enablePush() {
   }
   return ensureSubscribed();
 }
+
+export async function disablePush() {
+  try {
+    const sub = await currentSub();
+    if (!sub) return { ok: true };
+    const r = await removePushSubscription(sub.endpoint);
+    if (!r.ok) return r;
+    await sub.unsubscribe();
+    return { ok: true };
+  } catch (x) {
+    return { ok: false, error: 'Could not turn off notifications.' };
+  }
+}

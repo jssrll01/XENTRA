@@ -12,6 +12,10 @@ import Avatar from '../components/ui/Avatar';
 import Skeleton from '../components/ui/Skeleton';
 import { greeting, ago } from '../lib/format';
 import RecentChats from '../components/RecentChats';
+import ClockWidget from '../components/ClockWidget';
+import TodoWidget from '../components/TodoWidget';
+import CalendarWidget from '../components/CalendarWidget';
+import NotesWidget from '../components/NotesWidget';
 
 const TILES = [
   ['unread', 'Unread Messages', MessageCircle, '#3b82f6', 'blue'],
@@ -90,6 +94,11 @@ export default function Home() {
         <div className="row-main"><b>Explore AI tools</b><span>Discover and compare popular AI platforms</span></div>
         <AiChevron size={20} className="ai-link-go" />
       </Link>
+
+      <ClockWidget />
+      <TodoWidget />
+      <CalendarWidget />
+      <NotesWidget />
 
       <RecentChats />
 

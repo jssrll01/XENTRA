@@ -825,3 +825,13 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
 .lb-back { z-index: 230; cursor: zoom-out; }
 .lb-back img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
 .lb-x { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .9); color: #0f172a; font-size: 26px; cursor: pointer; }
+.wd-time { font-size: 26px; font-variant-numeric: tabular-nums; }
+.wd-done { text-decoration: line-through; color: var(--muted); }
+.wd-body { min-height: 180px; width: 100%; resize: vertical; }
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center; }
+.cal-h { font-size: 12px; color: var(--muted); font-weight: 700; }
+.cal-d { position: relative; height: 38px; border: 0; border-radius: 12px; background: transparent; color: var(--ink); font: inherit; cursor: pointer; }
+.cal-d.today { background: var(--blue); color: #fff; font-weight: 700; }
+.cal-d i { position: absolute; left: 50%; bottom: 4px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--amber); }
+.cal-up { display: block; margin: 10px 0 4px; }

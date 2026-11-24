@@ -274,3 +274,16 @@ export const pinOrgAnnouncement = (id, on) => call('pin_org_announcement', { p_i
 export const deleteOrgAnnouncement = (id) => call('delete_org_announcement', { p_id: id });
 export const getOrgInvitePolicy = (id) => call('get_org_invite_policy', { p_id: id });
 export const getChatHead = (cid) => call('get_chat_head', { p_cid: cid });
+export const listTodos = () => call('list_todos');
+export const addTodo = (text, due) => call('add_todo', { p_text: text, p_due: due || null });
+export const updateTodo = (id, p) => call('update_todo', { p_id: id, p_text: p.text === undefined ? null : p.text, p_done: p.done === undefined ? null : p.done, p_due: null, p_clear_due: false });
+export const deleteTodo = (id) => call('delete_todo', { p_id: id });
+export const listEvents = (from, to) => call('list_events', { p_from: from, p_to: to });
+export const addEvent = (title, starts, ends, note) => call('add_event', { p_title: title, p_starts: starts, p_ends: ends || null, p_note: note || null });
+export const updateEvent = (id, title, starts, ends, note) => call('update_event', { p_id: id, p_title: title, p_starts: starts, p_ends: ends || null, p_note: note || null });
+export const deleteEvent = (id) => call('delete_event', { p_id: id });
+export const listNotes = () => call('list_notes');
+export const getNote = (id) => call('get_note', { p_id: id });
+export const addNote = (title, body) => call('add_note', { p_title: title, p_body: body });
+export const updateNote = (id, title, body) => call('update_note', { p_id: id, p_title: title, p_body: body });
+export const deleteNote = (id) => call('delete_note', { p_id: id });

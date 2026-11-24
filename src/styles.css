@@ -857,3 +857,4 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
 .sel-list.at.out { animation: xa-pop-out .16s ease forwards; pointer-events: none; }
 .sel-list.out:not(.at) { animation: xa-sheet-out .16s ease forwards; pointer-events: none; }
 .sel-back.out { animation: xa-fade-out .16s ease forwards; }
+.conv-acts.out, .acts.out { animation: xa-pop-out .16s ease forwards; pointer-events: none; }

@@ -18,6 +18,7 @@ import PinBar from '../components/PinBar';
 import ChatSearch from '../components/ChatSearch';
 import ForwardPicker from '../components/ForwardPicker';
 import GroupInfoButton from '../components/GroupInfoButton';
+import { useExitValue } from '../lib/useExit';
 import Skeleton from '../components/ui/Skeleton';
 import useNames from '../lib/useNames';
 import { getChannelHead, getChatHead } from '../lib/api';
@@ -59,6 +60,7 @@ export default function Chat() {
   const [err, setErr] = useState('');
   const [notice, setNotice] = useState('');
   const [sel, setSel] = useState(null);
+  const selX = useExitValue(sel);
   useEffect(() => {
     if (!sel) return undefined;
     const off = (e) => { if (e.target.closest && e.target.closest('.acts')) return; setSel(null); };
@@ -371,8 +373,8 @@ export default function Chat() {
         {m.reactions.length ? (
           <div className="rxs">{m.reactions.map((r) => <button type="button" key={r.emoji} className={'rx' + (r.mine ? ' mine' : '')} onClick={() => react(m, r.emoji)}>{r.emoji} {r.count}</button>)}</div>
         ) : null}
-        {sel === m.id ? (
-          <div className="acts" role="menu">
+        {selX.value === m.id ? (
+          <div className={'acts' + (selX.out ? ' out' : '')} role="menu">
             <div className="when">{fullTime(m.created_at)}</div>
             <div className="quick">{QUICK.map((e) => <button type="button" key={e} aria-label={'React ' + e} onClick={() => react(m, e)}>{e}</button>)}<button type="button" aria-label="More reactions" onClick={() => { setRxFor(m.id); setRxText(''); }}><Plus size={18} /></button></div>
             {rxFor === m.id ? (

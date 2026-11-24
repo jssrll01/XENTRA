@@ -1,4 +1,5 @@
 import { pressProps } from '../lib/longpress';
+import { useExitValue } from '../lib/useExit';
 import GroupInvitesSheet from '../components/GroupInvitesSheet';
 import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -34,6 +35,7 @@ export default function Messages() {
   const [groupOpen, setGroupOpen] = useState(false);
   const [expFor, setExpFor] = useState(null);
   const [menu, setMenu] = useState(null);
+  const menuX = useExitValue(menu);
   const [cq, setCq] = useState('');
   const [hits, setHits] = useState(null);
   const [herr, setHerr] = useState('');
@@ -155,8 +157,8 @@ export default function Messages() {
             {shown.map((c) => (
               <div className="conv" key={c.id} {...pressProps(() => { setMuteFor(null); setMenu(c.id); })}>
                 <ConvRow c={c} meId={profile.id} />
-                {menu === c.id ? (
-                  <div className="conv-acts">
+                {menuX.value === c.id ? (
+                  <div className={'conv-acts' + (menuX.out ? ' out' : '')}>
                     <button type="button" onClick={() => flag(c, { p_pinned: !c.pinned })}>{c.pinned ? <PinOff size={16} /> : <Pin size={16} />} {c.pinned ? 'Unpin' : 'Pin'}</button>
                     {c.muted ? (
                       <button type="button" onClick={() => mute(c, 'off')}><Bell size={16} /> Unmute</button>

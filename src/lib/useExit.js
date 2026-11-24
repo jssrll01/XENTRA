@@ -15,3 +15,17 @@ export default function useExit(open, ms = 160) {
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   return { mounted: open || mounted, out: !open && mounted };
 }
+
+// Like useExit but for "which item is open" state (null = closed).
+// value stays the previous id for ms after closing so the exit animation can play.
+export function useExitValue(v, ms = 160) {
+  const [held, setHeld] = useState(v);
+  useEffect(() => {
+    if (v != null) { setHeld(v); return undefined; }
+    if (held == null) return undefined;
+    if (quick()) { setHeld(null); return undefined; }
+    const t = setTimeout(() => setHeld(null), ms);
+    return () => clearTimeout(t);
+  }, [v]); // eslint-disable-line react-hooks/exhaustive-deps
+  return { value: v != null ? v : held, out: v == null && held != null };
+}

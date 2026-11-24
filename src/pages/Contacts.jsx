@@ -1,4 +1,5 @@
 import { pressProps } from '../lib/longpress';
+import { useExitValue } from '../lib/useExit';
 import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Skeleton from '../components/ui/Skeleton';
@@ -27,6 +28,7 @@ export default function Contacts() {
   const [cat, setCat] = useState('all');
   const [q, setQ] = useState('');
   const [menu, setMenu] = useState(null);
+  const menuX = useExitValue(menu);
   const [sheet, setSheet] = useState(null);
   const [busy, setBusy] = useState('');
   useEffect(() => {
@@ -112,8 +114,8 @@ export default function Contacts() {
                       <div className="row-main"><b>{fullName(c)}{c.favorite ? <Star size={13} className="ci" /> : null}</b><span>@{c.username}{c.category ? ' - ' + c.category : ''}{c.labels.length ? ' - ' + c.labels.map((x) => x.name).join(', ') : ''}{c.mutual > 0 ? ' - ' + c.mutual + ' mutual' : ''}</span></div>
                     </div>
                     <button type="button" className="icon-btn" aria-label={'Message ' + fullName(c)} disabled={busy === c.id} onClick={() => message(c)}><MessageCircle size={20} /></button>
-                    {menu === c.id ? (
-                      <div className="conv-acts">
+                    {menuX.value === c.id ? (
+                      <div className={'conv-acts' + (menuX.out ? ' out' : '')}>
                         <button type="button" onClick={() => act(() => setFavorite(c.id, !c.favorite))}><Star size={16} /> {c.favorite ? 'Remove favorite' : 'Favorite'}</button>
                         <button type="button" onClick={() => { setMenu(null); setSheet({ t: 'labels', c }); }}><Tag size={16} /> Labels and category</button>
                         {c.mutual > 0 ? <button type="button" onClick={() => { setMenu(null); setSheet({ t: 'mutual', c }); }}><Users size={16} /> Mutual</button> : null}

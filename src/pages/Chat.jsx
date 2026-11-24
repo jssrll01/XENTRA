@@ -29,6 +29,7 @@ import AttachmentView from '../components/AttachmentView';
 import { uploadChatFile, fileCategory, acceptList } from '../lib/files';
 import { reserveUpload, releaseUpload } from '../lib/api';
 import QuotaNote from '../components/QuotaNote';
+import StagedFiles from '../components/StagedFiles';
 import { draftOf, queueDraft, useDrafts } from '../lib/drafts';
 import ReactorsSheet from '../components/ReactorsSheet';
 
@@ -74,6 +75,7 @@ export default function Chat() {
   const [pollOpen, setPollOpen] = useState(false);
   const [thread, setThread] = useState(null);
   const [ups, setUps] = useState([]);
+  const [staged, setStaged] = useState([]);
   const fileRef = useRef(null);
   const [qt, setQt] = useState(0);
   const seededFor = useRef(null);
@@ -311,12 +313,31 @@ export default function Chat() {
     for (const f of files) {
       if (f.size < 1) { setNotice(f.name + ' is empty.'); continue; }
       if (!fileCategory(f)) { setNotice(f.name + ' is not allowed. Images and documents only.'); continue; }
-      const u = { key: crypto.randomUUID(), file: f, progress: 0, failed: false, error: '', path: null };
-      setUps((p) => [...p, u]);
-      runUpload(u);
+      setStaged((p) => [...p, { key: crypto.randomUUID(), file: f, url: f.type.indexOf('image/') === 0 ? URL.createObjectURL(f) : null }]);
     }
   };
 
+  const stagedRef = useRef([]);
+  stagedRef.current = staged;
+  useEffect(() => () => {
+    stagedRef.current.forEach((s) => { if (s.url) URL.revokeObjectURL(s.url); });
+    setStaged([]);
+  }, [id]);
+  const dropStaged = (key) => setStaged((p) => {
+    const x = p.find((s) => s.key === key);
+    if (x && x.url) URL.revokeObjectURL(x.url);
+    return p.filter((s) => s.key !== key);
+  });
+  const sendStaged = () => {
+    const list = staged;
+    setStaged([]);
+    list.forEach((s) => {
+      if (s.url) URL.revokeObjectURL(s.url);
+      const u = { key: s.key, file: s.file, progress: 0, failed: false, error: '', path: null };
+      setUps((p) => [...p, u]);
+      runUpload(u);
+    });
+  };
   const statusTick = (m) => {
     if (m.pending) return <Clock size={12} className="tick" aria-label="Sending" />;
     if (m.failed) return null;
@@ -419,6 +440,7 @@ export default function Chat() {
           }} />
       ) : null}
       <QuotaNote tick={qt} />
+      <StagedFiles items={staged} onRemove={dropStaged} onSend={sendStaged} />
       {ups.length ? (
         <div className="ups">
           {ups.map((u) => (

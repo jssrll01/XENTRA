@@ -201,11 +201,6 @@ export const listTeamMemberRoles = (team) => call('list_team_member_roles', { p_
 export const getChannelPerms = (cid) => call('get_channel_perms', { p_cid: cid });
 export const deleteChannelMessage = (id) => call('delete_channel_message', { p_id: id });
 
-export const getNotifSettings = () => call('get_notification_settings');
-export const setNotifMode = (mode) => call('set_notification_mode', { p_mode: mode });
-export const setAnnounceNotifs = (on) => call('set_announcement_notifs', { p_on: on });
-export const listNotifTargets = () => call('list_notif_targets');
-export const setConvNotif = (cid, mode) => call('set_conversation_notif', { p_conversation: cid, p_mode: mode });
 
 const CACHE = 'xentra-cache:';
 async function cacheKey(name) {

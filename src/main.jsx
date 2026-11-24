@@ -4,6 +4,7 @@ import '@fontsource-variable/inter';
 import './styles.css';
 import './lib/lockdown';
 import './lib/holdopen';
+import './lib/voice';
 import App from './App.jsx';
 import DialogHost from './lib/dialog';
 import RulesHost from './lib/rulesDialog';

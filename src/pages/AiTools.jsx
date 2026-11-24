@@ -1,15 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, RefreshCw, Search as SearchIcon } from 'lucide-react';
 import AiLogo from '../components/AiLogo';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import { listAiDirectory } from '../lib/api';
+import { pressProps } from '../lib/longpress';
 
 export default function AiTools() {
   const [cats, setCats] = useState(null);
   const [err, setErr] = useState('');
   const [q, setQ] = useState('');
+  const nav = useNavigate();
   const load = useCallback(async () => {
     const r = await listAiDirectory();
     if (r.ok) { setCats(r.data || []); setErr(''); } else setErr(r.error);
@@ -33,7 +35,7 @@ export default function AiTools() {
           <div className="card-head"><h2>{c.name}</h2></div>
           <div className="rows">
             {c.tools.map((x) => (
-              <Link className="row" key={x.slug} to={'/ai/' + x.slug}>
+              <Link className="row" key={x.slug} to={'/ai/' + x.slug} {...pressProps(() => nav('/ai/' + x.slug))}>
                 <AiLogo url={x.logo_url} size={40} />
                 <div className="row-main"><b>{x.name}</b><span>{x.tagline}</span></div>
                 <ChevronRight size={18} />

@@ -272,3 +272,4 @@ export const listOrgAnnouncements = (org) => call('list_org_announcements', { p_
 export const markOrgAnnouncementRead = (id) => call('mark_org_announcement_read', { p_id: id });
 export const pinOrgAnnouncement = (id, on) => call('pin_org_announcement', { p_id: id, p_on: on });
 export const deleteOrgAnnouncement = (id) => call('delete_org_announcement', { p_id: id });
+export const getOrgInvitePolicy = (id) => call('get_org_invite_policy', { p_id: id });

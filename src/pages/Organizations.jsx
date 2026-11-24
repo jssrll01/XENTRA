@@ -6,7 +6,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
 import Sheet from '../components/Sheet';
 import { TeamErr } from '../components/TeamSub';
-import { listMyOrgs, listMyOrgInvites, respondOrgInvite, createOrg } from '../lib/api';
+import { listMyOrgs, listMyOrgInvites, respondOrgInvite, createOrg, getOrgInvitePolicy, acceptOrgPolicy } from '../lib/api';
 import { useSummary } from '../lib/summary';
 
 export default function Organizations() {
@@ -15,7 +15,9 @@ export default function Organizations() {
   const [orgs, setOrgs] = useState(null);
   const [invs, setInvs] = useState(null);
   const [err, setErr] = useState('');
-  const [note, setNote] = useState('');
+  const [pol, setPol] = useState(null);
+  const [agree, setAgree] = useState(false);
+  const [perr, setPerr] = useState('');
   const [busy, setBusy] = useState('');
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -27,12 +29,30 @@ export default function Organizations() {
     setOrgs(a.data || []); setInvs(b.data || []); setErr('');
   }, []);
   useEffect(() => { load(); }, [load, tick]);
+  const showPolicy = async (i) => {
+    setBusy(i.id);
+    const g = await getOrgInvitePolicy(i.id);
+    setBusy('');
+    if (!g.ok) { setErr(g.error); return; }
+    setAgree(false); setPerr('');
+    setPol({ inv: i, text: g.data.policy_text, version: g.data.policy_version });
+  };
+  const acceptPolicy = async () => {
+    setBusy('pol'); setPerr('');
+    const a = await acceptOrgPolicy(pol.inv.org_id);
+    if (!a.ok) { setBusy(''); setPerr(a.error); return; }
+    const r = await respondOrgInvite(pol.inv.id, true);
+    setBusy('');
+    if (!r.ok) { setPerr(r.error); return; }
+    setPol(null);
+    if (r.data && r.data.org_id) nav('/organizations/' + r.data.org_id); else load();
+  };
   const respond = async (i, accept) => {
-    setBusy(i.id); setNote('');
+    setBusy(i.id);
     const r = await respondOrgInvite(i.id, accept);
     setBusy('');
     if (!r.ok) {
-      if (/policy/i.test(r.error)) setNote('This organization requires you to accept its policy. Open the invite link from the person who invited you.');
+      if (accept && /policy/i.test(r.error)) showPolicy(i);
       else setErr(r.error);
       return;
     }
@@ -53,7 +73,7 @@ export default function Organizations() {
         <button type="button" className="btn btn-primary btn-sm" onClick={() => setOpen(true)}><Plus size={16} /> New</button>
       </div>
       {err ? <TeamErr msg={err} retry={load} /> : null}
-      {note ? <div className="alert info">{note}</div> : null}
+      
       {!orgs && !err ? <Skeleton /> : null}
       {invs && invs.length > 0 ? (
         <section className="tm-card">
@@ -84,6 +104,17 @@ export default function Organizations() {
             ))}
           </div>
         </section>
+      ) : null}
+      {pol ? (
+        <Sheet title="Organization policy" onClose={() => setPol(null)}>
+          <div className="tm-sheet">
+            <p className="tm-label">{pol.inv.org_name} - version {pol.version}</p>
+            <div className="org-policy-text">{pol.text}</div>
+            {perr ? <div className="alert err" role="alert">{perr}</div> : null}
+            <label className="org-check"><input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I have read and accept this policy</label>
+            <button type="button" className="tm-btn primary block" disabled={busy === 'pol' || !agree} onClick={acceptPolicy}>Accept and join</button>
+          </div>
+        </Sheet>
       ) : null}
       {open ? (
         <Sheet title="New organization" onClose={() => setOpen(false)}>

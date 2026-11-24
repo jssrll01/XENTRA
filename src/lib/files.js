@@ -1,16 +1,23 @@
 import { supabase, SUPABASE_URL, SUPABASE_KEY } from './supabase';
 import { cfg } from './config';
 
-export const maxFile = () => Number(cfg('file_max_bytes')) || 0;
-const safe = (n) => String(n || 'file').replace(/[^A-Za-z0-9._-]+/g, '_').slice(-80) || 'file';
+export const fileCategory = (f) => {
+  const ext = String(f.name || '').split('.').pop().toLowerCase();
+  const has = (k, v) => Array.isArray(cfg(k)) && cfg(k).indexOf(v) >= 0;
+  if (has('image_ext', ext) && has('image_mime', f.type)) return 'image';
+  if (has('doc_ext', ext) && has('doc_mime', f.type)) return 'doc';
+  return '';
+};
+export const acceptList = () => (Array.isArray(cfg('image_ext')) && Array.isArray(cfg('doc_ext')) ? cfg('image_ext').concat(cfg('doc_ext')).map((e) => '.' + e).join(',') : '');
+
 
 export const fmtSize = (n) => (n < 1024 ? n + ' B' : n < 1048576 ? Math.round(n / 1024) + ' KB' : (n / 1048576).toFixed(1) + ' MB');
 
-export async function uploadChatFile(cid, file, onProgress) {
+export async function uploadChatFile(path, file, onProgress) {
   const s = await supabase.auth.getSession();
   const token = s.data && s.data.session ? s.data.session.access_token : null;
   if (!token) return { ok: false, error: 'Not signed in.' };
-  const path = cid + '/' + crypto.randomUUID() + '-' + safe(file.name);
+
   return new Promise((resolve) => {
     const x = new XMLHttpRequest();
     x.open('POST', SUPABASE_URL + '/storage/v1/object/chat-files/' + path);

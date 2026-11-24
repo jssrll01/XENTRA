@@ -25,7 +25,9 @@ import PollSheet from '../components/PollSheet';
 import PollCard from '../components/PollCard';
 import ThreadPanel from '../components/ThreadPanel';
 import AttachmentView from '../components/AttachmentView';
-import { maxFile, uploadChatFile } from '../lib/files';
+import { uploadChatFile, fileCategory, acceptList } from '../lib/files';
+import { reserveUpload, releaseUpload } from '../lib/api';
+import QuotaNote from '../components/QuotaNote';
 import { draftOf, queueDraft, useDrafts } from '../lib/drafts';
 import ReactorsSheet from '../components/ReactorsSheet';
 
@@ -72,6 +74,7 @@ export default function Chat() {
   const [thread, setThread] = useState(null);
   const [ups, setUps] = useState([]);
   const fileRef = useRef(null);
+  const [qt, setQt] = useState(0);
   const seededFor = useRef(null);
   const { loaded: draftsLoaded, error: draftsError, version: draftsVersion } = useDrafts();
   const busyRef = useRef(false);
@@ -288,13 +291,16 @@ export default function Chat() {
     let path = u.path;
     if (!path) {
       set({ progress: 0 });
-      const r = await uploadChatFile(id, u.file, (n) => set({ progress: n }));
-      if (!r.ok) { set({ failed: true, error: r.error }); return; }
-      path = r.path;
-      set({ path, progress: 100 });
+      const rs = await reserveUpload(id, u.file.name, u.file.type, u.file.size);
+      if (!rs.ok) { set({ failed: true, error: rs.error }); return; }
+      const r = await uploadChatFile(rs.data.path, u.file, (n) => set({ progress: n }));
+      if (!r.ok) { await releaseUpload(rs.data.id); set({ failed: true, error: r.error }); return; }
+      path = rs.data.path;
+      set({ path, progress: 100, rid: rs.data.id });
     }
     const s = await sendAttachment(id, path, u.file.name, u.file.type, u.file.size, u.key);
     if (!s.ok) { set({ failed: true, error: s.error }); return; }
+    setQt((n) => n + 1);
     setUps((p) => p.filter((x) => x.key !== u.key));
     load();
   }, [id, load]);
@@ -303,9 +309,7 @@ export default function Chat() {
     e.target.value = '';
     for (const f of files) {
       if (f.size < 1) { setNotice(f.name + ' is empty.'); continue; }
-      const lim = maxFile();
-      if (!lim) { setNotice('Settings are unavailable. Reload and try again.'); continue; }
-      if (f.size > lim) { setNotice(f.name + ' is over ' + Math.round(lim / 1048576) + ' MB.'); continue; }
+      if (!fileCategory(f)) { setNotice(f.name + ' is not allowed. Images and documents only.'); continue; }
       const u = { key: crypto.randomUUID(), file: f, progress: 0, failed: false, error: '', path: null };
       setUps((p) => [...p, u]);
       runUpload(u);
@@ -413,6 +417,7 @@ export default function Chat() {
             setNotice(kind === 'schedule' ? 'Message scheduled' : 'Reminder set');
           }} />
       ) : null}
+      <QuotaNote tick={qt} />
       {ups.length ? (
         <div className="ups">
           {ups.map((u) => (
@@ -436,7 +441,7 @@ export default function Chat() {
           <textarea rows={1} value={text} placeholder="Message" aria-label="Message" maxLength={4000} disabled={!msgs}
             onChange={(e) => { setText(e.target.value); if (!editing) saveDraft(e.target.value); ping(); }}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }} />
-          <input ref={fileRef} type="file" multiple hidden onChange={onFiles} />
+          <input ref={fileRef} type="file" multiple hidden accept={acceptList()} onChange={onFiles} />
           <button type="button" className="icon-btn" aria-label="Attach file" disabled={!msgs} onClick={() => fileRef.current && fileRef.current.click()}><Paperclip size={20} /></button>
           <button type="button" className="icon-btn" aria-label="New poll" disabled={!msgs} onClick={() => setPollOpen(true)}><ListChecks size={20} /></button>
           <button type="button" className="icon-btn" aria-label="Schedule or remind" onClick={() => setLater({ tab: 'schedule', text })}><Clock size={20} /></button>

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { FileText, RefreshCw } from 'lucide-react';
+import { FileText, FileX, RefreshCw } from 'lucide-react';
 import { fmtSize, signedUrl } from '../lib/files';
 
 export default function AttachmentView({ a }) {
@@ -12,6 +12,7 @@ export default function AttachmentView({ a }) {
   }, [a.path]);
   useEffect(() => { load(); }, [load]);
   const isImg = a.mime.startsWith('image/');
+  if (a.expired_at) return <div className="att"><FileX size={24} /><span className="att-t"><b>{a.name}</b><span>File expired</span></span></div>;
   if (err) return <div className="att"><span className="att-t"><b>{a.name}</b><span>{err}</span></span><button type="button" className="icon-btn" aria-label="Retry" onClick={load}><RefreshCw size={16} /></button></div>;
   if (isImg) return <a className="att img" href={url || undefined} target="_blank" rel="noreferrer">{url ? <img src={url} alt={a.name} loading="lazy" /> : <span className="att-t"><b>{a.name}</b><span>Loading...</span></span>}</a>;
   return (

@@ -844,3 +844,7 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
 .stg-t b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stg-t span { color: var(--muted); font-size: 12px; }
 .stg-send { align-self: flex-end; }
+@keyframes xa-fade-out { to { opacity: 0; } }
+@keyframes xa-sheet-out { to { opacity: 0; transform: translateY(24px); } }
+.sheet-back.out { pointer-events: none; animation: xa-fade-out .18s ease forwards; }
+.sheet-back.out .sheet { animation: xa-sheet-out .18s ease forwards; }

@@ -13,6 +13,8 @@ import { pingPresence, getMyPresence, logSignIn } from '../lib/api';
 import CommandPalette from './CommandPalette';
 import CodeSheet from './CodeSheet';
 import ScanSheet from './ScanSheet';
+import AccountList from './AccountList';
+import { setAccountLabel, restorePushAfterSwitch } from '../lib/accounts';
 
 const EXTRA = { '/notifications': 'Activity', '/search': 'Search', '/settings': 'Settings' };
 
@@ -59,6 +61,8 @@ export default function AppShell() {
     return () => { clearInterval(t); window.removeEventListener('xentra-presence', load); document.removeEventListener('visibilitychange', ping); };
   }, []);
   useEffect(() => { setMenu(false); }, [pathname]);
+  useEffect(() => { if (profile && profile.id) setAccountLabel(profile.id, name, profile.avatar_url); }, [profile.id, name, profile.avatar_url]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { restorePushAfterSwitch(); }, []);
   useEffect(() => {
     const k = (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPal(true); } };
     document.addEventListener('keydown', k);
@@ -111,6 +115,7 @@ export default function AppShell() {
             {menu ? (
               <div className="pop glass" role="menu">
                 <div className="pop-head"><b>{name}</b><span>{profile.email}</span></div>
+                <AccountList onClose={() => setMenu(false)} />
                 <button type="button" role="menuitem" onClick={() => nav('/profile')}><User size={18} /> Profile</button>
                 <button type="button" role="menuitem" onClick={() => nav('/organizations')}><Building2 size={18} /> Organizations</button>
                 <button type="button" role="menuitem" onClick={() => openSheet('code')}><QrCode size={18} /> My QR</button>

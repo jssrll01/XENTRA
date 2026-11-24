@@ -74,7 +74,7 @@ export async function signIn(email, password) {
   return r;
 }
 
-export const signOutApi = () => wrap(() => supabase.auth.signOut());
+export const signOutApi = () => wrap(() => supabase.auth.signOut({ scope: 'local' }));
 
 export const sendResetCode = (email) => wrap(() => supabase.auth.resetPasswordForEmail(normEmail(email)));
 export const verifyRecovery = (email, code) => guard({ action: 'verify', type: 'recovery', email: normEmail(email), code: String(code).replace(/\D/g, '') });

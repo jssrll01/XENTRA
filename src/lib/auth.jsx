@@ -1,21 +1,25 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from './supabase';
-import { signOutApi } from './authApi';
+import { saveCreds, removeAccount, signOutActive, signOutAll } from './accounts';
 
-const wipeCache = () => {
-  try { Object.keys(localStorage).filter((k) => k.indexOf('xentra-cache:') === 0).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* storage blocked */ }
-};
-
-const Ctx = createContext({ session: undefined, user: null, signOut: () => {} });
+const Ctx = createContext({ session: undefined, user: null, signOut: () => {}, signOutAll: () => {} });
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined);
+  const last = useRef(null);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session || null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s || null));
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) { last.current = data.session.user.id; saveCreds(data.session); }
+      setSession(data.session || null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (s && s.user) { last.current = s.user.id; saveCreds(s); }
+      else if (event === 'SIGNED_OUT' && last.current) { removeAccount(last.current); last.current = null; }
+      setSession(s || null);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
-  const value = { session, user: session ? session.user : null, signOut: async () => { wipeCache(); return signOutApi(); } };
+  const value = { session, user: session ? session.user : null, signOut: () => signOutActive(), signOutAll: () => signOutAll() };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

@@ -30,6 +30,7 @@ import JoinTeam from './pages/JoinTeam';
 import Organizations from './pages/Organizations';
 import Organization from './pages/Organization';
 import JoinOrg from './pages/JoinOrg';
+import AddAccount from './pages/AddAccount';
 import AppShell from './components/AppShell';
 import { ProfileProvider } from './lib/profile';
 import { SummaryProvider } from './lib/summary';
@@ -80,6 +81,7 @@ export default function App() {
               <Route path="/organizations" element={<Organizations />} />
               <Route path="/organizations/:id" element={<Organization />} />
               <Route path="/o/:code" element={<JoinOrg />} />
+              <Route path="/add-account" element={<AddAccount />} />
             </Route>
             <Route path="/ai/:slug" element={<RequireAuth><AiTool /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />

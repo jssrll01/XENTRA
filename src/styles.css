@@ -454,6 +454,10 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .pf-accent .btn-primary { background: var(--accent, #2563eb); }
 .vbadge { color: #2563eb; vertical-align: -3px; margin-left: 4px; }
 .pf-sw { margin-top: 10px; }
+.pf-cover-img { height: 120px; background-size: cover; background-position: center; }
+.pf-bn { display: flex; flex-direction: column; gap: 8px; }
+.pf-bn-img { height: 96px; border-radius: 14px; background: var(--line) center / cover no-repeat; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.pf-bn-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; background: var(--sw); cursor: pointer; }
 .swatch.on { border-color: #0f172a; }
 .field-body textarea { width: 100%; border: 0; background: transparent; font: inherit; resize: vertical; outline: 0; }

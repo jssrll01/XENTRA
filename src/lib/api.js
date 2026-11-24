@@ -156,6 +156,7 @@ export const getDrafts = () => call('get_drafts');
 export const setDraft = (cid, body) => call('set_draft', { p_conversation: cid, p_body: body });
 
 export const getMyDetails = () => call('get_my_details');
+export const setMyBanner = (url) => call('set_my_banner', { p_url: url || null });
 export const setMyDetails = (bio, cover, accent) => call('set_my_details', { p_bio: bio || null, p_cover: cover || null, p_accent: accent || null });
 export const getMyPrivacy = () => call('get_my_privacy');
 export const setPrivacy = (settings) => call('set_privacy', { p_settings: settings });

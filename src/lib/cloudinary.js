@@ -6,6 +6,14 @@ export function thumb(url, size = 128) {
   return url.replace(/\/upload\/(?:[a-z]{1,3}_[^/]*\/)?/, '/upload/' + t + '/');
 }
 
+export function banner(url, width = 900) {
+  if (!url || url.indexOf('res.cloudinary.com') === -1) return url;
+  const t = 'c_fill,g_auto,w_' + Math.round(width) + ',h_' + Math.round(width / 3) + ',f_auto,q_auto';
+  return url.replace(/\/upload\/(?:[a-z]{1,3}_[^/]*\/)?/, '/upload/' + t + '/');
+}
+
+export const uploadBanner = (file) => uploadAvatar(file);
+
 export async function uploadAvatar(file) {
   const cloud = cfg('cloudinary_cloud');
   const preset = cfg('cloudinary_preset');

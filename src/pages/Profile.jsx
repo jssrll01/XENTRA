@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AtSign, BadgeCheck, Camera, Mail, Phone, User } from 'lucide-react';
+import { AtSign, BadgeCheck, Camera, ImagePlus, Mail, Phone, Trash2, User } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import { useProfile } from '../lib/profile';
 import { updateProfile, setAvatar, checkUsername, getMyDetails, setMyDetails, usernameCooldown } from '../lib/api';
-import { uploadAvatar } from '../lib/cloudinary';
-import { avatarCooldown } from '../lib/api';
+import { uploadAvatar, uploadBanner, banner } from '../lib/cloudinary';
+import { avatarCooldown, setMyBanner } from '../lib/api';
 import { fullName } from '../lib/format';
 
 function Item({ icon: Icon, label, required, wide, ...rest }) {
@@ -47,6 +47,10 @@ export default function Profile() {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [up, setUp] = useState(false);
+  const [bn, setBn] = useState({ url: '', next: '' });
+  const [bup, setBup] = useState(false);
+  const [berr, setBerr] = useState('');
+  const bref = useRef(null);
   const [un, setUn] = useState('');
   const fileRef = useRef(null);
 
@@ -55,6 +59,7 @@ export default function Profile() {
     if (!d.ok || !c.ok) { setDerr(d.ok ? c.error : d.error); return; }
     setDerr('');
     setDet({ bio: d.data.bio || '', cover: d.data.cover || '', accent: d.data.accent || '', verified: Boolean(d.data.verified) });
+    setBn({ url: d.data.banner_url || '', next: d.data.banner_next_at && new Date(d.data.banner_next_at) > new Date() ? d.data.banner_next_at : '' });
     setCool(c.data);
     setPhotoNext(a.ok && a.data && a.data.next_at && new Date(a.data.next_at) > new Date() ? a.data.next_at : '');
   }, []);
@@ -91,6 +96,26 @@ export default function Profile() {
     setOk(true);
   };
 
+  const pickBanner = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    setBerr(''); setBup(true);
+    const u = await uploadBanner(file);
+    if (!u.ok) { setBup(false); setBerr(u.error); return; }
+    const r = await setMyBanner(u.data);
+    setBup(false);
+    if (!r.ok) { setBerr(r.error); return; }
+    await loadExtra();
+  };
+  const removeBanner = async () => {
+    setBerr(''); setBup(true);
+    const r = await setMyBanner(null);
+    setBup(false);
+    if (!r.ok) { setBerr(r.error); return; }
+    await loadExtra();
+  };
+
   const pick = async (e) => {
     const file = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -109,6 +134,17 @@ export default function Profile() {
 
   return (
     <>
+      <section className="glass card pf-bn">
+        <div className="pf-bn-img" style={bn.url ? { backgroundImage: 'url(' + banner(bn.url, 900) + ')' } : undefined}>{!bn.url ? <><ImagePlus size={22} /> <span>No banner yet</span></> : null}</div>
+        {berr ? <div className="alert err" role="alert">{berr}</div> : null}
+        <div className="pf-bn-acts">
+          {!bn.next ? <button type="button" className="btn btn-secondary btn-sm" disabled={bup} onClick={() => bref.current && bref.current.click()}><ImagePlus size={16} /> {bup ? 'Uploading...' : (bn.url ? 'Replace banner' : 'Add banner')}</button> : null}
+          {bn.url ? <button type="button" className="btn btn-secondary btn-sm" disabled={bup} onClick={removeBanner}><Trash2 size={16} /> Remove</button> : null}
+          <input ref={bref} type="file" accept="image/*" hidden onChange={pickBanner} />
+        </div>
+        {bn.next ? <Cd label="banner" iso={bn.next} onDone={loadExtra} /> : null}
+      </section>
+
       <section className="glass card profile-top">
         <Avatar name={fullName(profile)} url={profile.avatar_url} size={72} />
         <div>

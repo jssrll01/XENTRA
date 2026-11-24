@@ -6,6 +6,7 @@ import Avatar from '../components/ui/Avatar';
 import { getPublicProfile, startDirect, sendContactRequest } from '../lib/api';
 import { fullName } from '../lib/format';
 import { PALETTE } from '../lib/palette';
+import { banner } from '../lib/cloudinary';
 
 export default function PublicProfile() {
   const { username } = useParams();
@@ -39,7 +40,7 @@ export default function PublicProfile() {
   const name = fullName(p) || p.username;
   return (
     <div className="pf-accent" style={p.accent ? { '--accent': PALETTE[p.accent] } : undefined}>
-      <div className="pf-cover" style={p.cover ? { '--cover': PALETTE[p.cover] } : undefined} />
+      <div className={'pf-cover' + (p.banner_url ? ' pf-cover-img' : '')} style={p.banner_url ? { backgroundImage: 'url(' + banner(p.banner_url, 900) + ')' } : (p.cover ? { '--cover': PALETTE[p.cover] } : undefined)} />
       <section className="glass card pf-pub">
         <Avatar name={name} url={p.avatar_url} size={88} />
         <h2>{name}{p.verified ? <BadgeCheck size={20} className="vbadge" aria-label="Verified" /> : null}</h2>

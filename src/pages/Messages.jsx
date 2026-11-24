@@ -167,7 +167,7 @@ export default function Messages() {
                     )}
                     <button type="button" onClick={() => flag(c, { p_archived: !c.archived })}>{c.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />} {c.archived ? 'Unarchive' : 'Archive'}</button>
                     <button type="button" onClick={() => { setMenu(null); setExpFor(c); }}><DownIcon size={16} /> Export chat</button>
-                    <button type="button" onClick={() => del(c)}><TrashIcon size={16} /> Delete chat</button>
+                    {c.other.is_channel ? null : <button type="button" onClick={() => del(c)}><TrashIcon size={16} /> Delete chat</button>}
                   </div>
                 ) : null}
               </div>

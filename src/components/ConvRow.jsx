@@ -13,12 +13,12 @@ export default function ConvRow({ c, meId }) {
   const last = c.last;
   useDrafts();
   const draft = draftOf(c.id);
-  const who = !last ? '' : last.sender_id === meId ? 'You: ' : (c.other.is_group && last.sender_name ? last.sender_name + ': ' : '');
+  const who = !last ? '' : last.sender_id === meId ? 'You: ' : ((c.other.is_group || c.other.is_channel) && last.sender_name ? last.sender_name + ': ' : '');
   const text = !last ? 'No messages yet' : last.deleted ? 'Message deleted' : who + last.body;
   return (
     <Link className="row" to={'/messages/' + c.id}>
       <Avatar name={name} url={c.other.avatar_url} size={46} presence={pr && (pr.state === 'online' || pr.state === 'dnd') ? pr.state : undefined} />
-      <div className="row-main"><b>{name}{c.pinned ? <Pin size={13} className="ci" /> : null}{c.muted ? <BellOff size={13} className="ci" /> : null}</b><span>{draft ? 'Draft: ' + draft : text}</span></div>
+      <div className="row-main"><b>{name}{c.pinned ? <Pin size={13} className="ci" /> : null}{c.muted ? <BellOff size={13} className="ci" /> : null}</b><span>{c.other.is_channel && c.other.team_name ? c.other.team_name + ' - ' : ''}{draft ? 'Draft: ' + draft : text}</span></div>
       <div className="row-side">
         <span className="row-time">{listTime(c.last_message_at)}</span>
         {c.unread > 0 ? <span className={'badge' + (c.muted ? ' off' : '')}>{c.unread > 99 ? '99+' : c.unread}</span> : null}

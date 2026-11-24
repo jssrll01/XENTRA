@@ -761,3 +761,14 @@ textarea.tm-input { min-height: 88px; line-height: 1.5; resize: vertical; }
   border: 0; box-shadow: none; outline: 0;
 }
 .chat-find:focus-within, .tm-search:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .14); }
+
+.org { display: flex; flex-direction: column; gap: 16px; }
+.org-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--blue); }
+.org-dot.off { background: transparent; border: 1px solid var(--line); }
+.org-ann { border-bottom: 1px solid var(--line); }
+.org-ann:last-child { border-bottom: 0; }
+.org-ann .tm-row { border-bottom: 0; }
+.org-body { margin: 0 0 12px 22px; font-size: 15px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.org-policy { display: flex; flex-direction: column; gap: 8px; width: 100%; text-align: left; }
+.org-policy-text { max-height: 200px; overflow-y: auto; padding: 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.org-check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; }

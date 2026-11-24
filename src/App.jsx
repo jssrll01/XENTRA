@@ -27,6 +27,9 @@ import AiTools from './pages/AiTools';
 import AiTool from './pages/AiTool';
 import Team from './pages/Team';
 import JoinTeam from './pages/JoinTeam';
+import Organizations from './pages/Organizations';
+import Organization from './pages/Organization';
+import JoinOrg from './pages/JoinOrg';
 import AppShell from './components/AppShell';
 import { ProfileProvider } from './lib/profile';
 import { SummaryProvider } from './lib/summary';
@@ -74,6 +77,9 @@ export default function App() {
               <Route path="/teams/:id" element={<Team />} />
               <Route path="/t/:code" element={<JoinTeam />} />
               <Route path="/c/:code" element={<JoinTeam />} />
+              <Route path="/organizations" element={<Organizations />} />
+              <Route path="/organizations/:id" element={<Organization />} />
+              <Route path="/o/:code" element={<JoinOrg />} />
             </Route>
             <Route path="/ai/:slug" element={<RequireAuth><AiTool /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />

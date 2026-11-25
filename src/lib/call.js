@@ -346,3 +346,9 @@ async function admitted(id) {
   const c = await connect(id);
   if (!c.ok && st.id === id) { await rpc('leave_meeting', { p_meeting: id }); finish(c.error, 5000); }
 }
+
+export const scheduleList = (cid) => rpc('list_scheduled_meetings', { p_conversation: cid });
+export const scheduleSave = (id, cid, title, iso) => (id
+  ? rpc('update_scheduled_meeting', { p_id: id, p_title: title, p_starts: iso })
+  : rpc('schedule_meeting', { p_conversation: cid, p_title: title, p_starts: iso }));
+export const scheduleCancel = (id) => rpc('cancel_scheduled_meeting', { p_id: id });

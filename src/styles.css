@@ -978,3 +978,10 @@ body:has(.cl-back) .sel-list { z-index: 401; }
 .ml-grid.strip { flex: 0 0 112px; grid-auto-flow: column; grid-auto-columns: 112px; grid-template-columns: none; grid-template-rows: 1fr; overflow-x: auto; }
 .ml-hand { position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--amber); color: #0f172a; }
 .ml-rx { position: absolute; top: 8px; right: 8px; font-size: 28px; line-height: 1; }
+/* scheduled meetings */
+.sc-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.sc-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sc-main span, .sc-note { color: var(--muted, #64748b); font-size: 14px; }
+.sc-btns, .sc-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.sc-actions { justify-content: flex-end; margin-top: 8px; }
+.sc-row + .btn-block, .sc-form .sc-note { margin-top: 12px; }

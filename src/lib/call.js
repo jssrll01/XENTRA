@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react';
-import { Room, RoomEvent, Track } from 'livekit-client';
+import { DisconnectReason, Room, RoomEvent, Track } from 'livekit-client';
 import { supabase } from './supabase';
 
-const IDLE = { phase: 'IDLE', id: null, status: null, mode: 'voice', mine: false, peer: '', avatar: null, muted: false, live: false, reconnecting: false, since: null, notice: null, camOn: false, facing: 'user', localTrack: null, remoteTrack: null, remoteOff: false, quality: 'unknown', parts: [] };
+const IDLE = { phase: 'IDLE', id: null, status: null, mode: 'voice', mine: false, peer: '', avatar: null, muted: false, live: false, reconnecting: false, since: null, notice: null, camOn: false, facing: 'user', localTrack: null, remoteTrack: null, remoteOff: false, quality: 'unknown', parts: [], group: false, members: [], role: null, title: '' };
 let st = IDLE;
 let room = null;
 let els = [];
@@ -51,13 +51,18 @@ function startPoll() { if (!poll) poll = setInterval(refresh, 3000); }
 function sync(c) {
   if (!c || c.id !== st.id) return;
   const s = c.status;
+  if (st.group && s === 'active') {
+    if (c.my_status === 'removed') { finish('You were removed from the meeting', 5000); return; }
+    if (c.my_status !== 'joined') { finish('You left the meeting'); return; }
+    set({ members: c.members || [], role: c.my_role || null, title: c.title || st.title, since: c.started_at ? Date.parse(c.started_at) : st.since });
+  }
   if (s === 'ringing' || s === 'active') {
     if (s === 'active' && st.phase === 'INCOMING') return;
     set({ status: s });
     applyPhase();
     return;
   }
-  const t = { declined: 'Call declined', missed: st.mine ? 'No answer' : 'Missed call', cancelled: 'Call cancelled', ended: 'Call ended' };
+  const t = { declined: 'Call declined', missed: st.mine ? 'No answer' : 'Missed call', cancelled: 'Call cancelled', ended: st.group ? 'Meeting ended' : 'Call ended' };
   finish(t[s] || 'Call ended');
 }
 
@@ -66,7 +71,7 @@ async function refresh() {
   busy = true;
   try {
     if (st.id) {
-      const r = await rpc('get_call', { p_meeting: st.id });
+      const r = await rpc(st.group ? 'get_meeting' : 'get_call', { p_meeting: st.id });
       if (r.ok && r.data) { fails = 0; sync(r.data); }
       else if (++fails >= 3) finish('Call ended');
     } else if (st.phase === 'IDLE') {
@@ -137,10 +142,10 @@ async function connect(id) {
   rm.on(RoomEvent.ConnectionQualityChanged, (q, p) => { if (p && p.isLocal) set({ quality: String(q) }); });
   rm.on(RoomEvent.Reconnecting, () => { if (room === rm) { set({ reconnecting: true }); applyPhase(); } });
   rm.on(RoomEvent.Reconnected, () => { if (room === rm) { set({ reconnecting: false }); applyPhase(); } });
-  rm.on(RoomEvent.Disconnected, () => {
+  rm.on(RoomEvent.Disconnected, (reason) => {
     if (room !== rm || !st.id) return;
-    rpc(st.status === 'active' ? 'end_call' : 'cancel_call', { p_meeting: st.id });
-    finish('Connection lost', 5000);
+    rpc(st.group ? 'leave_meeting' : st.status === 'active' ? 'end_call' : 'cancel_call', { p_meeting: st.id });
+    finish(reason === DisconnectReason.PARTICIPANT_REMOVED ? 'You were removed from the meeting' : 'Connection lost', 5000);
   });
   room = rm;
   try {
@@ -239,4 +244,64 @@ export async function listDevices() {
 export async function pickDevice(kind, id) {
   if (!room) return false;
   try { return await room.switchActiveDevice(kind, id || 'default'); } catch (e) { note('Could not switch that device.'); return false; }
+}
+
+export const meetingFor = (cid) => rpc('get_conversation_meeting', { p_conversation: cid });
+async function enterMeeting(id) {
+  const j = await rpc('join_meeting', { p_meeting: id });
+  if (!j.ok) { finish(j.error, 5000); return; }
+  set({ id, status: 'active', mine: false });
+  applyPhase();
+  startPoll();
+  refresh();
+  const c = await connect(id);
+  if (!c.ok && st.id === id) { await rpc('leave_meeting', { p_meeting: id }); finish(c.error, 5000); }
+}
+export async function startMeeting(cid, title) {
+  if (st.phase !== 'IDLE' || !cid) return;
+  clearTimeout(nt);
+  set({ ...IDLE, phase: 'INITIATING', group: true, mode: 'video', peer: title || 'Meeting', title: title || 'Meeting' });
+  const m = await mediaCheck(false);
+  if (!m.ok) { finish(m.error, 7000); return; }
+  const r = await rpc('create_meeting', { p_conversation: cid, p_title: title || '', p_mode: 'video' });
+  if (!r.ok || !r.data) { finish(r.error, 5000); return; }
+  await enterMeeting(r.data.id);
+}
+export async function joinMeeting(id, title, mode) {
+  if (st.phase !== 'IDLE' || !id) return;
+  clearTimeout(nt);
+  set({ ...IDLE, phase: 'INITIATING', group: true, mode: mode === 'voice' ? 'voice' : 'video', peer: title || 'Meeting', title: title || 'Meeting' });
+  const m = await mediaCheck(false);
+  if (!m.ok) { finish(m.error, 7000); return; }
+  await enterMeeting(id);
+}
+export async function leaveMeeting() {
+  const id = st.id;
+  if (!id) return;
+  await rpc('leave_meeting', { p_meeting: id });
+  finish('You left the meeting');
+}
+export async function endForAll() {
+  const id = st.id;
+  if (!id) return;
+  const r = await supabase.functions.invoke('end-meeting', { body: { meeting_id: id } });
+  if (r.error) { note('Could not end the meeting. Try again.'); return; }
+  finish('Meeting ended');
+}
+export async function removePerson(uid) {
+  const id = st.id;
+  if (!id || !uid) return;
+  const r = await supabase.functions.invoke('remove-participant', { body: { meeting_id: id, user_id: uid } });
+  if (r.error) {
+    let m = 'Could not remove that person.';
+    try { const b = await r.error.context.json(); if (b && b.error) m = b.error; } catch (x) { /* no body */ }
+    note(m);
+    return;
+  }
+  refresh();
+}
+export async function setRole(uid, role) {
+  const r = await rpc('set_participant_role', { p_meeting: st.id, p_user: uid, p_role: role });
+  if (!r.ok) note(r.error);
+  refresh();
 }

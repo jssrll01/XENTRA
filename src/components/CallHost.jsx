@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, Phone, PhoneOff, Settings, Signal, SignalHigh, SignalLow, SignalMedium, SignalZero, SwitchCamera, Video, VideoOff, X } from 'lucide-react';
+import { Mic, MicOff, Phone, PhoneOff, Settings, Signal, SignalHigh, SignalLow, SignalMedium, SignalZero, SwitchCamera, Users, Video, VideoOff, X, LogOut } from 'lucide-react';
 import Avatar from './ui/Avatar';
 import Select from './ui/Select';
-import { useCall, startCallEvents, acceptCall, declineCall, cancelCall, hangUp, toggleMute, toggleCamera, switchCamera, listDevices, pickDevice } from '../lib/call';
+import { useCall, startCallEvents, acceptCall, declineCall, cancelCall, hangUp, toggleMute, toggleCamera, switchCamera, listDevices, pickDevice, leaveMeeting, endForAll, removePerson, setRole } from '../lib/call';
+import { People, Confirm } from './MeetingPanels';
 
 const mmss = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 const Q = { excellent: [SignalHigh, 'Excellent'], good: [SignalMedium, 'Good'], poor: [SignalLow, 'Poor'], lost: [SignalZero, 'Lost'] };
@@ -60,8 +61,10 @@ export default function CallHost({ uid }) {
   const c = useCall();
   const [now, setNow] = useState(Date.now());
   const [dev, setDev] = useState(false);
+  const [ppl, setPpl] = useState(false);
+  const [ask, setAsk] = useState(null);
   useEffect(() => startCallEvents(uid), [uid]);
-  useEffect(() => { if (c.phase === 'IDLE') setDev(false); }, [c.phase]);
+  useEffect(() => { if (c.phase === 'IDLE') { setDev(false); setPpl(false); setAsk(null); } }, [c.phase]);
   useEffect(() => {
     if (c.phase !== 'CONNECTED' && c.phase !== 'RECONNECTING') return undefined;
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -77,6 +80,7 @@ export default function CallHost({ uid }) {
   const toast = c.notice ? <div className="toast" role="status">{c.notice}</div> : null;
   if (c.phase === 'IDLE') return toast;
   const video = c.mode === 'video';
+  const doAsk = () => { const a = ask; setAsk(null); if (a.kind === 'leave') leaveMeeting(); else if (a.kind === 'end') endForAll(); else if (a.kind === 'remove') removePerson(a.uid); };
 
   if (c.phase === 'INCOMING') {
     return (
@@ -104,7 +108,7 @@ export default function CallHost({ uid }) {
       <div className="ml">
         <header className="ml-head">
           <span className="ml-brand">XENTRA</span>
-          <div className="ml-title"><b>{c.peer ? 'Call with ' + c.peer : 'Call'}</b><span>{STATUS[c.phase]}{grid ? ' - ' + c.parts.length + ' in call' : ''}</span></div>
+          <div className="ml-title"><b>{c.group ? (c.title || c.peer || 'Meeting') : c.peer ? 'Call with ' + c.peer : 'Call'}</b><span>{STATUS[c.phase]}{grid ? ' - ' + c.parts.length + ' in call' : ''}</span></div>
           <span className="ml-time" role="timer" aria-live="off">{inCall ? mmss(secs) : '--:--'}</span>
         </header>
         {c.phase === 'RECONNECTING' ? <div className="cl-warn ml-warn" role="status">Connection is weak. Reconnecting...</div> : null}
@@ -125,12 +129,15 @@ export default function CallHost({ uid }) {
             <button type="button" className={'cl-btn' + (c.muted ? ' on' : '')} aria-label={c.muted ? 'Unmute microphone' : 'Mute microphone'} aria-pressed={c.muted} disabled={!c.live} onClick={toggleMute}>{c.muted ? <MicOff size={24} /> : <Mic size={24} />}</button>
             {video ? <button type="button" className={'cl-btn' + (c.camOn ? '' : ' on')} aria-label={c.camOn ? 'Turn camera off' : 'Turn camera on'} aria-pressed={!c.camOn} disabled={!c.live} onClick={toggleCamera}>{c.camOn ? <Video size={24} /> : <VideoOff size={24} />}</button> : null}
             {video && c.camOn ? <button type="button" className="cl-btn" aria-label="Switch camera" onClick={switchCamera}><SwitchCamera size={24} /></button> : null}
-            <button type="button" className="cl-btn" aria-label="Device settings" disabled={!c.live} onClick={() => setDev(!dev)}><Settings size={24} /></button>
-            {c.phase === 'INITIATING' ? null : <button type="button" className="cl-btn red" aria-label={ringing ? 'Cancel call' : 'End call'} onClick={ringing ? cancelCall : hangUp}><PhoneOff size={24} /></button>}
+            {c.group ? <button type="button" className="cl-btn" aria-label="People" disabled={!c.live} onClick={() => { setPpl(!ppl); setDev(false); }}><Users size={24} /></button> : null}
+            <button type="button" className="cl-btn" aria-label="Device settings" disabled={!c.live} onClick={() => { setDev(!dev); setPpl(false); }}><Settings size={24} /></button>
+            {c.group ? (c.phase === 'INITIATING' ? null : <button type="button" className="cl-btn red" aria-label="Leave meeting" onClick={() => setAsk({ kind: 'leave' })}><LogOut size={24} /></button>) : c.phase === 'INITIATING' ? null : <button type="button" className="cl-btn red" aria-label={ringing ? 'Cancel call' : 'End call'} onClick={ringing ? cancelCall : hangUp}><PhoneOff size={24} /></button>}
           </div>
         </div>
       </div>
       {dev ? <DeviceSettings video={video} onClose={() => setDev(false)} /> : null}
+      {ppl && c.group ? <People members={c.members} role={c.role} uid={uid} onClose={() => setPpl(false)} onRole={setRole} onAsk={setAsk} /> : null}
+      {ask ? <Confirm a={ask} onNo={() => setAsk(null)} onYes={doAsk} /> : null}
       {toast}
     </div>
   );

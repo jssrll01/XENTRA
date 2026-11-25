@@ -7,6 +7,7 @@ import Avatar from './ui/Avatar';
 import { NAV } from '../nav';
 import { useAuth } from '../lib/auth';
 import { useProfile } from '../lib/profile';
+import CallHost from './CallHost';
 import { useSummary } from '../lib/summary';
 import { fullName } from '../lib/format';
 import { pingPresence, getMyPresence, logSignIn } from '../lib/api';
@@ -83,6 +84,7 @@ export default function AppShell() {
       {pal ? <CommandPalette uid={profile.id} onClose={() => setPal(false)} /> : null}
       {sheet && sheet.t === 'scan' ? <ScanSheet onClose={() => setSheet(null)} /> : null}
       {sheet && sheet.t === 'code' ? <CodeSheet onClose={() => setSheet(null)} /> : null}
+      <CallHost uid={profile.id} />
       {copied ? <div className="toast" role="status">{copied}</div> : null}
       <aside className="side" aria-label="Sidebar">
         <Logo size={40} />

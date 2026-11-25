@@ -22,6 +22,7 @@ import Contacts from './pages/Contacts';
 import AddContact from './pages/AddContact';
 import InvitePage from './pages/InvitePage';
 import InviteResume from './components/InviteResume';
+import CallHistory from './pages/CallHistory';
 import GroupInfo from './pages/GroupInfo';
 import JoinGroup from './pages/JoinGroup';
 import Teams from './pages/Teams';
@@ -76,6 +77,7 @@ export default function App() {
               <Route path="/messages" element={<Messages />} />
               <Route path="/messages/:id" element={<Chat />} />
               <Route path="/contacts" element={<Contacts />} />
+              <Route path="/calls" element={<CallHistory />} />
               <Route path="/add/:code" element={<AddContact />} />
               <Route path="/groups/:id/info" element={<GroupInfo />} />
               <Route path="/join/:code" element={<JoinGroup />} />

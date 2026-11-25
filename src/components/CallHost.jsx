@@ -6,6 +6,7 @@ import { useCall, startCallEvents, acceptCall, declineCall, cancelCall, hangUp, 
 
 const mmss = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 const Q = { excellent: [SignalHigh, 'Excellent'], good: [SignalMedium, 'Good'], poor: [SignalLow, 'Poor'], lost: [SignalZero, 'Lost'] };
+const STATUS = { INITIATING: 'Starting', RINGING: 'Ringing', CONNECTING: 'Connecting', CONNECTED: 'Live', RECONNECTING: 'Reconnecting' };
 
 function VideoEl({ track, className }) {
   const ref = useRef(null);
@@ -21,6 +22,15 @@ function VideoEl({ track, className }) {
 function Quality({ q }) {
   const [Icon, text] = Q[q] || [Signal, 'Checking'];
   return <span className={'cl-q ' + (Q[q] ? q : '')} role="status"><Icon size={14} /> {text}</span>;
+}
+
+function Tile({ p, avatar, mirror }) {
+  return (
+    <div className={'ml-tile' + (p.speaking ? ' sp' : '')}>
+      {p.track ? <VideoEl track={p.track} className={'ml-vid' + (p.local && mirror ? ' mirror' : '')} /> : <Avatar name={p.name} url={p.local ? null : avatar} size={72} />}
+      <span className="ml-name">{p.micOff ? <MicOff size={14} /> : null}{p.name}</span>
+    </div>
+  );
 }
 
 function DeviceSettings({ video, onClose }) {
@@ -85,26 +95,39 @@ export default function CallHost({ uid }) {
   }
 
   const secs = c.since ? Math.max(0, Math.floor((now - c.since) / 1000)) : 0;
-  const label = { INITIATING: 'Starting call...', RINGING: 'Ringing...', CONNECTING: 'Connecting...', CONNECTED: mmss(secs), RECONNECTING: 'Reconnecting...' }[c.phase];
+  const inCall = c.phase === 'CONNECTED' || c.phase === 'RECONNECTING';
+  const grid = inCall && c.parts.length > 0;
   const ringing = c.phase === 'RINGING' || c.phase === 'INITIATING';
-  const showRemote = video && c.remoteTrack && !c.remoteOff;
+  const hero = { INITIATING: 'Starting call...', RINGING: 'Ringing...', CONNECTING: 'Connecting...', CONNECTED: mmss(secs), RECONNECTING: 'Reconnecting...' }[c.phase];
   return (
     <div className="cl-back full" role="dialog" aria-label={video ? 'Video call' : 'Voice call'}>
-      {showRemote ? <VideoEl track={c.remoteTrack} className="cl-remote" /> : null}
-      {video && c.camOn && c.localTrack ? <VideoEl track={c.localTrack} className={'cl-pip' + (c.facing === 'user' ? ' mirror' : '')} /> : null}
-      <div className={'cl-card' + (showRemote ? ' over' : '')}>
-        {c.phase === 'RECONNECTING' ? <div className="cl-warn" role="status">Connection is weak. Reconnecting...</div> : null}
-        {showRemote ? null : <Avatar name={c.peer} url={c.avatar} size={110} />}
-        <h2>{c.peer}</h2>
-        <p role="timer" aria-live="off">{label}</p>
-        {c.live ? <Quality q={c.quality} /> : null}
-        {video && c.remoteOff && c.live ? <p>Camera is off</p> : null}
-        <div className="cl-row">
-          <button type="button" className={'cl-btn' + (c.muted ? ' on' : '')} aria-label={c.muted ? 'Unmute microphone' : 'Mute microphone'} aria-pressed={c.muted} disabled={!c.live} onClick={toggleMute}>{c.muted ? <MicOff size={26} /> : <Mic size={26} />}</button>
-          {video ? <button type="button" className={'cl-btn' + (c.camOn ? '' : ' on')} aria-label={c.camOn ? 'Turn camera off' : 'Turn camera on'} aria-pressed={!c.camOn} disabled={!c.live} onClick={toggleCamera}>{c.camOn ? <Video size={26} /> : <VideoOff size={26} />}</button> : null}
-          {video && c.camOn ? <button type="button" className="cl-btn" aria-label="Switch camera" onClick={switchCamera}><SwitchCamera size={26} /></button> : null}
-          <button type="button" className="cl-btn" aria-label="Device settings" disabled={!c.live} onClick={() => setDev(!dev)}><Settings size={26} /></button>
-          {c.phase === 'INITIATING' ? null : <button type="button" className="cl-btn red" aria-label={ringing ? 'Cancel call' : 'End call'} onClick={ringing ? cancelCall : hangUp}><PhoneOff size={26} /></button>}
+      <div className="ml">
+        <header className="ml-head">
+          <span className="ml-brand">XENTRA</span>
+          <div className="ml-title"><b>{c.peer ? 'Call with ' + c.peer : 'Call'}</b><span>{STATUS[c.phase]}{grid ? ' - ' + c.parts.length + ' in call' : ''}</span></div>
+          <span className="ml-time" role="timer" aria-live="off">{inCall ? mmss(secs) : '--:--'}</span>
+        </header>
+        {c.phase === 'RECONNECTING' ? <div className="cl-warn ml-warn" role="status">Connection is weak. Reconnecting...</div> : null}
+        {grid ? (
+          <div className="ml-grid" data-n={Math.min(c.parts.length, 5)}>
+            {c.parts.map((p) => <Tile key={p.id} p={p} avatar={c.avatar} mirror={c.facing === 'user'} />)}
+          </div>
+        ) : (
+          <div className="ml-hero">
+            <Avatar name={c.peer} url={c.avatar} size={110} />
+            <h2>{c.peer}</h2>
+            <p>{hero}</p>
+          </div>
+        )}
+        <div className="ml-bar">
+          {c.live ? <Quality q={c.quality} /> : null}
+          <div className="cl-row">
+            <button type="button" className={'cl-btn' + (c.muted ? ' on' : '')} aria-label={c.muted ? 'Unmute microphone' : 'Mute microphone'} aria-pressed={c.muted} disabled={!c.live} onClick={toggleMute}>{c.muted ? <MicOff size={24} /> : <Mic size={24} />}</button>
+            {video ? <button type="button" className={'cl-btn' + (c.camOn ? '' : ' on')} aria-label={c.camOn ? 'Turn camera off' : 'Turn camera on'} aria-pressed={!c.camOn} disabled={!c.live} onClick={toggleCamera}>{c.camOn ? <Video size={24} /> : <VideoOff size={24} />}</button> : null}
+            {video && c.camOn ? <button type="button" className="cl-btn" aria-label="Switch camera" onClick={switchCamera}><SwitchCamera size={24} /></button> : null}
+            <button type="button" className="cl-btn" aria-label="Device settings" disabled={!c.live} onClick={() => setDev(!dev)}><Settings size={24} /></button>
+            {c.phase === 'INITIATING' ? null : <button type="button" className="cl-btn red" aria-label={ringing ? 'Cancel call' : 'End call'} onClick={ringing ? cancelCall : hangUp}><PhoneOff size={24} /></button>}
+          </div>
         </div>
       </div>
       {dev ? <DeviceSettings video={video} onClose={() => setDev(false)} /> : null}

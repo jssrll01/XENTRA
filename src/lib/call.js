@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { Room, RoomEvent, Track } from 'livekit-client';
 import { supabase } from './supabase';
 
-const IDLE = { phase: 'IDLE', id: null, status: null, mode: 'voice', mine: false, peer: '', avatar: null, muted: false, live: false, reconnecting: false, since: null, notice: null, camOn: false, facing: 'user', localTrack: null, remoteTrack: null, remoteOff: false, quality: 'unknown' };
+const IDLE = { phase: 'IDLE', id: null, status: null, mode: 'voice', mine: false, peer: '', avatar: null, muted: false, live: false, reconnecting: false, since: null, notice: null, camOn: false, facing: 'user', localTrack: null, remoteTrack: null, remoteOff: false, quality: 'unknown', parts: [] };
 let st = IDLE;
 let room = null;
 let els = [];
@@ -108,6 +108,16 @@ async function mediaCheck(video) {
   }
 }
 
+function snap(rm) {
+  if (room !== rm) return;
+  const mk = (p) => {
+    const cam = p.getTrackPublication(Track.Source.Camera);
+    const mic = p.getTrackPublication(Track.Source.Microphone);
+    return { id: p.identity, name: p.isLocal ? 'You' : (p.name || st.peer || 'Guest'), local: p.isLocal, speaking: p.isSpeaking, micOff: !mic || mic.isMuted, track: cam && !cam.isMuted && cam.videoTrack ? cam.videoTrack : null };
+  };
+  set({ parts: [mk(rm.localParticipant), ...Array.from(rm.remoteParticipants.values()).map(mk)] });
+}
+
 async function connect(id) {
   const r = await supabase.functions.invoke('join-meeting', { body: { meeting_id: id } });
   if (r.error || !r.data || !r.data.token) {
@@ -116,6 +126,7 @@ async function connect(id) {
     return { ok: false, error: m };
   }
   const rm = new Room();
+  [RoomEvent.ParticipantConnected, RoomEvent.ParticipantDisconnected, RoomEvent.TrackSubscribed, RoomEvent.TrackUnsubscribed, RoomEvent.TrackMuted, RoomEvent.TrackUnmuted, RoomEvent.ActiveSpeakersChanged, RoomEvent.LocalTrackPublished, RoomEvent.LocalTrackUnpublished].forEach((ev) => rm.on(ev, () => snap(rm)));
   rm.on(RoomEvent.TrackSubscribed, (t) => {
     if (t.kind === Track.Kind.Audio) { const el = t.attach(); el.style.display = 'none'; document.body.appendChild(el); els.push(el); }
     else if (t.kind === Track.Kind.Video) set({ remoteTrack: t, remoteOff: false });
@@ -142,6 +153,7 @@ async function connect(id) {
   }
   if (room !== rm) return { ok: true };
   set({ live: true, muted: false });
+  snap(rm);
   if (st.mode === 'video') {
     try {
       const pub = await rm.localParticipant.setCameraEnabled(true);

@@ -8,7 +8,8 @@ import OrgMembers from '../components/OrgMembers';
 import OrgManage, { canManageOrg } from '../components/OrgManage';
 import { TeamErr } from '../components/TeamSub';
 import { ask } from '../lib/dialog';
-import { getOrg, leaveOrg, listOrgAnnouncements, markOrgAnnouncementRead } from '../lib/api';
+import { getOrg, leaveOrg, deleteOrg, listOrgAnnouncements, markOrgAnnouncementRead } from '../lib/api';
+import DeleteSheet from '../components/DeleteSheet';
 import { timeAgo } from '../lib/format';
 import { useSummary } from '../lib/summary';
 
@@ -59,6 +60,7 @@ export default function Organization() {
   const [err, setErr] = useState('');
   const [tab, setTab] = useState('home');
   const [busy, setBusy] = useState(false);
+  const [del, setDel] = useState(false);
   const load = useCallback(async () => {
     const r = await getOrg(id);
     if (r.ok) { setO(r.data); setErr(''); } else setErr(r.error);
@@ -93,7 +95,13 @@ export default function Organization() {
           {cur === 'home' ? <Announcements org={o} tick={tick} /> : null}
           {cur === 'members' ? <OrgMembers org={o} tick={tick} onChanged={load} /> : null}
           {cur === 'manage' ? <OrgManage org={o} tick={tick} onChanged={load} /> : null}
-          {o.my_role === 'owner' ? <p className="tm-hint">Owners must transfer ownership before leaving.</p> : (
+          {o.my_role === 'owner' ? (
+            <div className="tm-foot">
+              <p className="tm-hint">Owners must transfer ownership before leaving.</p>
+              <button type="button" className="tm-btn danger" onClick={() => setDel(true)}>Delete organization</button>
+              {del ? <DeleteSheet title="Delete organization" name={o.name} warn="This removes every member and all organization data immediately. It cannot be undone." onDelete={(t) => deleteOrg(id, t)} onClose={() => setDel(false)} onDone={() => nav('/organizations')} /> : null}
+            </div>
+          ) : (
             <div className="tm-foot"><button type="button" className="tm-btn danger" disabled={busy} onClick={leave}>Leave organization</button></div>
           )}
         </>

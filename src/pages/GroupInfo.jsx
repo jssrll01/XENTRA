@@ -2,6 +2,8 @@ import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from '../components/ui/Skeleton';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { deleteGroup } from '../lib/api';
+import DeleteSheet from '../components/DeleteSheet';
 import { Camera, Copy, Crown, LogOut, RefreshCw, ShieldCheck, ShieldOff, UserMinus, UserPlus } from 'lucide-react';
 import Avatar from '../components/ui/Avatar';
 import PickSheet from '../components/PickSheet';
@@ -14,6 +16,7 @@ import { fullName } from '../lib/format';
 export default function GroupInfo() {
   const { id } = useParams();
   const nav = useNavigate();
+  const [del, setDel] = useState(false);
   const file = useRef(null);
   const [g, setG] = useState(null);
   const [mem, setMem] = useState(null);
@@ -141,6 +144,8 @@ export default function GroupInfo() {
           {admin && g.perms ? <GroupPermissions id={id} perms={g.perms} onChanged={load} /> : null}
             {admin ? <GroupRules id={id} mem={mem} onChanged={load} /> : null}
           <button type="button" className="btn btn-secondary btn-block" disabled={busy} onClick={leave}><LogOut size={16} /> Leave group</button>
+          {owner ? <button type="button" className="btn btn-secondary btn-block" onClick={() => setDel(true)}>Delete group</button> : null}
+          {del ? <DeleteSheet title="Delete group" name={g.name || 'group'} warn="All members are removed immediately and the chat, files list and meetings are deleted. It cannot be undone." onDelete={(x) => deleteGroup(id, x)} onClose={() => setDel(false)} onDone={() => nav('/messages')} /> : null}
         </>
       ) : null}
       {add && mem ? <PickSheet title="Add members" label="Add" exclude={mem.map((m) => m.id)} onSubmit={(ids) => addGroupMembers(id, ids)} onClose={() => setAdd(false)} onDone={() => { setAdd(false); setNote('Members added'); load(); }} /> : null}

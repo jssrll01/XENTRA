@@ -282,3 +282,7 @@ export const getNote = (id) => call('get_note', { p_id: id });
 export const addNote = (title, body) => call('add_note', { p_title: title, p_body: body });
 export const updateNote = (id, title, body) => call('update_note', { p_id: id, p_title: title, p_body: body });
 export const deleteNote = (id) => call('delete_note', { p_id: id });
+
+export const deleteOrg = (org, confirm) => call('delete_org', { p_org: org, p_confirm: confirm });
+export const deleteTeam = (team, confirm) => call('delete_team', { p_team: team, p_confirm: confirm });
+export const deleteGroup = (cid, confirm) => call('delete_group', { p_conversation: cid, p_confirm: confirm });

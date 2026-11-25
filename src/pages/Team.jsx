@@ -9,12 +9,14 @@ import TeamMembers from '../components/TeamMembers';
 import TeamActivity from '../components/TeamActivity';
 import TeamManage from '../components/TeamManage';
 import { TeamErr } from '../components/TeamSub';
-import { getTeam, leaveTeam } from '../lib/api';
+import { getTeam, leaveTeam, deleteTeam } from '../lib/api';
+import DeleteSheet from '../components/DeleteSheet';
 import { useSummary } from '../lib/summary';
 
 export default function Team() {
   const { id } = useParams();
   const nav = useNavigate();
+  const [del, setDel] = useState(false);
   const { tick } = useSummary();
   const [t, setT] = useState(null);
   const [err, setErr] = useState('');
@@ -68,6 +70,8 @@ export default function Team() {
             <section className="tm-dz">
               <h3 className="tm-label">Danger zone</h3>
               <button type="button" className="tm-btn danger" disabled={busy} onClick={leave}><LogOut size={16} /> Leave team</button>
+              {t.my_role === 'owner' ? <button type="button" className="tm-btn danger" onClick={() => setDel(true)}>Delete team</button> : null}
+              {del ? <DeleteSheet title="Delete team" name={t.name} warn="All members are removed immediately and the team, its channels and chats are deleted. It cannot be undone." onDelete={(x) => deleteTeam(id, x)} onClose={() => setDel(false)} onDone={() => nav('/teams')} /> : null}
             </section>
           ) : null}
         </>

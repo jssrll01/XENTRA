@@ -19,7 +19,7 @@ import ChatSearch from '../components/ChatSearch';
 import ForwardPicker from '../components/ForwardPicker';
 import GroupInfoButton from '../components/GroupInfoButton';
 import { Link as CallLink } from 'react-router-dom';
-import { History, Phone } from 'lucide-react';
+import { History, Phone, Video } from 'lucide-react';
 import { startCall } from '../lib/call';
 import { useExitValue } from '../lib/useExit';
 import Skeleton from '../components/ui/Skeleton';
@@ -419,7 +419,7 @@ export default function Chat() {
         {other ? <Avatar name={name} url={other.avatar_url} size={40} /> : <span className="avatar" style={{ width: 40, height: 40, background: '#e2e8f0' }} />}
         <b>{name}{typing ? <small className="typing">typing...</small> : pline ? <small className="pline">{pline}</small> : null}</b>
         <button type="button" className="icon-btn" aria-label="Search in chat" onClick={() => setSearching(!searching)}><SearchIcon size={20} /></button>
-        {other && !other.is_group && !other.is_channel ? <><CallLink className="icon-btn" to="/calls" aria-label="Call history"><History size={20} /></CallLink><button type="button" className="icon-btn" aria-label={'Voice call ' + name} onClick={() => startCall(id, name)}><Phone size={20} /></button></> : null}
+        {other && !other.is_group && !other.is_channel ? <><CallLink className="icon-btn" to="/calls" aria-label="Call history"><History size={20} /></CallLink><button type="button" className="icon-btn" aria-label={'Voice call ' + name} onClick={() => startCall(id, name, 'voice')}><Phone size={20} /></button><button type="button" className="icon-btn" aria-label={'Video call ' + name} onClick={() => startCall(id, name, 'video')}><Video size={20} /></button></> : null}
         {other && (other.is_group || other.is_channel) ? <GroupInfoButton id={id} other={other} /> : null}
       </div>
       {searching ? <ChatSearch conversationId={id} onClose={() => setSearching(false)} onJump={(m) => { setSearching(false); goQuote(m.id); }} /> : null}

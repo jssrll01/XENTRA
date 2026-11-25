@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { Room, RoomEvent, Track } from 'livekit-client';
 import { supabase } from './supabase';
 
-const IDLE = { phase: 'IDLE', id: null, status: null, mine: false, peer: '', avatar: null, muted: false, live: false, reconnecting: false, since: null, notice: null };
+const IDLE = { phase: 'IDLE', id: null, status: null, mode: 'voice', mine: false, peer: '', avatar: null, muted: false, live: false, reconnecting: false, since: null, notice: null, camOn: false, facing: 'user', localTrack: null, remoteTrack: null, remoteOff: false, quality: 'unknown' };
 let st = IDLE;
 let room = null;
 let els = [];
@@ -14,6 +14,7 @@ const subs = new Set();
 
 const set = (p) => { st = { ...st, ...p }; subs.forEach((f) => f()); };
 export const useCall = () => useSyncExternalStore((cb) => { subs.add(cb); return () => subs.delete(cb); }, () => st);
+const note = (t, ms = 4000) => { clearTimeout(nt); set({ notice: t }); nt = setTimeout(() => set({ notice: null }), ms); };
 
 async function rpc(name, args) {
   try {
@@ -75,7 +76,7 @@ async function refresh() {
         const g = await rpc('get_call', { p_meeting: c.id });
         if (g.ok && g.data && st.phase === 'IDLE') {
           clearTimeout(nt);
-          set({ ...IDLE, phase: 'INCOMING', id: c.id, status: 'ringing', mine: false, peer: g.data.peer_name || 'Someone', avatar: g.data.peer_avatar || null });
+          set({ ...IDLE, phase: 'INCOMING', id: c.id, status: 'ringing', mode: g.data.mode === 'video' ? 'video' : 'voice', mine: false, peer: g.data.peer_name || 'Someone', avatar: g.data.peer_avatar || null });
           startPoll();
         }
       }
@@ -94,15 +95,16 @@ export function startCallEvents(userId) {
   return () => { document.removeEventListener('visibilitychange', vis); supabase.removeChannel(ch); };
 }
 
-async function micCheck() {
+async function mediaCheck(video) {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return { ok: false, error: 'This browser cannot make calls.' };
   try {
-    const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: !!video });
     s.getTracks().forEach((t) => t.stop());
     return { ok: true };
   } catch (e) {
     const denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
-    return { ok: false, error: denied ? 'Microphone is blocked. Allow microphone access in your browser site settings, then try again.' : 'No microphone was found.' };
+    const what = video ? 'Camera or microphone' : 'Microphone';
+    return { ok: false, error: denied ? what + ' is blocked. Allow access in your browser site settings, then try again.' : 'No ' + (video ? 'camera or microphone' : 'microphone') + ' was found.' };
   }
 }
 
@@ -116,13 +118,17 @@ async function connect(id) {
   const rm = new Room();
   rm.on(RoomEvent.TrackSubscribed, (t) => {
     if (t.kind === Track.Kind.Audio) { const el = t.attach(); el.style.display = 'none'; document.body.appendChild(el); els.push(el); }
+    else if (t.kind === Track.Kind.Video) set({ remoteTrack: t, remoteOff: false });
   });
+  rm.on(RoomEvent.TrackUnsubscribed, (t) => { if (t.kind === Track.Kind.Video) set({ remoteTrack: null }); });
+  rm.on(RoomEvent.TrackMuted, (pub, p) => { if (pub.kind === Track.Kind.Video && p && !p.isLocal) set({ remoteOff: true }); });
+  rm.on(RoomEvent.TrackUnmuted, (pub, p) => { if (pub.kind === Track.Kind.Video && p && !p.isLocal) set({ remoteOff: false }); });
+  rm.on(RoomEvent.ConnectionQualityChanged, (q, p) => { if (p && p.isLocal) set({ quality: String(q) }); });
   rm.on(RoomEvent.Reconnecting, () => { if (room === rm) { set({ reconnecting: true }); applyPhase(); } });
   rm.on(RoomEvent.Reconnected, () => { if (room === rm) { set({ reconnecting: false }); applyPhase(); } });
   rm.on(RoomEvent.Disconnected, () => {
     if (room !== rm || !st.id) return;
-    const cid = st.id;
-    rpc(st.status === 'active' ? 'end_call' : 'cancel_call', { p_meeting: cid });
+    rpc(st.status === 'active' ? 'end_call' : 'cancel_call', { p_meeting: st.id });
     finish('Connection lost', 5000);
   });
   room = rm;
@@ -136,17 +142,23 @@ async function connect(id) {
   }
   if (room !== rm) return { ok: true };
   set({ live: true, muted: false });
+  if (st.mode === 'video') {
+    try {
+      const pub = await rm.localParticipant.setCameraEnabled(true);
+      set({ camOn: !!pub, localTrack: pub ? pub.videoTrack : null });
+    } catch (e) { note('The camera could not start. Continuing with audio only.'); }
+  }
   applyPhase();
   return { ok: true };
 }
 
-export async function startCall(cid, name) {
+export async function startCall(cid, name, mode = 'voice') {
   if (st.phase !== 'IDLE' || !cid) return;
   clearTimeout(nt);
-  set({ ...IDLE, phase: 'INITIATING', mine: true, peer: name || '' });
-  const m = await micCheck();
+  set({ ...IDLE, phase: 'INITIATING', mine: true, peer: name || '', mode });
+  const m = await mediaCheck(mode === 'video');
   if (!m.ok) { finish(m.error, 7000); return; }
-  const r = await rpc('create_call', { p_conversation: cid, p_mode: 'voice' });
+  const r = await rpc('create_call', { p_conversation: cid, p_mode: mode });
   if (!r.ok || !r.data) { finish(r.error, 5000); return; }
   set({ id: r.data.id, status: 'ringing', mine: true });
   applyPhase();
@@ -158,7 +170,7 @@ export async function startCall(cid, name) {
 export async function acceptCall() {
   if (st.phase !== 'INCOMING') return;
   const id = st.id;
-  const m = await micCheck();
+  const m = await mediaCheck(st.mode === 'video');
   if (!m.ok) { await rpc('respond_call', { p_meeting: id, p_accept: false }); finish(m.error, 7000); return; }
   const r = await rpc('respond_call', { p_meeting: id, p_accept: true });
   if (!r.ok) { finish(r.error, 5000); return; }
@@ -192,4 +204,27 @@ export function toggleMute() {
   const m = !st.muted;
   room.localParticipant.setMicrophoneEnabled(!m);
   set({ muted: m });
+}
+export async function toggleCamera() {
+  if (!room || st.mode !== 'video') return;
+  const on = !st.camOn;
+  try {
+    const pub = await room.localParticipant.setCameraEnabled(on);
+    set({ camOn: on, localTrack: on && pub ? pub.videoTrack : null });
+  } catch (e) { note('The camera could not be turned ' + (on ? 'on' : 'off') + '.'); }
+}
+export async function switchCamera() {
+  const t = st.localTrack;
+  if (!t || !st.camOn) return;
+  const next = st.facing === 'user' ? 'environment' : 'user';
+  try { await t.restartTrack({ facingMode: next }); set({ facing: next }); } catch (e) { note('This device cannot switch cameras.'); }
+}
+export async function listDevices() {
+  const get = (k) => Room.getLocalDevices(k).catch(() => []);
+  const [a, v, o] = await Promise.all([get('audioinput'), get('videoinput'), get('audiooutput')]);
+  return { audioinput: a, videoinput: v, audiooutput: o };
+}
+export async function pickDevice(kind, id) {
+  if (!room) return false;
+  try { return await room.switchActiveDevice(kind, id || 'default'); } catch (e) { note('Could not switch that device.'); return false; }
 }

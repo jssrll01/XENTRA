@@ -956,3 +956,25 @@ body:has(.cl-back) .sel-list { z-index: 401; }
 .cl-cbtn.red { background: var(--red); color: #fff; }
 .icon-btn:has(> .mt-dot) { position: relative; }
 .mt-dot { position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
+
+/* collaboration */
+.cl-set { bottom: calc(190px + env(safe-area-inset-bottom)); }
+.cl-btn:has(> .cl-badge) { position: relative; }
+.cl-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; }
+.cl-wait { display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.cl-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.cl-tools .cl-cbtn { flex: 1 1 auto; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; }
+.cl-cbtn[aria-pressed="true"] { background: var(--blue); color: #fff; }
+.cl-msgs { height: 36vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.cl-msg { align-self: flex-start; max-width: 85%; padding: 8px 10px; border-radius: 12px; background: rgba(148, 163, 184, .2); font-size: 14px; overflow-wrap: anywhere; }
+.cl-msg.mine { align-self: flex-end; background: var(--blue); color: #fff; }
+.cl-msg small { display: block; font-size: 11px; opacity: .7; }
+.cl-chatf { display: flex; gap: 8px; }
+.cl-input { flex: 1; min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); color: var(--ink); font: inherit; font-size: 16px; }
+.cl-react { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(190px + env(safe-area-inset-bottom)); display: flex; gap: 6px; padding: 8px; border-radius: 999px; background: var(--surface); box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+.cl-rbtn { width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; font-size: 24px; cursor: pointer; }
+.ml-share { flex: 1; min-height: 0; position: relative; border-radius: 18px; background: #000; overflow: hidden; }
+.ml-vid.fit { object-fit: contain; }
+.ml-grid.strip { flex: 0 0 112px; grid-auto-flow: column; grid-auto-columns: 112px; grid-template-columns: none; grid-template-rows: 1fr; overflow-x: auto; }
+.ml-hand { position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--amber); color: #0f172a; }
+.ml-rx { position: absolute; top: 8px; right: 8px; font-size: 28px; line-height: 1; }

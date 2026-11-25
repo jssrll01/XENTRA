@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { DisconnectReason, Room, RoomEvent, Track } from 'livekit-client';
 import { supabase } from './supabase';
 
-const IDLE = { phase: 'IDLE', id: null, status: null, mode: 'voice', mine: false, peer: '', avatar: null, muted: false, live: false, reconnecting: false, since: null, notice: null, camOn: false, facing: 'user', localTrack: null, remoteTrack: null, remoteOff: false, quality: 'unknown', parts: [], group: false, members: [], role: null, title: '' };
+const IDLE = { phase: 'IDLE', waiting: false, wait: [], lobby: false, id: null, status: null, mode: 'voice', mine: false, peer: '', avatar: null, muted: false, live: false, reconnecting: false, since: null, notice: null, camOn: false, facing: 'user', localTrack: null, remoteTrack: null, remoteOff: false, quality: 'unknown', parts: [], group: false, members: [], role: null, title: '' };
 let st = IDLE;
 let room = null;
 let els = [];
@@ -42,7 +42,8 @@ function finish(text, ms = 3500) {
 function applyPhase() {
   if (!st.id) return;
   let p;
-  if (st.status === 'active') p = !st.live ? 'CONNECTING' : st.reconnecting ? 'RECONNECTING' : 'CONNECTED';
+  if (st.waiting) p = 'WAITING';
+  else if (st.status === 'active') p = !st.live ? 'CONNECTING' : st.reconnecting ? 'RECONNECTING' : 'CONNECTED';
   else p = st.mine ? 'RINGING' : 'INCOMING';
   set({ phase: p, since: p === 'CONNECTED' && !st.since ? Date.now() : st.since });
 }
@@ -53,8 +54,11 @@ function sync(c) {
   const s = c.status;
   if (st.group && s === 'active') {
     if (c.my_status === 'removed') { finish('You were removed from the meeting', 5000); return; }
+    if (c.my_status === 'declined') { finish('The host did not let you in', 5000); return; }
+    if (c.my_status === 'invited') { if (!st.waiting) { set({ waiting: true }); applyPhase(); } return; }
     if (c.my_status !== 'joined') { finish('You left the meeting'); return; }
-    set({ members: c.members || [], role: c.my_role || null, title: c.title || st.title, since: c.started_at ? Date.parse(c.started_at) : st.since });
+    if (st.waiting) { set({ waiting: false }); applyPhase(); admitted(st.id); }
+    set({ lobby: !!c.lobby, wait: c.waiting || [], members: c.members || [], role: c.my_role || null, title: c.title || st.title, since: c.started_at ? Date.parse(c.started_at) : st.since });
   }
   if (s === 'ringing' || s === 'active') {
     if (s === 'active' && st.phase === 'INCOMING') return;
@@ -118,7 +122,8 @@ function snap(rm) {
   const mk = (p) => {
     const cam = p.getTrackPublication(Track.Source.Camera);
     const mic = p.getTrackPublication(Track.Source.Microphone);
-    return { id: p.identity, name: p.isLocal ? 'You' : (p.name || st.peer || 'Guest'), local: p.isLocal, speaking: p.isSpeaking, micOff: !mic || mic.isMuted, track: cam && !cam.isMuted && cam.videoTrack ? cam.videoTrack : null };
+    const scr = p.getTrackPublication(Track.Source.ScreenShare);
+    return { screen: scr && !scr.isMuted && scr.videoTrack ? scr.videoTrack : null, id: p.identity, name: p.isLocal ? 'You' : (p.name || st.peer || 'Guest'), local: p.isLocal, speaking: p.isSpeaking, micOff: !mic || mic.isMuted, track: cam && !cam.isMuted && cam.videoTrack ? cam.videoTrack : null };
   };
   set({ parts: [mk(rm.localParticipant), ...Array.from(rm.remoteParticipants.values()).map(mk)] });
 }
@@ -137,6 +142,8 @@ async function connect(id) {
     else if (t.kind === Track.Kind.Video) set({ remoteTrack: t, remoteOff: false });
   });
   rm.on(RoomEvent.TrackUnsubscribed, (t) => { if (t.kind === Track.Kind.Video) set({ remoteTrack: null }); });
+  rm.on(RoomEvent.LocalTrackPublished, () => snap(rm));
+  rm.on(RoomEvent.LocalTrackUnpublished, () => snap(rm));
   rm.on(RoomEvent.TrackMuted, (pub, p) => { if (pub.kind === Track.Kind.Video && p && !p.isLocal) set({ remoteOff: true }); });
   rm.on(RoomEvent.TrackUnmuted, (pub, p) => { if (pub.kind === Track.Kind.Video && p && !p.isLocal) set({ remoteOff: false }); });
   rm.on(RoomEvent.ConnectionQualityChanged, (q, p) => { if (p && p.isLocal) set({ quality: String(q) }); });
@@ -249,6 +256,7 @@ export async function pickDevice(kind, id) {
 export const meetingFor = (cid) => rpc('get_conversation_meeting', { p_conversation: cid });
 async function enterMeeting(id) {
   const j = await rpc('join_meeting', { p_meeting: id });
+  if (j.ok && j.data && j.data.waiting) { set({ id, status: 'active', mine: false, waiting: true }); applyPhase(); startPoll(); refresh(); return; }
   if (!j.ok) { finish(j.error, 5000); return; }
   set({ id, status: 'active', mine: false });
   applyPhase();
@@ -304,4 +312,37 @@ export async function setRole(uid, role) {
   const r = await rpc('set_participant_role', { p_meeting: st.id, p_user: uid, p_role: role });
   if (!r.ok) note(r.error);
   refresh();
+}
+
+async function act(name, args) {
+  const r = await rpc(name, args);
+  if (!r.ok) note(r.error);
+  refresh();
+  return r;
+}
+export const toggleHand = (up) => act('set_hand', { p_meeting: st.id, p_up: !!up });
+export const sendReaction = (k) => act('send_reaction', { p_meeting: st.id, p_key: k });
+export const setLobby = (on) => act('set_meeting_lobby', { p_meeting: st.id, p_on: !!on });
+export const admitPerson = (uid, ok) => act('admit_participant', { p_meeting: st.id, p_user: uid, p_ok: !!ok });
+export async function revokeLinks() {
+  const r = await act('revoke_meeting_links', { p_meeting: st.id });
+  if (r.ok) note('Invite links revoked');
+}
+export async function copyLink() {
+  const r = await rpc('create_meeting_link', { p_meeting: st.id });
+  if (!r.ok || !r.data) { note(r.error || 'Could not create a link.'); return; }
+  const link = window.location.origin + '/m/' + r.data.code;
+  try { await navigator.clipboard.writeText(link); note('Invite link copied'); } catch (e) { note(link, 12000); }
+}
+export const chatList = (after) => rpc('list_meeting_chat', { p_meeting: st.id, p_after: after });
+export const chatSend = (body) => rpc('send_meeting_chat', { p_meeting: st.id, p_body: body });
+export const joinByCode = (code) => rpc('join_meeting_by_code', { p_code: code });
+export async function toggleShare() {
+  if (!room) return;
+  const on = !room.localParticipant.isScreenShareEnabled;
+  try { await room.localParticipant.setScreenShareEnabled(on); snap(room); } catch (e) { if (on) note('Screen sharing was cancelled or is blocked.'); }
+}
+async function admitted(id) {
+  const c = await connect(id);
+  if (!c.ok && st.id === id) { await rpc('leave_meeting', { p_meeting: id }); finish(c.error, 5000); }
 }

@@ -1,3 +1,4 @@
+import JoinMeeting from './pages/JoinMeeting';
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import PublicProfile from './pages/PublicProfile';
@@ -78,6 +79,7 @@ export default function App() {
               <Route path="/messages/:id" element={<Chat />} />
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/calls" element={<CallHistory />} />
+              <Route path="/m/:code" element={<JoinMeeting />} />
               <Route path="/add/:code" element={<AddContact />} />
               <Route path="/groups/:id/info" element={<GroupInfo />} />
               <Route path="/join/:code" element={<JoinGroup />} />

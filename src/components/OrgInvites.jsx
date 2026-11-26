@@ -1,3 +1,4 @@
+import { appOrigin } from '../lib/appUrl';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Copy, RefreshCw } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
@@ -15,7 +16,7 @@ export default function OrgInvites({ org, tick, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState('username');
   const [val, setVal] = useState('');
-  const link = org.invite_code ? window.location.origin + '/o/' + org.invite_code : '';
+  const link = org.invite_code ? appOrigin() + '/o/' + org.invite_code : '';
   const load = useCallback(async () => {
     const [a, b] = await Promise.all([listOrgInvites(org.id), listOrgJoinRequests(org.id)]);
     if (!a.ok) { setErr(a.error); return; }

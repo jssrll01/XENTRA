@@ -1,3 +1,4 @@
+import { appOrigin } from '../lib/appUrl';
 import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useState } from 'react';
 import Skeleton from './ui/Skeleton';
@@ -6,7 +7,7 @@ import QRCode from 'qrcode';
 import Sheet from './Sheet';
 import { getMyCode, regenerateMyCode } from '../lib/api';
 
-const link = (c) => window.location.origin + '/add/' + c;
+const link = (c) => appOrigin() + '/add/' + c;
 
 export default function CodeSheet({ onClose }) {
   const [code, setCode] = useState(null);

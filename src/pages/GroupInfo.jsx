@@ -1,3 +1,4 @@
+import { appOrigin } from '../lib/appUrl';
 import { ask } from '../lib/dialog';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from '../components/ui/Skeleton';
@@ -42,7 +43,7 @@ export default function GroupInfo() {
   };
   const admin = g && (g.my_role === 'owner' || g.my_role === 'admin');
   const owner = g && g.my_role === 'owner';
-  const link = g && g.invite_code ? window.location.origin + '/join/' + g.invite_code : '';
+  const link = g && g.invite_code ? appOrigin() + '/join/' + g.invite_code : '';
   const pick = async (e) => {
     const f = e.target.files && e.target.files[0];
     e.target.value = '';

@@ -1,3 +1,4 @@
+import { appOrigin } from '../lib/appUrl';
 import React, { useEffect, useRef, useState } from 'react';
 import useExit from '../lib/useExit';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -40,7 +41,7 @@ export default function AppShell() {
   const openSheet = (t) => { setMenu(false); setSheet({ t }); };
   const shareProfile = async () => {
     setMenu(false);
-    const url = window.location.origin + '/u/' + profile.username;
+    const url = appOrigin() + '/u/' + profile.username;
     if (navigator.share) {
       try { await navigator.share({ title: name + ' on XENTRA', text: 'Connect with ' + name + ' on XENTRA', url }); } catch (x) { /* dismissed */ }
       return;

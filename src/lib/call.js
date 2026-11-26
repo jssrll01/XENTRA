@@ -1,4 +1,3 @@
-import { appOrigin } from './appUrl';
 import { useSyncExternalStore } from 'react';
 import { DisconnectReason, Room, RoomEvent, Track } from 'livekit-client';
 import { supabase } from './supabase';
@@ -332,7 +331,7 @@ export async function revokeLinks() {
 export async function copyLink() {
   const r = await rpc('create_meeting_link', { p_meeting: st.id });
   if (!r.ok || !r.data) { note(r.error || 'Could not create a link.'); return; }
-  const link = appOrigin() + '/m/' + r.data.code;
+  const link = window.location.origin + '/m/' + r.data.code;
   try { await navigator.clipboard.writeText(link); note('Invite link copied'); } catch (e) { note(link, 12000); }
 }
 export const chatList = (after) => rpc('list_meeting_chat', { p_meeting: st.id, p_after: after });

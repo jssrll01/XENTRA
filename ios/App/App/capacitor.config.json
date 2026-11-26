@@ -1,0 +1,12 @@
+{
+	"appId": "com.xmarket.xentra",
+	"appName": "XENTRA",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	},
+	"packageClassList": [
+		"ClipboardPlugin",
+		"SharePlugin"
+	]
+}

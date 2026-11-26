@@ -1,4 +1,3 @@
-import { appOrigin } from '../lib/appUrl';
 import { ask, promptText } from '../lib/dialog';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Ban, Camera, ChevronRight, Copy, FileText, Hash, History, QrCode, Settings, Shield, Tag, UserPlus } from 'lucide-react';
@@ -45,7 +44,7 @@ function Details({ team, busy, run, pick }) {
 }
 
 function Invite({ team, busy, run, setNote }) {
-  const link = team.invite_code ? appOrigin() + '/c/' + team.invite_code : '';
+  const link = team.invite_code ? window.location.origin + '/c/' + team.invite_code : '';
   const on = !!team.invite_enabled && !!link;
   const copy = async () => {
     try { await navigator.clipboard.writeText(link); setNote('Link copied'); } catch (x) { setNote('Could not copy.'); }
